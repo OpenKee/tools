@@ -61,8 +61,7 @@ a{color:var(--ink);text-decoration:none}
 <div class="header"><h1>🏛 Art Gallery</h1><div class="sub">Explore 400,000+ artworks from The Met</div></div>
 <div class="search">
 <form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn">Search</button></form>
-<button class="random" onclick="randomArt()">✦ <span class="en">Random artwork</span><span class="zh" style="display:none">随机浏览</span></button>
-<button class="random" onclick="toggleLang()" style="font-size:.72rem"><span class="en">中文</span><span class="zh" style="display:none">EN</span></button>
+<button class="random" onclick="randomArt()">✦ Random artwork</button>
 </div>
 <div class="loading" id="ld">Loading…</div>
 <div class="gallery" id="out"></div>
@@ -173,17 +172,8 @@ function showDetail(id){
 function closeDetail(){document.getElementById('overlay').classList.remove('on')}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
 
-var isZh=false;
-function toggleLang(){
-  isZh=!isZh;
-  document.querySelectorAll('.en').forEach(function(e){e.style.display=isZh?'none':'inline'});
-  document.querySelectorAll('.zh').forEach(function(e){e.style.display=isZh?'inline':'none'});
-  document.getElementById('inp').placeholder=isZh?'搜索… 莫奈、梵高、武士…':'Search... Monet, Van Gogh, Samurai...';
-  document.querySelector('.search button').textContent=isZh?'搜索':'SEARCH';
-  document.querySelector('.header .sub').textContent=isZh?'探索大都会博物馆 40 万+ 件藏品':'Explore 400,000+ artworks from The Met';
-}
 randomArt();
 </script>
-<div style="text-align:center;padding:1.5rem;border-top:1px solid #d4c9b8;margin-top:2rem;font-size:.72rem;color:#9c8e7c"><span>OpenKee · 2026</span> · <a href="https://github.com/OpenKee" target="_blank" style="color:#9c8e7c">GitHub</a> · <span class="en">Powered by The Met API</span><span class="zh" style="display:none">由大都会博物馆 API 驱动</span></div>
+<div style="text-align:center;padding:1.5rem;border-top:1px solid #d4c9b8;margin-top:2rem;font-size:.72rem;color:#9c8e7c"><span>OpenKee · 2026</span> · <a href="https://github.com/OpenKee" target="_blank" style="color:#9c8e7c">GitHub</a> · Powered by The Met API</div>
 </body>
 </html>
