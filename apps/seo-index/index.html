@@ -1,304 +1,238 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SEO 体检</title>
-    <meta name="theme-color" content="#fafaf8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-      :root{--bg:#fafaf8;--sf:#fff;--bd:#e8e6e1;--tx:#1a1a1a;--mt:#78766e;--dm:#a8a6a0;--acc:#2563eb;--gn:#16a34a;--yl:#ca8a04;--rd:#dc2626}
-      *{box-sizing:border-box;margin:0;padding:0}
-      body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
-      .wrap{max-width:720px;margin:0 auto;padding:0 1.25rem}
-      .nav{padding:1rem 0;border-bottom:1px solid var(--bd);margin-bottom:1.5rem;display:flex;align-items:baseline;gap:.5rem}
-      .nav .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);flex-shrink:0}
-      .nav .title{font-weight:700;font-size:.9rem}
-      .nav .sep{color:var(--dm);font-size:.8rem}
-      .nav .tag{font-size:.72rem;color:var(--dm);border:1px solid var(--bd);padding:.15rem .5rem;border-radius:4px;margin-left:auto}
-      .header{padding:1.5rem 0 1rem}
-      .header h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
-      .header p{color:var(--mt);font-size:.88rem;margin-top:.3rem}
-      .search{margin:1rem 0 1.5rem}
-      .search form{display:flex;gap:.5rem}
-      .search input{flex:1;height:2.5rem;padding:0 .75rem;border:1px solid var(--bd);border-radius:6px;font:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;transition:border-color .2s}
-      .search input:focus{border-color:var(--acc)}
-      .search input::placeholder{color:var(--dm)}
-      .search button{height:2.5rem;padding:0 1.25rem;background:var(--tx);color:var(--bg);border:none;border-radius:6px;font:inherit;font-weight:600;font-size:.82rem;cursor:pointer;transition:opacity .15s}
-      .search button:hover{opacity:.85}
-      .search button:disabled{opacity:.4}
-      .examples{margin-top:.5rem;font-size:.78rem;color:var(--dm)}
-      .examples button{background:none;border:none;color:var(--acc);font:inherit;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
-      .loading{display:none;padding:2rem 0;text-align:center;font-size:.85rem;color:var(--mt)}
-      .loading.on{display:block}
-      .error{display:none;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin:1rem 0;font-size:.85rem;color:var(--rd)}
-      .error.on{display:block}
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SEO 体检</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fafaf8;--sf:#fff;--bd:#e8e6e1;--tx:#1a1a1a;--mt:#78766e;--dm:#a8a6a0;--acc:#2563eb;--gn:#16a34a;--yl:#ca8a04;--rd:#dc2626}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:0 1.25rem}
+.nav{padding:1rem 0;border-bottom:1px solid var(--bd);margin-bottom:1.5rem;display:flex;align-items:baseline;gap:.5rem}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.nav .title{font-weight:700;font-size:.9rem}
+.nav .sep{color:var(--dm);font-size:.8rem}
+.nav .tag{font-size:.72rem;color:var(--dm);border:1px solid var(--bd);padding:.15rem .5rem;border-radius:4px;margin-left:auto}
+.hdr{padding:1.5rem 0 1rem}
+.hdr h1{font-size:1.6rem;font-weight:700}
+.hdr p{color:var(--mt);font-size:.88rem;margin-top:.3rem}
+.srch{margin:1rem 0 1.5rem}
+.srch form{display:flex;gap:.5rem}
+.srch input{flex:1;height:2.5rem;padding:0 .75rem;border:1px solid var(--bd);border-radius:6px;font:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none}
+.srch input:focus{border-color:var(--acc)}
+.srch button{height:2.5rem;padding:0 1.25rem;background:var(--tx);color:var(--bg);border:none;border-radius:6px;font:inherit;font-weight:600;font-size:.82rem;cursor:pointer}
+.srch button:disabled{opacity:.4}
+.exs{margin-top:.5rem;font-size:.78rem;color:var(--dm)}
+.exs button{background:none;border:none;color:var(--acc);font:inherit;font-size:.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.ld{display:none;padding:2rem 0;text-align:center;font-size:.85rem;color:var(--mt)}
+.ld.on{display:block}
+.err{display:none;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin:1rem 0;font-size:.85rem;color:var(--rd)}
+.err.on{display:block}
+.score{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:1.5rem}
+.score .num{font-size:2.2rem;font-weight:800;width:3.5rem;text-align:center}
+.score .num.g{color:var(--gn)}.score .num.w{color:var(--yl)}.score .num.b{color:var(--rd)}
+.score .info{flex:1}
+.score .lbl{font-size:.82rem;font-weight:600}
+.score .sub{font-size:.72rem;color:var(--mt)}
+.sec{margin-bottom:1.5rem}
+.sec-t{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid var(--bd)}
+.chk{display:flex;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--bd)}
+.chk:last-child{border-bottom:none}
+.chk .ic{width:1.4rem;text-align:center;font-size:.85rem;flex-shrink:0}
+.chk .ic.p{color:var(--gn)}.chk .ic.w{color:var(--yl)}.chk .ic.f{color:var(--rd)}
+.chk .bd{flex:1;min-width:0}
+.chk .nm{font-size:.84rem;font-weight:600}
+.chk .vl{font-size:.78rem;color:var(--mt);margin-top:.1rem;word-break:break-all}
+.chk .tp{font-size:.75rem;color:var(--dm);margin-top:.2rem;font-style:italic}
+footer{padding:2rem 0;border-top:1px solid var(--bd);margin-top:2rem;font-size:.72rem;color:var(--dm);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>SEO 体检</span><span class="tag">免费</span></nav>
+<div class="hdr"><h1>SEO 体检</h1><p>输入网址，检查 SEO 基础健康状况</p></div>
+<div class="srch">
+<form onsubmit="go();return false">
+<input type="text" id="inp" placeholder="example.com 或 https://example.com" autocomplete="off"/>
+<button type="submit" id="btn">体检</button>
+</form>
+<div class="exs">试试：<button onclick="q('openkee.github.io')">openkee.github.io</button> · <button onclick="q('github.com')">github.com</button></div>
+</div>
+<div class="ld" id="ld">检测中…</div>
+<div class="err" id="er"></div>
+<div id="out"></div>
+<footer>SEO 体检 — 纯前端检测</footer>
+</div>
+<script>
+var $=function(id){return document.getElementById(id)};
+function q(v){$('inp').value=v;go()}
 
-      /* Score */
-      .score-bar{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:1.5rem}
-      .score-num{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;width:3.5rem;text-align:center}
-      .score-num.g{color:var(--gn)}.score-num.w{color:var(--yl)}.score-num.b{color:var(--rd)}
-      .score-info{flex:1}
-      .score-info .label{font-size:.82rem;font-weight:600}
-      .score-info .sub{font-size:.72rem;color:var(--mt);margin-top:.1rem}
+var PROXIES=[
+  function(u){return 'https://corsproxy.io/?'+encodeURIComponent(u)},
+  function(u){return 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)},
+  function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u)}
+];
 
-      /* Section */
-      .section{margin-bottom:1.5rem}
-      .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid var(--bd)}
+function proxyFetch(url,timeout){
+  timeout=timeout||12000;
+  var i=0;
+  function tryNext(){
+    if(i>=PROXIES.length)return Promise.reject('no proxy');
+    var mk=PROXIES[i++];
+    try{
+      return fetch(mk(url),{signal:AbortSignal.timeout(timeout)}).then(function(r){
+        if(r.ok)return r.text();
+        return tryNext();
+      }).catch(function(){return tryNext()});
+    }catch(e){return tryNext()}
+  }
+  return tryNext();
+}
 
-      /* Check row */
-      .check{display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--bd)}
-      .check:last-child{border-bottom:none}
-      .check .icon{flex-shrink:0;width:1.4rem;text-align:center;font-size:.85rem;line-height:1.5}
-      .check .icon.pass{color:var(--gn)}.check .icon.warn{color:var(--yl)}.check .icon.fail{color:var(--rd)}
-      .check .body{flex:1;min-width:0}
-      .check .name{font-size:.84rem;font-weight:600}
-      .check .val{font-size:.78rem;color:var(--mt);margin-top:.1rem;word-break:break-all}
-      .check .tip{font-size:.75rem;color:var(--dm);margin-top:.2rem;font-style:italic}
+function norm(raw){
+  var u=raw.trim();
+  if(!/^https?:\/\//i.test(u))u='https://'+u;
+  try{return new URL(u)}catch(e){return null}
+}
+function getTag(html,re){var m=html.match(re);return m}
+function getTags(html,re){var m=html.match(new RegExp(re.source+'g',re.flags));return m||[]}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
 
-      footer{padding:2rem 0;border-top:1px solid var(--bd);margin-top:2rem;font-size:.72rem;color:var(--dm);text-align:center}
-      @media(max-width:500px){.score-bar{flex-direction:column;text-align:center;gap:.5rem}}
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <nav class="nav">
-        <span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>SEO 体检</span><span class="tag">免费</span>
-      </nav>
-      <div class="header"><h1>SEO 体检</h1><p>输入网址，检查 SEO 基础健康状况</p></div>
-      <div class="search">
-        <form onsubmit="go();return false">
-          <input type="text" id="inp" placeholder="example.com 或 https://example.com" autocomplete="off" />
-          <button type="submit" id="btn">体检</button>
-        </form>
-        <div class="examples">试试：<button onclick="q('openkee.github.io')">openkee.github.io</button> · <button onclick="q('github.com')">github.com</button></div>
-      </div>
-      <div class="loading" id="ld">检测中…</div>
-      <div class="error" id="er"></div>
-      <div id="output"></div>
-      <footer>SEO 体检 — 纯前端检测，无需后端</footer>
-    </div>
+function go(){
+  var raw=$('inp').value.trim();if(!raw)return;
+  var u=norm(raw);
+  if(!u){$('er').textContent='URL 格式不对';$('er').classList.add('on');return}
+  var btn=$('btn');btn.disabled=true;
+  $('out').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
+  analyze(u).then(function(chks){render(chks,u)}).catch(function(e){
+    $('er').textContent=e.message||e;$('er').classList.add('on');
+  }).finally(function(){btn.disabled=false;$('ld').classList.remove('on')});
+}
 
-    <script>
-      const $=id=>document.getElementById(id);
-      function q(v){$('inp').value=v;go()}
+function analyze(u){
+  var origin=u.origin;
+  var url=u.href;
+  var R=[];
+  var t0=Date.now();
 
-      const PROXIES=[
-        u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
-        u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-      ];
-      async function fetchPage(url,timeout=12000){
-        for(const mk of PROXIES){
-          try{const r=await fetch(mk(url),{signal:AbortSignal.timeout(timeout)});if(r.ok)return await r.text()}catch{}
-        }
-        return null;
+  return proxyFetch(url).then(function(html){
+    var ms=Date.now()-t0;
+    if(!html)throw new Error('无法获取页面');
+
+    // BASICS
+    R.push({c:'基础',n:'HTTPS',s:u.protocol==='https:'?'p':'f',v:u.protocol,t:u.protocol!=='https:'?'建议启用 HTTPS':''});
+    R.push({c:'基础',n:'响应时间',s:ms<1000?'p':ms<3000?'w':'f',v:ms+'ms',t:ms>3000?'响应较慢':''});
+    var fav=/<link[^>]*rel=["'](?:shortcut )?icon["']/i.test(html)||/\/favicon\.ico/i.test(html);
+    R.push({c:'基础',n:'Favicon',s:fav?'p':'w',v:fav?'已设置':'未检测到',t:!fav?'建议添加 favicon':''});
+
+    // META
+    var titleM=getTag(html,/<title[^>]*>([^<]*)<\/title>/i);
+    var title=titleM?titleM[1].trim():'';
+    var tLen=[].slice.call(title).length;
+    R.push({c:'Meta',n:'Title',s:!title?'f':tLen>60?'w':tLen<10?'w':'p',
+      v:title?'"'+title+'"（'+tLen+'字）':'缺失',t:!title?'必须设置 title':tLen>60?'title 过长':''});
+
+    var descM=getTag(html,/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)||
+               getTag(html,/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i);
+    var desc=descM?descM[1].trim():'';
+    var dLen=[].slice.call(desc).length;
+    R.push({c:'Meta',n:'Description',s:!desc?'f':dLen>160?'w':'p',
+      v:desc?'"'+desc.slice(0,80)+(dLen>80?'…':'')+'"（'+dLen+'字）':'缺失',t:!desc?'必须设置 description':''});
+
+    var can=getTag(html,/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i);
+    R.push({c:'Meta',n:'Canonical',s:can?'p':'w',v:can?can[1]:'未设置',t:!can?'建议设置 canonical':''});
+
+    var vp=getTag(html,/<meta[^>]*name=["']viewport["']/i);
+    R.push({c:'Meta',n:'Viewport',s:vp?'p':'f',v:vp?'已设置':'缺失',t:!vp?'缺少 viewport':''});
+
+    var ch=getTag(html,/<meta[^>]*charset=["']?([^"' >]+)/i);
+    R.push({c:'Meta',n:'字符编码',s:ch?'p':'w',v:ch?ch[1]:'未声明',t:!ch?'建议声明 UTF-8':''});
+
+    // OG
+    var ogT=getTag(html,/<meta[^>]*property=["']og:title["']/i);
+    var ogD=getTag(html,/<meta[^>]*property=["']og:description["']/i);
+    var ogI=getTag(html,/<meta[^>]*property=["']og:image["']/i);
+    var ogU=getTag(html,/<meta[^>]*property=["']og:url["']/i);
+    var tw=getTag(html,/<meta[^>]*name=["']twitter:card["']/i);
+    var ogN=[ogT,ogD,ogI,ogU].filter(Boolean).length;
+    R.push({c:'社交',n:'Open Graph',s:ogN>=3?'p':ogN>=1?'w':'f',v:ogN+'/4 项',t:ogN<3?'建议完善 OG 标签':''});
+    R.push({c:'社交',n:'Twitter Card',s:tw?'p':'w',v:tw?'已设置':'未设置',t:!tw?'建议添加 twitter:card':''});
+
+    // HEADINGS
+    var h1s=getTags(html,/<h1[^>]*>[\s\S]*?<\/h1>/i);
+    R.push({c:'内容',n:'H1 标签',s:h1s.length===1?'p':h1s.length===0?'f':'w',v:h1s.length+' 个',t:h1s.length===0?'缺少 H1':h1s.length>1?'H1 应只有 1 个':''});
+    var hcount=0;
+    ['h2','h3','h4','h5','h6'].forEach(function(t){hcount+=getTags(html,new RegExp('<'+t+'[^>]*>','gi')).length});
+    R.push({c:'内容',n:'子标题 H2-H6',s:hcount>0?'p':'w',v:hcount+' 个',t:hcount===0?'建议使用子标题':''});
+
+    // IMAGES
+    var imgs=getTags(html,/<img[^>]*>/gi);
+    var noAlt=imgs.filter(function(i){return !/alt=["'][^"']+["']/i.test(i)});
+    R.push({c:'内容',n:'图片 alt',s:imgs.length===0?'p':noAlt.length===0?'p':noAlt.length<3?'w':'f',
+      v:imgs.length===0?'无图片':imgs.length+' 张，'+noAlt.length+' 缺 alt',t:noAlt.length>0?noAlt.length+' 张图片缺 alt':''});
+
+    // LINKS
+    var links=getTags(html,/<a[^>]*href=["']([^"']+)["'][^>]*>/gi);
+    var intl=links.filter(function(l){return l.includes(u.hostname)||l[0]==='/'});
+    R.push({c:'内容',n:'内部链接',s:intl.length>0?'p':'w',v:intl.length+' 个',t:intl.length===0?'建议添加内部链接':''});
+
+    // JSON-LD
+    var jld=getTags(html,/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi);
+    R.push({c:'技术',n:'结构化数据',s:jld.length>0?'p':'w',v:jld.length>0?jld.length+' 个':'未检测到',t:jld.length===0?'建议添加 JSON-LD':''});
+
+    // ROBOTS META
+    var rbM=getTag(html,/<meta[^>]*name=["']robots["'][^>]*content=["']([^"']*)["']/i);
+    var rbV=rbM?rbM[1].toLowerCase():'';
+    R.push({c:'技术',n:'Robots Meta',s:rbV.indexOf('noindex')>=0?'f':rbM?'p':'w',
+      v:rbM?rbM[1]:'未设置',t:rbV.indexOf('noindex')>=0?'设置了 noindex，不会收录':''});
+
+    // ROBOTS.TXT
+    return proxyFetch(origin+'/robots.txt').catch(function(){return null}).then(function(rt){
+      R.push({c:'技术',n:'robots.txt',s:rt?'p':'w',v:rt?rt.split('\n').length+' 行':'不存在',t:!rt?'建议创建 robots.txt':''});
+      if(rt){
+        var hasSm=/^sitemap:/im.test(rt);
+        R.push({c:'技术',n:'robots.txt Sitemap',s:hasSm?'p':'w',v:hasSm?'已声明':'未声明',t:!hasSm?'建议在 robots.txt 声明 Sitemap':''});
       }
 
-      function norm(raw){let u=raw.trim();if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u)}catch{return null}}
-      function tag(html,re){return html.match(re)}
-      function tags(html,re){const m=html.match(new RegExp(re.source+'g',re.flags));return m||[]}
-      function esc(s){return s?.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')||''}
+      // SITEMAP
+      return proxyFetch(origin+'/sitemap.xml').catch(function(){return null}).then(function(sm){
+        var hasSmXml=sm&&(sm.indexOf('<urlset')>=0||sm.indexOf('<sitemapindex')>=0);
+        R.push({c:'技术',n:'sitemap.xml',s:hasSmXml?'p':'w',v:hasSmXml?'存在':'不存在',t:!hasSmXml?'建议创建 sitemap.xml':''});
+        return R;
+      });
+    });
+  });
+}
 
-      async function go(){
-        const raw=$('inp').value.trim();if(!raw)return;
-        const u=norm(raw);if(!u){$('er').textContent='URL 格式不对';$('er').classList.add('on');return}
-        const b=$('btn');b.disabled=true;
-        $('output').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
+function render(chks,u){
+  var pass=chks.filter(function(c){return c.s==='p'}).length;
+  var total=chks.length;
+  var score=Math.round(pass/total*100);
+  var cls=score>=80?'g':score>=50?'w':'b';
+  var lbl=score>=80?'健康':score>=50?'需改进':'问题较多';
 
-        try{
-          const checks=await analyze(u);
-          render(checks,u);
-        }catch(e){$('er').textContent=e.message;$('er').classList.add('on')}
-        finally{b.disabled=false;$('ld').classList.remove('on')}
-      }
+  var html='<div class="score"><div class="num '+cls+'">'+score+'</div><div class="info"><div class="lbl">'+lbl+' · '+pass+'/'+total+' 项通过</div><div class="sub">'+u.hostname+'</div></div></div>';
 
-      async function analyze(u){
-        const origin=u.origin;
-        const url=u.href;
-        const results=[];
+  var cats={};
+  chks.forEach(function(c){if(!cats[c.c])cats[c.c]=[];cats[c.c].push(c)});
 
-        // Fetch main page
-        const pageStart=Date.now();
-        const html=await fetchPage(url);
-        const loadTime=Date.now()-pageStart;
-        if(!html)throw new Error('无法获取页面，请检查 URL 是否可访问');
+  Object.keys(cats).forEach(function(cat){
+    html+='<div class="sec"><div class="sec-t">'+cat+'</div>';
+    cats[cat].forEach(function(c){
+      var ic=c.s==='p'?'✓':c.s==='w'?'⚠':'✗';
+      html+='<div class="chk"><div class="ic '+c.s+'">'+ic+'</div><div class="bd"><div class="nm">'+c.n+'</div>';
+      if(c.v)html+='<div class="vl">'+esc(c.v)+'</div>';
+      if(c.t)html+='<div class="tp">'+esc(c.t)+'</div>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
 
-        // === BASICS ===
-        // HTTPS
-        results.push({cat:'基础',name:'HTTPS',status:u.protocol==='https:'?'pass':'fail',
-          val:u.protocol,tip:u.protocol!=='https:'?'建议启用 HTTPS，搜索引擎优先收录安全站点':''});
-
-        // Load time
-        results.push({cat:'基础',name:'响应时间',status:loadTime<1000?'pass':loadTime<3000?'warn':'fail',
-          val:`${loadTime}ms`,tip:loadTime>3000?'响应较慢，建议优化服务器或启用 CDN':''});
-
-        // Favicon
-        const hasFavicon=/<link[^>]*rel=["'](?:shortcut )?icon["']/i.test(html)||/\/favicon\.ico/i.test(html);
-        results.push({cat:'基础',name:'Favicon',status:hasFavicon?'pass':'warn',
-          val:hasFavicon?'已设置':'未检测到',tip:!hasFavicon?'建议添加 favicon，提升品牌识别度':''});
-
-        // === META ===
-        // Title
-        const titleM=tag(html,/<title[^>]*>([^<]*)<\/title>/i);
-        const title=titleM?titleM[1].trim():'';
-        const titleLen=[...title].length;
-        results.push({cat:'Meta',name:'Title',
-          status:!title?'fail':titleLen>60?'warn':titleLen<10?'warn':'pass',
-          val:title?`"${title}"（${titleLen}字）`:'缺失',
-          tip:!title?'必须设置 title':titleLen>60?'title 过长，建议控制在 30 字以内':titleLen<10?'title 过短，建议包含核心关键词':''});
-
-        // Description
-        const descM=tag(html,/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)||
-                     tag(html,/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i);
-        const desc=descM?descM[1].trim():'';
-        const descLen=[...desc].length;
-        results.push({cat:'Meta',name:'Description',
-          status:!desc?'fail':descLen>160?'warn':'pass',
-          val:desc?`"${desc.slice(0,80)}${descLen>80?'…':''}"（${descLen}字）`:'缺失',
-          tip:!desc?'必须设置 meta description':descLen>160?'描述过长，搜索引擎可能截断':''});
-
-        // Canonical
-        const canonicalM=tag(html,/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i);
-        results.push({cat:'Meta',name:'Canonical',status:canonicalM?'pass':'warn',
-          val:canonicalM?canonicalM[1]:'未设置',tip:!canonicalM?'建议设置 canonical 避免重复内容问题':''});
-
-        // Viewport
-        const viewportM=tag(html,/<meta[^>]*name=["']viewport["']/i);
-        results.push({cat:'Meta',name:'Viewport',status:viewportM?'pass':'fail',
-          val:viewportM?'已设置':'缺失',tip:!viewportM?'缺少 viewport 标签，移动端将无法适配':''});
-
-        // Charset
-        const charsetM=tag(html,/<meta[^>]*charset=["']?([^"' >]+)/i)||tag(html,/<meta[^>]*content=["'][^"']*charset=([^;"' ]+)/i);
-        results.push({cat:'Meta',name:'字符编码',status:charsetM?'pass':'warn',
-          val:charsetM?charsetM[1]:'未声明',tip:!charsetM?'建议声明 charset="UTF-8"':''});
-
-        // === OG / SOCIAL ===
-        const ogTitle=tag(html,/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i);
-        const ogDesc=tag(html,/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
-        const ogImage=tag(html,/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*)["']/i);
-        const ogUrl=tag(html,/<meta[^>]*property=["']og:url["'][^>]*content=["']([^"']*)["']/i);
-        const twitterCard=tag(html,/<meta[^>]*name=["']twitter:card["']/i);
-        const ogCount=[ogTitle,ogDesc,ogImage,ogUrl].filter(Boolean).length;
-        results.push({cat:'社交',name:'Open Graph',status:ogCount>=3?'pass':ogCount>=1?'warn':'fail',
-          val:`${ogCount}/4 项（title/desc/image/url）`,
-          tip:ogCount<3?'建议完善 OG 标签，社交分享时显示效果更好':''});
-        results.push({cat:'社交',name:'Twitter Card',status:twitterCard?'pass':'warn',
-          val:twitterCard?'已设置':'未设置',tip:!twitterCard?'建议添加 twitter:card 标签':''});
-
-        // === HEADINGS ===
-        const h1s=tags(html,/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-        const h2s=tags(html,/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-        results.push({cat:'内容',name:'H1 标签',
-          status:h1s.length===1?'pass':h1s.length===0?'fail':'warn',
-          val:`${h1s.length} 个`,tip:h1s.length===0?'缺少 H1 标签':h1s.length>1?'H1 应该只有 1 个':''});
-
-        // H2+
-        const headingCount=['h2','h3','h4','h5','h6'].reduce((s,t)=>{
-          return s+tags(html,new RegExp(`<${t}[^>]*>`,'gi')).length;
-        },0);
-        results.push({cat:'内容',name:'子标题（H2-H6）',status:headingCount>0?'pass':'warn',
-          val:`${headingCount} 个`,tip:headingCount===0?'建议使用子标题组织内容结构':''});
-
-        // === IMAGES ===
-        const imgs=tags(html,/<img[^>]*>/gi);
-        const imgsNoAlt=imgs.filter(i=>!/alt=["'][^"']+["']/i.test(i));
-        const imgTotal=imgs.length;
-        const imgNoAltCount=imgsNoAlt.length;
-        results.push({cat:'内容',name:'图片 alt',
-          status:imgTotal===0?'pass':imgNoAltCount===0?'pass':imgNoAltCount<3?'warn':'fail',
-          val:imgTotal===0?'无图片':`${imgTotal} 张图片，${imgNoAltCount} 张缺 alt`,
-          tip:imgNoAltCount>0?`有 ${imgNoAltCount} 张图片缺少 alt 文本，影响可访问性和图片搜索':''});
-
-        // === LINKS ===
-        const links=tags(html,/<a[^>]*href=["']([^"']+)["'][^>]*>/gi);
-        const internalLinks=links.filter(l=>l.includes(u.hostname)||l.startsWith('/')||l.startsWith('#')||l.startsWith('.'));
-        const externalLinks=links.filter(l=>!internalLinks.includes(l));
-        results.push({cat:'内容',name:'内部链接',status:internalLinks.length>0?'pass':'warn',
-          val:`${internalLinks.length} 个`,tip:internalLinks.length===0?'建议添加内部链接提升站内导航':''});
-
-        // === STRUCTURED DATA ===
-        const jsonLd=tags(html,/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-        results.push({cat:'技术',name:'结构化数据（JSON-LD）',status:jsonLd.length>0?'pass':'warn',
-          val:jsonLd.length>0?`${jsonLd.length} 个块`:'未检测到',
-          tip:jsonLd.length===0?'建议添加 JSON-LD 结构化数据，帮助搜索引擎理解页面':''});
-
-        // === ROBOTS ===
-        const robotsMeta=tag(html,/<meta[^>]*name=["']robots["'][^>]*content=["']([^"']*)["']/i);
-        const robotsVal=robotsMeta?robotsMeta[1].toLowerCase():'';
-        const isNoindex=robotsVal.includes('noindex');
-        const isNofollow=robotsVal.includes('nofollow');
-        results.push({cat:'技术',name:'Robots Meta',status:isNoindex?'fail':robotsMeta?'pass':'warn',
-          val:robotsMeta?robotsMeta[1]:'未设置（默认 index,follow）',
-          tip:isNoindex?'⚠️ 页面设置了 noindex，搜索引擎不会收录！':!robotsMeta?'默认允许收录，如需精确控制建议显式设置':''});
-
-        // === FETCH ROBOTS.TXT ===
-        const robotsTxt=await fetchPage(`${origin}/robots.txt`).catch(()=>null);
-        results.push({cat:'技术',name:'robots.txt',status:robotsTxt?'pass':'warn',
-          val:robotsTxt?`${robotsTxt.split('\n').length} 行`:'不存在',
-          tip:!robotsTxt?'建议创建 robots.txt 文件':''});
-        if(robotsTxt){
-          const hasSitemap=/^sitemap:/im.test(robotsTxt);
-          results.push({cat:'技术',name:'robots.txt 中的 Sitemap',status:hasSitemap?'pass':'warn',
-            val:hasSitemap?'已声明':'未声明',
-            tip:!hasSitemap?'建议在 robots.txt 中声明 Sitemap 地址':''});
-        }
-
-        // === FETCH SITEMAP ===
-        const sitemap=await fetchPage(`${origin}/sitemap.xml`).catch(()=>null);
-        const hasSitemapXml=sitemap&&sitemap.includes('<urlset')||sitemap&&sitemap.includes('<sitemapindex');
-        results.push({cat:'技术',name:'sitemap.xml',status:hasSitemapXml?'pass':'warn',
-          val:hasSitemapXml?'存在':'不存在或格式错误',
-          tip:!hasSitemapXml?'建议创建 sitemap.xml 帮助搜索引擎发现所有页面':''});
-
-        return results;
-      }
-
-      function render(checks,u){
-        let html='';
-
-        // Score
-        const pass=checks.filter(c=>c.status==='pass').length;
-        const total=checks.length;
-        const score=Math.round(pass/total*100);
-        const cls=score>=80?'g':score>=50?'w':'b';
-        const label=score>=80?'健康':score>=50?'需要改进':'问题较多';
-
-        html+=`<div class="score-bar">
-          <div class="score-num ${cls}">${score}</div>
-          <div class="score-info">
-            <div class="label">${label} · ${pass}/${total} 项通过</div>
-            <div class="sub">${u.hostname}</div>
-          </div>
-        </div>`;
-
-        // Group by category
-        const cats={};
-        for(const c of checks){
-          if(!cats[c.cat])cats[c.cat]=[];
-          cats[c.cat].push(c);
-        }
-
-        for(const [cat,items] of Object.entries(cats)){
-          html+=`<div class="section"><div class="section-title">${cat}</div>`;
-          for(const c of items){
-            const icon=c.status==='pass'?'✓':c.status==='warn'?'⚠':'✗';
-            html+=`<div class="check">
-              <div class="icon ${c.status}">${icon}</div>
-              <div class="body">
-                <div class="name">${c.name}</div>
-                ${c.val?`<div class="val">${esc(c.val)}</div>`:''}
-                ${c.tip?`<div class="tip">${esc(c.tip)}</div>`:''}
-              </div>
-            </div>`;
-          }
-          html+=`</div>`;
-        }
-
-        $('output').innerHTML=html;
-      }
-    </script>
-  </body>
+  $('out').innerHTML=html;
+}
+</script>
+</body>
 </html>
