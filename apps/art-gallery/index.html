@@ -158,7 +158,10 @@ function showDetail(el){
     .then(function(d){
       var a=d.data;var iiif=d.config.iiif_url;
       var img=a.image_id?iiif+'/'+a.image_id+'/full/843,/0/default.jpg':'';
-      var imgHtml=img?'<img src="'+img+'" alt="'+(a.title||'')">':'<div style="width:100%;aspect-ratio:3/4;background:#e8dfd2;display:flex;align-items:center;justify-content:center;font-size:4rem">🖼</div>';
+      var t = a.title || 'Untitled';
+      var imgHtml = img
+        ? '<img src="' + img + '" alt="' + t + '">'
+        : '<div style="width:100%;aspect-ratio:3/4;background:#e8dfd2;display:flex;align-items:center;justify-content:center;font-size:4rem">🖼</div>';
 
       var rows=[];
       if(a.date_display)rows.push(['Date',a.date_display]);
