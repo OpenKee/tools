@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Repo Scope — GitHub User & Repository Analysis</title>
+    <meta name="description" content="Analyze any GitHub user profile. See repos, languages, activity scores, and health at a glance." />
+    <meta property="og:title" content="Repo Scope" />
+    <meta property="og:description" content="GitHub user & repository analysis dashboard." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/repo-scope/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f2efe7" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">GitHub analysis utility</p>
+          <h1 data-i18n="title">Repo Scope</h1>
+          <p class="lead" data-i18n="lead">Analyze any GitHub user — repos, languages, activity scores, and health at a glance.</p>
+        </div>
+        <div class="header-right">
+          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- Search -->
+      <section class="search-bar">
+        <form id="userForm">
+          <input id="usernameInput" type="text" placeholder="torvalds" autocomplete="off" />
+          <button type="submit" data-i18n="analyze">Analyze</button>
+        </form>
+        <details class="token-toggle">
+          <summary data-i18n="tokenToggle">Optional: GitHub token</summary>
+          <div class="token-row">
+            <input id="tokenInput" type="password" placeholder="ghp_xxxx" autocomplete="off" />
+            <button id="tokenSave" type="button" data-i18n="tokenSave">Save</button>
+            <button id="tokenClear" type="button" class="btn-ghost" data-i18n="tokenClear">Clear</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- Profile -->
+      <section id="profileSection" class="profile-section" style="display:none;">
+        <div class="profile-card">
+          <img id="avatar" class="avatar" src="" alt="avatar" />
+          <div class="profile-info">
+            <h2 id="profileName"></h2>
+            <p id="profileBio" class="profile-bio"></p>
+            <div class="profile-meta" id="profileMeta"></div>
+            <a id="profileLink" href="#" target="_blank" rel="noreferrer" class="profile-link" data-i18n="openProfile">Open profile →</a>
+          </div>
+        </div>
+        <div class="stat-strip" id="statStrip"></div>
+      </section>
+
+      <!-- Activity score -->
+      <section id="scoreSection" class="score-section" style="display:none;">
+        <div class="score-card">
+          <div class="score-ring" id="scoreRing"></div>
+          <div class="score-info">
+            <h3 data-i18n="activityScore">Activity score</h3>
+            <p id="scoreDesc" class="score-desc"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Languages -->
+      <section id="langSection" class="lang-section" style="display:none;">
+        <h2 data-i18n="languages">Languages</h2>
+        <div id="langBars" class="lang-bars"></div>
+      </section>
+
+      <!-- Repos + Detail side by side -->
+      <div id="repoLayout" class="repo-layout" style="display:none;">
+        <section class="repo-section">
+          <div class="repo-header">
+            <h2 data-i18n="repositories">Repositories</h2>
+            <div class="repo-controls">
+              <select id="sortSelect">
+                <option value="stars" data-i18n="byStars">By stars</option>
+                <option value="updated" data-i18n="byUpdated">By updated</option>
+                <option value="forks" data-i18n="byForks">By forks</option>
+                <option value="name" data-i18n="byName">By name</option>
+              </select>
+              <input id="repoSearch" type="text" placeholder="Filter\u2026" />
+            </div>
+          </div>
+          <div id="repoGrid" class="repo-grid"></div>
+          <div id="repoPagination" class="pagination"></div>
+        </section>
+
+        <aside id="detailSection" class="detail-section" style="display:none;">
+          <div class="detail-head">
+            <h2 id="detailName"></h2>
+            <button id="detailClose" type="button">&times;</button>
+          </div>
+          <div id="detailBody" class="detail-body"></div>
+        </aside>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #cdc2b3;text-align:center;font-family:IBM Plex Sans,system-ui,sans-serif;font-size:0.72rem;color:#6a6258;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>

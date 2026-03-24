@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trending Atlas — Discover What's Hot on GitHub</title>
+    <meta name="description" content="Discover trending GitHub repositories by day, week, or month. Filter by language, see star growth, and find your next favorite project." />
+    <meta property="og:title" content="Trending Atlas" />
+    <meta property="og:description" content="Discover trending GitHub repositories. Filter by time range and language." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/trending-atlas/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f2efe7" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="kicker" data-i18n="eyebrow">GitHub trending explorer</p>
+          <h1 data-i18n="title">Trending Atlas</h1>
+          <p class="lead" data-i18n="lead">Discover what the open-source world is building right now.</p>
+        </div>
+        <button id="langToggle" class="lang-toggle" type="button">中文</button>
+      </header>
+
+      <section class="controls">
+        <div class="range-tabs">
+          <button class="range-btn active" data-range="daily" data-i18n="daily">Today</button>
+          <button class="range-btn" data-range="weekly" data-i18n="weekly">This week</button>
+          <button class="range-btn" data-range="monthly" data-i18n="monthly">This month</button>
+        </div>
+        <div class="lang-filter">
+          <select id="langSelect">
+            <option value="" data-i18n="allLanguages">All languages</option>
+          </select>
+        </div>
+      </section>
+
+      <section id="statusBar" class="status-bar"></section>
+
+      <section id="repoGrid" class="repo-grid"></section>
+
+      <section id="pagination" class="pagination"></section>
+    </main>
+
+    <script src="script.js"></script>
+
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #cdc2b3;text-align:center;font-family:IBM Plex Sans;font-size:0.72rem;color:#6a6258;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">All projects</a>
+  </footer>
+</body>
+</html>

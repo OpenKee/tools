@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radio Atlas — Global Radio Explorer</title>
+    <meta name="description" content="Explore and listen to live radio stations from around the world. Free API, no sign-up." />
+    <meta property="og:title" content="Radio Atlas" />
+    <meta property="og:description" content="Global radio station explorer." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/radio-atlas/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f6f2ea" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Global radio explorer</p>
+          <h1 data-i18n="title">Radio Atlas</h1>
+          <p class="lead" data-i18n="lead">Tune into live stations from every corner of the world.</p>
+        </div>
+        <button id="langToggle" class="lang-toggle" type="button">中文</button>
+      </header>
+
+      <!-- Controls -->
+      <section class="controls">
+        <div class="control-row">
+          <input id="countryInput" list="countryList" placeholder="Country\u2026" />
+          <datalist id="countryList"></datalist>
+          <input id="tagInput" list="tagList" placeholder="Genre\u2026" />
+          <datalist id="tagList"></datalist>
+          <input id="nameInput" type="text" placeholder="Station name\u2026" />
+          <button id="searchBtn" data-i18n="search">Search</button>
+        </div>
+        <div class="control-extras">
+          <button id="randomBtn" class="btn-ghost" data-i18n="random">🎲 Random</button>
+          <button id="favBtn" class="btn-ghost" data-i18n="favorites">⭐ Favorites</button>
+          <span id="resultCount" class="result-count"></span>
+        </div>
+      </section>
+
+      <!-- Station grid -->
+      <section id="stationGrid" class="station-grid"></section>
+      <div id="loadMore" class="load-more"></div>
+    </main>
+
+    <!-- Sticky player -->
+    <footer id="playerBar" class="player-bar" style="display:none;">
+      <div class="player-inner">
+        <div class="player-info">
+          <img id="playerFavicon" class="player-favicon" src="" alt="" />
+          <div>
+            <strong id="playerName"></strong>
+            <p id="playerMeta"></p>
+          </div>
+        </div>
+        <div class="player-controls">
+          <button id="prevBtn" class="ctrl-btn" title="Previous">⏮</button>
+          <button id="playBtn" class="ctrl-btn ctrl-main" title="Play">▶</button>
+          <button id="nextBtn" class="ctrl-btn" title="Next">⏭</button>
+        </div>
+        <div class="player-right">
+          <input id="volumeInput" type="range" min="0" max="1" step="0.05" value="0.8" />
+          <button id="stopBtn" class="ctrl-btn" title="Stop">⏹</button>
+        </div>
+      </div>
+    </footer>
+
+    <audio id="audio"></audio>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(16,18,23,.1);text-align:center;font-family:Manrope,system-ui,sans-serif;font-size:0.72rem;color:#697487;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#ff6b2c;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#ff6b2c;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>

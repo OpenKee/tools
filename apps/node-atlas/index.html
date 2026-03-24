@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Node Atlas — IP & Domain Intelligence</title>
+    <meta name="description" content="Lookup IPs and domains. DNS records, geolocation, HTTP headers, SSL certs, latency — all from your browser." />
+    <meta property="og:title" content="Node Atlas" />
+    <meta property="og:description" content="IP & domain intelligence tool." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/node-atlas/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#08111f" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Network intelligence</p>
+          <h1 data-i18n="title">Node Atlas</h1>
+          <p class="lead" data-i18n="lead">Lookup IPs and domains — DNS, geo, headers, SSL, latency.</p>
+        </div>
+        <button id="langToggle" class="lang-toggle" type="button">中文</button>
+      </header>
+
+      <!-- Search -->
+      <section class="search-bar">
+        <form id="lookupForm">
+          <input id="targetInput" type="text" placeholder="8.8.8.8 or google.com" autocomplete="off" />
+          <button type="submit" data-i18n="scan">Scan</button>
+        </form>
+        <div class="history-strip" id="historyStrip"></div>
+      </section>
+
+      <!-- Status -->
+      <div id="statusBar" class="status-bar"></div>
+
+      <!-- Results -->
+      <div id="results" class="results" style="display:none;">
+
+        <!-- Geo card -->
+        <section class="card geo-card" id="geoCard">
+          <div class="card-head">
+            <span class="card-kicker" data-i18n="geolocation">Geolocation</span>
+          </div>
+          <div class="geo-grid" id="geoGrid"></div>
+        </section>
+
+        <!-- DNS records -->
+        <section class="card" id="dnsCard">
+          <div class="card-head">
+            <span class="card-kicker" data-i18n="dnsRecords">DNS Records</span>
+          </div>
+          <div id="dnsGrid" class="dns-grid"></div>
+        </section>
+
+        <!-- Latency -->
+        <section class="card" id="latencyCard">
+          <div class="card-head">
+            <span class="card-kicker" data-i18n="latency">Latency</span>
+          </div>
+          <div id="latencyBody" class="latency-body"></div>
+        </section>
+
+        <!-- HTTP headers -->
+        <section class="card" id="headersCard" style="display:none;">
+          <div class="card-head">
+            <span class="card-kicker" data-i18n="httpHeaders">HTTP Response</span>
+          </div>
+          <div id="headersBody" class="kv-list"></div>
+        </section>
+
+        <!-- SSL -->
+        <section class="card" id="sslCard" style="display:none;">
+          <div class="card-head">
+            <span class="card-kicker" data-i18n="sslCerts">SSL Certificates</span>
+          </div>
+          <div id="sslBody" class="ssl-body"></div>
+        </section>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(125,197,255,0.18);text-align:center;font-family:Space Grotesk,system-ui,sans-serif;font-size:0.72rem;color:#87a3c4;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#56d3ff;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#56d3ff;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Route</title>
+    <meta name="description" content="Compare travel conditions between two cities with route-aware weather, time, and daylight snapshots." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Route-aware travel brief</p>
+          <h1 data-i18n="title">Sky Route</h1>
+          <p class="lead" data-i18n="lead">Drop in two cities and get a sharp flying brief: weather, time gap, daylight overlap, arrival vibe, and route distance.</p>
+        </div>
+        <button id="langToggle" class="lang-toggle" type="button">中文</button>
+      </header>
+
+      <section class="preset-strip">
+        <p class="eyebrow" data-i18n="popularRoutes">Popular routes</p>
+        <div id="presetButtons" class="preset-buttons"></div>
+      </section>
+
+      <section class="picker-grid">
+        <div class="picker-panel">
+          <p class="eyebrow" data-i18n="from">From</p>
+          <div id="fromQuickCities" class="quick-city-grid"></div>
+        </div>
+        <div class="picker-panel">
+          <p class="eyebrow" data-i18n="to">To</p>
+          <div id="toQuickCities" class="quick-city-grid"></div>
+        </div>
+      </section>
+
+      <form id="routeForm" class="route-form">
+        <label>
+          <span data-i18n="from">From</span>
+          <input id="fromInput" type="text" value="Shanghai" list="citySuggestions" />
+        </label>
+        <div class="route-arrow">→</div>
+        <label>
+          <span data-i18n="to">To</span>
+          <input id="toInput" type="text" value="Singapore" list="citySuggestions" />
+        </label>
+        <button type="submit" data-i18n="buildBrief">Build brief</button>
+      </form>
+      <datalist id="citySuggestions"></datalist>
+
+      <section class="route-board" id="routeBoard"></section>
+      <section class="summary-grid" id="summaryGrid"></section>
+
+      <section class="details-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <p class="eyebrow" data-i18n="citySnapshots">City snapshots</p>
+            <h2 data-i18n="localConditions">Local conditions</h2>
+          </div>
+          <div id="cityCards" class="city-cards"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <p class="eyebrow" data-i18n="timingNotes">Timing notes</p>
+            <h2 data-i18n="travelRead">Travel read</h2>
+          </div>
+          <div id="notesList" class="notes-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(19, 32, 51, 0.14);text-align:center;font-family:Manrope;font-size:0.72rem;color:#607086;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#2672ff;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#2672ff;text-decoration:none;">All projects</a>
+  </footer>
+</body>
+</html>

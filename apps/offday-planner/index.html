@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offday Planner — Holiday & Leave Optimizer</title>
+    <meta name="description" content="Plan your time off smarter. See holidays, find long weekends, and get the best days to take leave." />
+    <meta property="og:title" content="Offday Planner" />
+    <meta property="og:description" content="Plan holidays and optimize your leave days." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/offday-planner/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f7f4ee" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Holiday & leave optimizer</p>
+          <h1 data-i18n="title">Offday Planner</h1>
+          <p class="lead" data-i18n="lead">See holidays at a glance, find long weekends, and get the smartest days to take off.</p>
+        </div>
+        <div class="header-right">
+          <form id="controlForm" class="control-form">
+            <select id="countrySelect"></select>
+            <select id="yearSelect"></select>
+          </form>
+          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- Summary cards -->
+      <section class="summary" id="summary"></section>
+
+      <!-- Countdown -->
+      <section class="countdown-card" id="countdownCard"></section>
+
+      <!-- Year calendar grid -->
+      <section class="year-grid" id="yearGrid"></section>
+
+      <!-- Leave optimizer -->
+      <section class="optimizer-section">
+        <div class="section-head">
+          <h2 data-i18n="optimizer">Leave optimizer</h2>
+          <p class="section-desc" data-i18n="optimizerDesc">Take these days off to get the longest consecutive breaks.</p>
+        </div>
+        <div id="optimizerList" class="optimizer-grid"></div>
+      </section>
+
+      <!-- Holiday list -->
+      <section class="holiday-section">
+        <div class="section-head">
+          <h2 data-i18n="allHolidays">All holidays</h2>
+        </div>
+        <div id="holidayList" class="holiday-list"></div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #ddd4c6;text-align:center;font-family:IBM Plex Sans,system-ui,sans-serif;font-size:0.72rem;color:#6b6459;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#8b5a2b;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#8b5a2b;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>

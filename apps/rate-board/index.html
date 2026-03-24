@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rate Board — Live Exchange Rate Converter</title>
+    <meta name="description" content="Real-time exchange rate converter. Convert between 30+ currencies, compare rates, and plan your budget." />
+    <meta property="og:title" content="Rate Board" />
+    <meta property="og:description" content="Real-time exchange rate converter with bidirectional conversion and cross-rate matrix." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/rate-board/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Exchange rate utility</p>
+          <h1 data-i18n="title">Rate Board</h1>
+          <p class="lead" data-i18n="lead">Convert currencies, compare rates, plan budgets. No sign-up, no tracking.</p>
+        </div>
+        <div class="header-actions">
+          <span id="updatedAt" class="update-time"></span>
+          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- Converter -->
+      <section class="converter-card">
+        <div class="converter-row">
+          <div class="converter-side">
+            <select id="fromCurrency"></select>
+            <input id="fromAmount" type="number" value="1000" min="0" step="any" />
+          </div>
+          <button id="swapBtn" class="swap-btn" type="button" title="Swap">⇄</button>
+          <div class="converter-side">
+            <select id="toCurrency"></select>
+            <input id="toAmount" type="number" readonly />
+          </div>
+        </div>
+        <p class="converter-rate" id="converterRate"></p>
+      </section>
+
+      <!-- Region sections -->
+      <section class="region-sections" id="regionSections"></section>
+
+      <!-- Cross-rate matrix -->
+      <section class="matrix-section">
+        <div class="section-head">
+          <h2 data-i18n="crossRates">Cross Rates</h2>
+          <p class="section-desc" data-i18n="crossDesc">Direct rates between currencies (no base needed).</p>
+        </div>
+        <div class="matrix-wrap">
+          <table id="matrixTable" class="matrix-table"></table>
+        </div>
+      </section>
+
+      <!-- Quick convert table -->
+      <section class="table-section">
+        <div class="section-head">
+          <h2 data-i18n="allRates">All Rates</h2>
+          <div class="table-controls">
+            <select id="tableBase"></select>
+            <input id="tableAmount" type="number" value="100" min="0" step="any" placeholder="Amount" />
+          </div>
+        </div>
+        <div id="rateTable" class="rate-table"></div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #d9e0ea;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#5a6778;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1c63d5;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1c63d5;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>

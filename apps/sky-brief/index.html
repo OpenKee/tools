@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Brief — Weather & Air Quality</title>
+    <meta name="description" content="Real-time weather, air quality, and 7-day forecast. Free API, no sign-up." />
+    <meta property="og:title" content="Sky Brief" />
+    <meta property="og:description" content="Weather & air quality dashboard." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/sky-brief/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f3f6fb" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Weather & air quality</p>
+          <h1 data-i18n="title">Sky Brief</h1>
+        </div>
+        <div class="header-right">
+          <button id="unitToggle" class="btn-ghost" type="button">°C</button>
+          <button id="locateBtn" class="btn-ghost" type="button" data-i18n="locate">📍 My location</button>
+        </div>
+      </header>
+
+      <!-- Search -->
+      <section class="search-bar">
+        <form id="searchForm">
+          <input id="queryInput" type="text" placeholder="Search city\u2026" value="Shanghai" autocomplete="off" />
+          <button type="submit" data-i18n="search">Search</button>
+        </form>
+        <div class="saved-strip" id="savedStrip"></div>
+      </section>
+
+      <!-- Current weather hero -->
+      <section id="heroSection" class="hero-section" style="display:none;">
+        <div class="hero-main">
+          <span id="heroIcon" class="hero-icon"></span>
+          <div class="hero-temp">
+            <span id="heroTemp" class="hero-temp-val"></span>
+            <span id="heroCondition" class="hero-condition"></span>
+          </div>
+        </div>
+        <div class="hero-place">
+          <h2 id="heroPlace"></h2>
+          <p id="heroMeta" class="hero-meta"></p>
+        </div>
+        <div class="hero-stats" id="heroStats"></div>
+      </section>
+
+      <!-- AQI -->
+      <section id="aqiSection" class="aqi-section" style="display:none;">
+        <div class="aqi-header">
+          <span class="aqi-label" data-i18n="airQuality">Air quality</span>
+          <span id="aqiValue" class="aqi-value"></span>
+          <span id="aqiText" class="aqi-text"></span>
+        </div>
+        <div class="aqi-bar-track"><div id="aqiBar" class="aqi-bar-fill"></div></div>
+        <div class="aqi-scale">
+          <span>0</span><span>50</span><span>100</span><span>150</span><span>200+</span>
+        </div>
+      </section>
+
+      <!-- Hourly -->
+      <section id="hourlySection" class="hourly-section" style="display:none;">
+        <h3 data-i18n="hourly">Next 12 hours</h3>
+        <div id="hourlyStrip" class="hourly-strip"></div>
+      </section>
+
+      <!-- Daily -->
+      <section id="dailySection" class="daily-section" style="display:none;">
+        <h3 data-i18n="daily">7-day forecast</h3>
+        <div id="dailyList" class="daily-list"></div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  
+  <footer class="openkfoooter" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #d8e0ec;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#5c6b80;letter-spacing:0.03em;">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">All projects</a>
+  </footer>
+
+  </body>
+</html>
