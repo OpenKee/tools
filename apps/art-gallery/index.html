@@ -97,19 +97,26 @@ a{color:var(--ink);text-decoration:none}
 
 <script>
 var API='https://api.artic.edu/api/v1';
-var IMG='https://www.artic.edu/iiif/2';
 var FIELDS='id,title,artist_display,date_display,medium_display,dimensions,image_id,department_title,style_title,classification_title,description';
+var currentQuery='';
+var currentPage=1;
+var currentTotal=0;
+var currentIiif='';
 
 function search(){
   var q=document.getElementById('inp').value.trim();if(!q)return;
   var btn=document.getElementById('btn');btn.disabled=true;
   document.getElementById('out').innerHTML='';
   document.getElementById('ld').classList.add('on');
+  currentQuery=q;currentPage=1;
   fetch(API+'/artworks/search?q='+encodeURIComponent(q)+'&limit=24&fields='+FIELDS)
     .then(function(r){return r.json()})
     .then(function(d){
       document.getElementById('ld').classList.remove('on');
-      renderGrid(d.data||[],d.config.iiif_url,d.pagination?.total||0,q);
+      currentTotal=d.pagination?d.pagination.total:0;
+      currentIiif=d.config?d.config.iiif_url:'';
+      renderGrid(d.data||[],currentIiif,currentTotal,q);
+      document.getElementById('moreBtn').style.display=currentTotal>24?'inline-block':'none';
     })
     .catch(function(){document.getElementById('ld').textContent='Error loading'})
     .finally(function(){btn.disabled=false});
@@ -119,12 +126,15 @@ function randomArt(){
   var btn=document.getElementById('btn');btn.disabled=true;
   document.getElementById('out').innerHTML='';
   document.getElementById('ld').classList.add('on');
-  var page=Math.floor(Math.random()*200)+1;
-  fetch(API+'/artworks?limit=24&page='+page+'&fields='+FIELDS)
+  currentQuery='';currentPage=Math.floor(Math.random()*200)+1;
+  fetch(API+'/artworks?limit=24&page='+currentPage+'&fields='+FIELDS)
     .then(function(r){return r.json()})
     .then(function(d){
       document.getElementById('ld').classList.remove('on');
-      renderGrid(d.data||[],d.config.iiif_url,d.pagination?.total||0,'random');
+      currentTotal=d.pagination?d.pagination.total:0;
+      currentIiif=d.config?d.config.iiif_url:'';
+      renderGrid(d.data||[],currentIiif,currentTotal,'random');
+      document.getElementById('moreBtn').style.display='inline-block';
     })
     .catch(function(){document.getElementById('ld').textContent='Error loading'})
     .finally(function(){btn.disabled=false});
@@ -190,7 +200,39 @@ function showDetail(el){
 function closeDetail(){document.getElementById('overlay').classList.remove('on')}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
 
-// Load random on page load
+// Load more
+function loadMore(){
+  currentPage++;
+  var btn=document.getElementById('moreBtn');btn.textContent='Loading...';btn.disabled=true;
+  var url=currentQuery
+    ? API+'/artworks/search?q='+encodeURIComponent(currentQuery)+'&limit=24&page='+currentPage+'&fields='+FIELDS
+    : API+'/artworks?limit=24&page='+currentPage+'&fields='+FIELDS;
+  fetch(url)
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var items=d.data||[];
+      if(!currentIiif&&d.config)currentIiif=d.config.iiif_url;
+      appendGrid(items,currentIiif);
+      var shown=currentPage*24;
+      btn.style.display=shown<currentTotal?'inline-block':'none';
+      btn.textContent='Load more';btn.disabled=false;
+    })
+    .catch(function(){btn.textContent='Load more';btn.disabled=false});
+}
+
+function appendGrid(items,iiif){
+  var grid=document.querySelector('.grid');
+  items.forEach(function(a){
+    var img=a.image_id?iiif+'/'+a.image_id+'/full/400,/0/default.jpg':'';
+    var t=a.title||'Untitled';
+    var imgH=img?'<img src="'+img+'" alt="'+t+'" loading="lazy">':'<div class="no-img">🖼</div>';
+    var div=document.createElement('div');div.className='art';div.setAttribute('data-id',a.id);
+    div.onclick=function(){showDetail(this)};
+    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+t+'</div><div class="artist">'+(a.artist_display||'Unknown')+'</div><div class="date">'+(a.date_display||'')+'</div></div>';
+    grid.appendChild(div);
+  });
+}
+
 randomArt();
 </script>
 </body>
