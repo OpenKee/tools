@@ -1,195 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenKee Tools — API Utilities</title>
-    <meta name="description" content="API-powered tools and utilities by OpenKee." />
-    <meta property="og:title" content="OpenKee Tools" />
-    <meta property="og:description" content="API-powered tools and utilities." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://openkee.github.io/tools/" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="theme-color" content="#000000" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <style>
-      :root { --bg:#000; --panel:#0a0a0a; --text:#f5f5f3; --muted:#9f9f99; --border:rgba(255,255,255,0.08); }
-      * { box-sizing:border-box; }
-      body { margin:0; font-family:"Inter",system-ui,sans-serif; color:var(--text); background:var(--bg); }
-      a { color:var(--text); text-decoration:none; }
-      h1,h2,h3,p,strong,span,small { margin:0; }
-      .shell { width:min(1000px,calc(100% - 2rem)); margin:0 auto; padding:2rem 0 4rem; }
-      .masthead { padding:0 0 2rem; border-bottom:1px solid var(--border); }
-      .eyebrow { text-transform:uppercase; letter-spacing:0.2em; font-size:0.7rem; font-weight:600; color:var(--muted); }
-      h1 { margin-top:0.5rem; font-size:clamp(2rem,5vw,3rem); line-height:1.05; letter-spacing:-0.04em; max-width:18ch; font-weight:800; }
-      .lead { margin-top:0.6rem; color:var(--muted); font-size:0.92rem; max-width:55ch; line-height:1.6; }
-      .header-right { display:flex; gap:0.8rem; align-items:center; margin-top:1rem; }
-      .gh-link { font-size:0.82rem; font-weight:500; padding:0.4rem 0.8rem; border:1px solid var(--border); border-radius:6px; transition:border-color 200ms; }
-      .gh-link:hover { border-color:var(--text); }
-      .lang-toggle { font:inherit; height:2rem; padding:0 0.6rem; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-size:0.78rem; border-radius:6px; }
-      .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:0; padding:1.5rem 0; border-bottom:1px solid var(--border); }
-      .stat-item { padding:0 1rem; border-right:1px solid var(--border); }
-      .stat-item:last-child { border-right:none; }
-      .stat-label { font-size:0.66rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
-      .stat-value { font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; margin-top:0.15rem; }
-      .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1px; background:var(--border); margin-top:1.5rem; border:1px solid var(--border); }
-      .card { background:var(--bg); padding:1.5rem; display:flex; flex-direction:column; gap:0.5rem; transition:background 200ms; }
-      .card:hover { background:var(--panel); }
-      .card-tag { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; padding:0.15rem 0.4rem; border:1px solid var(--border); border-radius:3px; align-self:start; }
-      .card-tag.data { color:#56d3ff; border-color:rgba(86,211,255,0.3); }
-      .card-tag.geo { color:#34d399; border-color:rgba(52,211,153,0.3); }
-      .card-tag.finance { color:#fbbf24; border-color:rgba(251,191,36,0.3); }
-      .card-tag.media { color:#a78bfa; border-color:rgba(167,139,250,0.3); }
-      .card-tag.travel { color:#f472b6; border-color:rgba(244,114,182,0.3); }
-      .card-name { font-size:1.05rem; font-weight:700; letter-spacing:-0.01em; }
-      .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; flex:1; }
-      .card-links { display:flex; gap:0.5rem; margin-top:0.3rem; }
-      .card-link { font-size:0.74rem; font-weight:500; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:4px; transition:all 150ms; }
-      .card-link:hover { border-color:var(--text); color:var(--text); }
-      .footer { margin-top:3rem; padding:1.5rem 0; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--muted); }
-      .footer a { color:var(--muted); }
-      .footer a:hover { color:var(--text); }
-      @media (max-width:700px) {
-        .stats { grid-template-columns:repeat(3,1fr); }
-        .stat-item { border-right:none; padding:0.4rem 0; }
-        .grid { grid-template-columns:1fr; }
-        .footer { flex-direction:column; gap:0.5rem; text-align:center; }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">OpenKee · Tools</p>
-          <h1 data-i18n="title">API-powered tools and utilities.</h1>
-          <p class="lead" data-i18n="lead">Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more — all powered by public APIs.</p>
-        </div>
-        <div class="header-right">
-          <a href="https://github.com/OpenKee/tools" target="_blank" class="gh-link">GitHub ↗</a>
-          <a href="https://openkee.github.io/" class="gh-link" data-i18n="allProjects">All projects ↗</a>
-          <button id="langToggle" class="lang-toggle" type="button">中文</button>
-        </div>
-      </header>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>OpenKee Tools</title>
+<meta name="theme-color" content="#18181b"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#18181b;--sf:#27272a;--sf2:#1f1f23;--bd:#3f3f46;--tx:#fafafa;--mt:#a1a1aa;--dm:#71717a;--bl:#818cf8;--cy:#22d3ee;--gn:#4ade80;--yl:#facc15;--pk:#f472b6;--or:#fb923c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Space Grotesk","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding:0 1.5rem 3rem}
 
-      <section class="stats">
-        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">11</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">5</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-i18n="active">Active</div></div>
-      </section>
+/* NAV */
+.nav{padding:1.25rem 0;display:flex;align-items:center;gap:.6rem}
+.nav a{color:var(--dm);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .15s}
+.nav a:hover{color:var(--tx)}
+.nav .sep{color:var(--bd);font-size:.7rem}
+.nav .now{color:var(--tx)}
 
-      <section class="grid" id="projectGrid"></section>
+/* HEADER */
+.hdr{text-align:center;padding:3rem 0 2.5rem}
+.hdr h1{font-size:clamp(2rem,4vw,2.8rem);font-weight:700;letter-spacing:-.04em}
+.hdr h1 em{font-style:normal;background:linear-gradient(135deg,var(--bl),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr .sub{color:var(--dm);font-size:.88rem;margin-top:.4rem}
 
-      <footer class="footer">
-        <span>Built by <a href="https://github.com/OpenKee" target="_blank">OpenKee</a></span>
-        <span><a href="https://openkee.github.io/" data-i18n="back">← All projects</a></span>
-      </footer>
-    </main>
+/* STATS ROW */
+.stats{display:flex;justify-content:center;gap:2rem;padding:1.25rem 0;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);margin-bottom:2.5rem}
+.stats .s{text-align:center}
+.stats .s .v{font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
+.stats .s .l{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);margin-top:.1rem}
 
-    <script>
-      const PROJECTS = [
-        {
-          name: 'Rate Board', type: 'finance', typeClass: 'finance',
-          desc: { en: 'Live exchange rates with multi-currency converter.', zh: '实时汇率与多币种换算器。' },
-        },
-        {
-          name: 'Crypto Board', type: 'finance', typeClass: 'finance',
-          desc: { en: 'Live cryptocurrency prices and market data.', zh: '实时加密货币行情与市场数据。' },
-        },
-        {
-          name: 'Atlas Info', type: 'data', typeClass: 'data',
-          desc: { en: 'Country encyclopedia with population, languages, and borders.', zh: '国家百科：人口、语言、邻国等信息。' },
-        },
-        {
-          name: 'Radio Atlas', type: 'media', typeClass: 'media',
-          desc: { en: 'Global radio explorer powered by Radio Browser API.', zh: '基于 Radio Browser API 的全球电台探索器。' },
-        },
-        {
-          name: 'Sky Brief', type: 'geo', typeClass: 'geo',
-          desc: { en: 'Weather and geolocation quick brief for any city.', zh: '任意城市的天气与地理速览。' },
-        },
-        {
-          name: 'Sky Route', type: 'travel', typeClass: 'travel',
-          desc: { en: 'Route-aware travel brief with weather, time, and distance.', zh: '路线旅行简报：天气、时差、距离一览。' },
-        },
-        {
-          name: 'Trending Atlas', type: 'data', typeClass: 'data',
-          desc: { en: 'Discover trending GitHub repos by day, week, or month.', zh: '按日/周/月发现 GitHub 热门仓库。' },
-        },
-        {
-          name: 'Repo Scope', type: 'data', typeClass: 'data',
-          desc: { en: 'GitHub repo analysis and scope overview tool.', zh: 'GitHub 仓库分析与概览工具。' },
-        },
-        {
-          name: 'Node Atlas', type: 'data', typeClass: 'data',
-          desc: { en: 'Explore and visualize node/network data.', zh: '节点与网络数据的探索与可视化。' },
-        },
-        {
-          name: 'Hour Bridge', type: 'data', typeClass: 'data',
-          desc: { en: 'Time zone bridge — compare times across regions.', zh: '时区桥梁 — 跨区域时间对照。' },
-        },
-        {
-          name: 'SEO 体检', slug: 'seo-index', type: 'data', typeClass: 'data',
-          desc: { en: 'Check your site SEO health — meta, headings, images, structured data.', zh: '检查网站 SEO 健康状况：Meta 标签、标题层级、图片 alt、结构化数据。' },
-        },
-        {
-          name: 'Offday Planner', type: 'data', typeClass: 'data',
-          desc: { en: 'Holiday and off-day planner tool.', zh: '假期与休息日规划工具。' },
-        },
-      ];
+/* GRID — broken layout */
+.grid{display:grid;gap:1px}
+.grid .card{position:relative;overflow:hidden;border-radius:10px;transition:transform .2s,box-shadow .2s}
+.grid .card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.grid .card a{display:block;text-decoration:none;color:inherit;height:100%}
+.grid .card .inner{padding:1.5rem;height:100%;display:flex;flex-direction:column}
+.grid .card .emoji{font-size:1.8rem;margin-bottom:.6rem}
+.grid .card .name{font-size:1rem;font-weight:600;letter-spacing:-.01em}
+.grid .card .desc{font-size:.78rem;color:var(--mt);margin-top:.25rem;flex:1;line-height:1.5}
+.grid .card .tags{display:flex;gap:.3rem;margin-top:.6rem}
+.grid .card .tag{font-size:.62rem;padding:.15rem .45rem;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 
-      const copy = {
-        en: {
-          title: 'API-powered tools and utilities.',
-          lead: 'Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more \u2014 all powered by public APIs.',
-          allProjects: 'All projects ↗', tools: 'Tools', categories: 'Categories', status: 'Status', active: 'Live',
-          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', open: 'Open ↗', back: '\u2190 All projects',
-        },
-        zh: {
-          title: 'API 驱动的工具集。',
-          lead: '汇率、天气简报、加密行情、电台流、地理编码……全部由公共 API 驱动。',
-          allProjects: '全部项目 ↗', tools: '工具', categories: '分类', status: '状态', active: '在线',
-          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', open: '打开 ↗', back: '\u2190 全部项目',
-        },
-      };
+/* Layout: big + small mosaic */
+.grid{grid-template-columns:repeat(4,1fr);grid-template-rows:auto}
+.grid .card:nth-child(1){grid-column:span 2;grid-row:span 2}
+.grid .card:nth-child(1) .inner{padding:2rem}
+.grid .card:nth-child(1) .emoji{font-size:2.5rem}
+.grid .card:nth-child(1) .name{font-size:1.3rem}
+.grid .card:nth-child(1) .desc{font-size:.85rem}
+.grid .card:nth-child(2){grid-column:span 2}
+.grid .card:nth-child(7){grid-column:span 2}
 
-      let lang = localStorage.getItem('openkee-lang') || 'en';
-      const langToggle = document.getElementById('langToggle');
-      const projectGrid = document.getElementById('projectGrid');
+/* Color variants */
+.c1{background:linear-gradient(135deg,#1e1b4b,#312e81)}.c1 .tag{color:var(--bl);background:rgba(129,140,248,.15)}
+.c2{background:linear-gradient(135deg,#14532d,#166534)}.c2 .tag{color:var(--gn);background:rgba(74,222,128,.15)}
+.c3{background:linear-gradient(135deg,#713f12,#854d0e)}.c3 .tag{color:var(--yl);background:rgba(250,204,21,.15)}
+.c4{background:linear-gradient(135deg,#4a1d96,#6b21a8)}.c4 .tag{color:var(--pk);background:rgba(244,114,182,.15)}
+.c5{background:linear-gradient(135deg,#164e63,#155e75)}.c5 .tag{color:var(--cy);background:rgba(34,211,238,.15)}
+.c6{background:linear-gradient(135deg,#7c2d12,#9a3412)}.c6 .tag{color:var(--or);background:rgba(251,146,60,.15)}
+.c7{background:linear-gradient(135deg,#1e3a5f,#1e40af)}.c7 .tag{color:var(--bl);background:rgba(129,140,248,.15)}
+.c8{background:linear-gradient(135deg,#064e3b,#047857)}.c8 .tag{color:var(--gn);background:rgba(74,222,128,.15)}
+.c9{background:linear-gradient(135deg,#3b0764,#7e22ce)}.c9 .tag{color:var(--pk);background:rgba(244,114,182,.15)}
+.c10{background:linear-gradient(135deg,#0c4a6e,#0369a1)}.c10 .tag{color:var(--cy);background:rgba(34,211,238,.15)}
+.c11{background:linear-gradient(135deg,#1a1a2e,#16213e)}.c11 .tag{color:var(--gn);background:rgba(74,222,128,.15)}
+.c12{background:linear-gradient(135deg,#2d132c,#801336)}.c12 .tag{color:var(--pk);background:rgba(244,114,182,.15)}
 
-      function t(k) { return copy[lang][k] || k; }
+footer{text-align:center;padding:2rem 0;font-size:.7rem;color:var(--dm)}
+footer a{color:var(--dm)}
 
-      function applyLanguage() {
-        document.documentElement.lang = lang;
-        langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-        document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
-        render();
-      }
+@media(max-width:700px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .grid .card:nth-child(1){grid-column:span 2;grid-row:span 1}
+  .grid .card:nth-child(2){grid-column:span 2}
+  .grid .card:nth-child(7){grid-column:span 1}
+  .stats{gap:1rem}
+}
+@media(max-width:420px){
+  .grid{grid-template-columns:1fr}
+  .grid .card:nth-child(1),.grid .card:nth-child(2),.grid .card:nth-child(7){grid-column:span 1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><a href="https://openkee.github.io/">OpenKee</a><span class="sep">/</span><span class="now">Tools</span></nav>
+<div class="hdr"><h1>OpenKee <em>Tools</em></h1><div class="sub">浏览器原生工具集 · 免费 · 无需注册</div></div>
+<div class="stats">
+<div class="s"><div class="v">12</div><div class="l">Tools</div></div>
+<div class="s"><div class="v">6</div><div class="l">APIs</div></div>
+<div class="s"><div class="v">0</div><div class="l">Backend</div></div>
+<div class="s"><div class="v">∞</div><div class="l">Free</div></div>
+</div>
+<div class="grid" id="grid"></div>
+<footer><a href="https://github.com/OpenKee/tools" target="_blank">GitHub</a> · 100% Open Source</footer>
+</div>
+<script>
+var items=[
+  {name:'Brief Box',emoji:'📡',desc:'多源 API 城市情报系统。天气、汇率、国家画像、假期日历，一个搜索全貌呈现。',slug:'../brief-box/',tags:['情报','API'],cls:'c1'},
+  {name:'Rate Board',emoji:'💱',desc:'实时汇率换算器，30+ 币种交叉汇率矩阵。',slug:'apps/rate-board/',tags:['金融'],cls:'c2'},
+  {name:'Crypto Board',emoji:'₿',desc:'实时加密货币行情、市值和 7 天走势。',slug:'apps/crypto-board/',tags:['金融'],cls:'c3'},
+  {name:'SEO 体检',emoji:'🩺',desc:'网站 SEO 健康诊断。Meta、结构、技术指标全面扫描。',slug:'apps/seo-index/',tags:['诊断'],cls:'c11'},
+  {name:'Sky Brief',emoji:'🌤',desc:'天气和空气质量看板。AQI 仪表盘、7 天预报。',slug:'apps/sky-brief/',tags:['地理'],cls:'c5'},
+  {name:'Radio Atlas',emoji:'📻',desc:'全球电台探索器。流派筛选、收藏、播放。',slug:'apps/radio-atlas/',tags:['媒体'],cls:'c4'},
+  {name:'Atlas Info',emoji:'🌍',desc:'国家百科。国旗、人口、语言、货币、边境一览。',slug:'apps/atlas-info/',tags:['数据'],cls:'c6'},
+  {name:'Trending Atlas',emoji:'🔥',desc:'发现 GitHub 热门仓库。按天/周/月，按语言筛选。',slug:'apps/trending-atlas/',tags:['GitHub'],cls:'c7'},
+  {name:'Repo Scope',emoji:'🔭',desc:'GitHub 仓库分析。健康标签、语言分布、活跃度。',slug:'apps/repo-scope/',tags:['GitHub'],cls:'c8'},
+  {name:'Node Atlas',emoji:'🌐',desc:'IP 和域名情报。DNS、地理位置、SSL、延迟。',slug:'apps/node-atlas/',tags:['网络'],cls:'c9'},
+  {name:'Hour Bridge',emoji:'🕐',desc:'跨时区会议规划。可视化时间线、最佳时段。',slug:'apps/hour-bridge/',tags:['时间'],cls:'c10'},
+  {name:'Offday Planner',emoji:'📅',desc:'假期日历、请假优化器。',slug:'apps/offday-planner/',tags:['生活'],cls:'c12'},
+];
 
-      function render() {
-        const folder = p => 'apps/' + (p.slug || p.name.toLowerCase().replace(/\s+/g, '-')) + '/';
-        projectGrid.innerHTML = PROJECTS.map(p => `
-          <div class="card">
-            <span class="card-tag ${p.typeClass}">${t(p.typeClass)}</span>
-            <div class="card-name">${p.name}</div>
-            <div class="card-desc">${p.desc[lang]}</div>
-            <div class="card-links">
-              <a class="card-link" href="${folder(p)}">${t('open')}</a>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      langToggle.addEventListener('click', () => {
-        lang = lang === 'en' ? 'zh' : 'en';
-        localStorage.setItem('openkee-lang', lang);
-        applyLanguage();
-      });
-
-      applyLanguage();
-    </script>
-  </body>
+var grid=document.getElementById('grid');
+grid.innerHTML=items.map(function(it){
+  return '<div class="card '+it.cls+'"><a href="'+it.slug+'"><div class="inner">'+
+    '<div class="emoji">'+it.emoji+'</div>'+
+    '<div class="name">'+it.name+'</div>'+
+    '<div class="desc">'+it.desc+'</div>'+
+    '<div class="tags">'+it.tags.map(function(t){return'<span class="tag">'+t+'</span>'}).join('')+'</div>'+
+  '</div></a></div>';
+}).join('');
+</script>
+</body>
 </html>
