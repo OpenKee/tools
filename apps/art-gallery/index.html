@@ -8,13 +8,13 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#f5f2eb;--sf:#fff;--ink:#1a1a1a;--mt:#6b5d4f;--dm:#9c8e7c;--rule:#d4c9b8;--rule2:#e8dfd2;--red:#8b0000;--blue:#1a3a5c}
+:root{--bg:#f5f2eb;--sf:#fff;--ink:#1a1a1a;--mt:#6b5d4f;--dm:#9c8e7c;--rule:#d4c9b8;--rule2:#e8dfd2;--blue:#1a3a5c}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Source Sans 3","Noto Sans SC",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:"Source Sans 3","Noto Sans SC",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
 a{color:var(--ink);text-decoration:none}
 
-.nav{padding:1rem 1.5rem;border-bottom:3px double var(--rule);display:flex;align-items:baseline;gap:.5rem}
-.nav b{font-weight:700;font-size:.88rem}
+.nav{padding:1rem 1.5rem;border-bottom:3px double var(--rule);display:flex;align-items:baseline;gap:.5rem;font-size:.85rem}
+.nav b{font-weight:700}
 .nav .sep{color:var(--dm)}
 .nav .tag{font-size:.68rem;color:var(--dm);margin-left:auto;font-style:italic}
 
@@ -24,7 +24,7 @@ a{color:var(--ink);text-decoration:none}
 
 .search{max-width:500px;margin:1.5rem auto;padding:0 1.5rem}
 .search form{display:flex;gap:0;border:1.5px solid var(--ink);border-radius:0;overflow:hidden}
-.search input{flex:1;height:2.8rem;padding:0 1rem;border:none;background:transparent;font:inherit;font-size:.88rem;color:var(--ink);outline:none;font-family:"Source Sans 3",sans-serif}
+.search input{flex:1;height:2.8rem;padding:0 1rem;border:none;background:transparent;font:inherit;font-size:.88rem;color:var(--ink);outline:none}
 .search input::placeholder{color:var(--dm);font-style:italic}
 .search button{height:2.8rem;padding:0 1.5rem;background:var(--ink);color:var(--bg);border:none;font:inherit;font-weight:600;font-size:.78rem;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
 .search button:disabled{opacity:.4}
@@ -38,15 +38,14 @@ a{color:var(--ink);text-decoration:none}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
 .art{cursor:pointer;transition:transform .3s}
 .art:hover{transform:translateY(-3px)}
-.art .frame{aspect-ratio:3/4;background:var(--rule2);border:8px solid #fff;box-shadow:2px 3px 12px rgba(0,0,0,.08);overflow:hidden;position:relative}
+.art .frame{aspect-ratio:3/4;background:var(--rule2);border:8px solid #fff;box-shadow:2px 3px 12px rgba(0,0,0,.08);overflow:hidden}
 .art .frame img{width:100%;height:100%;object-fit:cover;display:block}
-.art .frame .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--dm);background:var(--rule2)}
+.art .frame .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--dm)}
 .art .label{padding:.6rem .2rem 0}
 .art .label .title{font-family:"Playfair Display",serif;font-size:.92rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.art .label .artist{font-size:.78rem;color:var(--mt);margin-top:.1rem}
+.art .label .meta{font-size:.78rem;color:var(--mt);margin-top:.1rem}
 .art .label .date{font-size:.72rem;color:var(--dm);font-style:italic}
 
-/* DETAIL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;overflow-y:auto;padding:2rem}
 .overlay.on{display:block}
 .modal{max-width:900px;margin:0 auto;background:var(--bg);border:1px solid var(--rule);position:relative}
@@ -55,63 +54,61 @@ a{color:var(--ink);text-decoration:none}
 .modal .img-wrap{flex:1;max-width:500px}
 .modal .img-wrap img{width:100%;display:block;border:4px solid #fff;box-shadow:2px 3px 12px rgba(0,0,0,.08)}
 .modal .info{flex:1;min-width:0}
-.modal .info h2{font-family:"Playfair Display",serif;font-size:1.5rem;font-weight:700;margin-bottom:.3rem}
-.modal .info .artist{font-size:1rem;color:var(--mt);margin-bottom:1rem}
-.modal .info table{width:100%;border-collapse:collapse;font-size:.82rem}
-.modal .info tr{border-bottom:1px solid var(--rule2)}
-.modal .info td{padding:.4rem 0;vertical-align:top}
-.modal .info td:first-child{color:var(--dm);width:5rem;font-size:.75rem;font-weight:500}
-.modal .bottom{padding:1.5rem 2rem;font-size:.85rem;color:var(--mt);line-height:1.8}
-.modal .bottom .section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dm);font-weight:600;margin-bottom:.5rem}
+.modal .info h2{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
+.modal .info .artist{font-size:.95rem;color:var(--mt);margin-bottom:1rem}
+.modal table{width:100%;border-collapse:collapse;font-size:.82rem}
+.modal tr{border-bottom:1px solid var(--rule2)}
+.modal td{padding:.4rem 0;vertical-align:top}
+.modal td:first-child{color:var(--dm);width:5.5rem;font-size:.75rem;font-weight:500}
 
-@media(max-width:700px){
-  .grid{grid-template-columns:repeat(2,1fr);gap:1rem}
-  .modal .top{flex-direction:column}
-  .modal .img-wrap{max-width:100%}
-}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);gap:1rem}.modal .top{flex-direction:column}.modal .img-wrap{max-width:100%}}
 </style>
 </head>
 <body>
 
-<div class="nav"><b>openkee</b><span class="sep">/</span>tools<span class="sep">/</span>art-gallery<span class="tag">Art Institute of Chicago</span></div>
-
+<div class="nav"><b>openkee</b><span class="sep">/</span>tools<span class="sep">/</span>art-gallery<span class="tag">Metropolitan Museum of Art</span></div>
 <div class="header">
 <h1>🏛 Art Gallery</h1>
-<div class="sub">Explore 50,000+ artworks from the Art Institute of Chicago</div>
+<div class="sub">Explore 400,000+ artworks from The Met</div>
 </div>
-
 <div class="search">
 <form onsubmit="search();return false">
-<input type="text" id="inp" placeholder="Search artworks… Monet, Van Gogh, 国画…" autocomplete="off"/>
+<input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/>
 <button type="submit" id="btn">Search</button>
 </form>
 <button class="random" onclick="randomArt()">✦ Random artwork</button>
 </div>
-
 <div class="loading" id="ld">Loading…</div>
 <div class="gallery" id="out"></div>
-
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()">
+<div class="overlay" id="overlay" onclick="if(event.target===this)close()">
 <div class="modal" id="modal"></div>
 </div>
 
 <script>
-var API='https://api.artic.edu/api/v1';
-var IMG='https://www.artic.edu/iiif/2';
-var FIELDS='id,title,artist_display,date_display,medium_display,dimensions,image_id,department_title,style_title,classification_title,description';
+var API='https://collectionapi.metmuseum.org/public/collection/v1';
 
 function search(){
   var q=document.getElementById('inp').value.trim();if(!q)return;
   var btn=document.getElementById('btn');btn.disabled=true;
   document.getElementById('out').innerHTML='';
   document.getElementById('ld').classList.add('on');
-  fetch(API+'/artworks/search?q='+encodeURIComponent(q)+'&limit=24&fields='+FIELDS)
+  fetch(API+'/search?q='+encodeURIComponent(q)+'&hasImages=true')
     .then(function(r){return r.json()})
     .then(function(d){
-      document.getElementById('ld').classList.remove('on');
-      renderGrid(d.data||[],d.config.iiif_url,d.pagination?.total||0,q);
+      var ids=(d.objectIDs||[]).slice(0,24);
+      if(!ids.length)throw Error('No results');
+      return Promise.all(ids.map(function(id){
+        return fetch(API+'/objects/'+id).then(function(r){return r.json()}).catch(function(){return null});
+      }));
     })
-    .catch(function(){document.getElementById('ld').textContent='Error loading'})
+    .then(function(arts){
+      document.getElementById('ld').classList.remove('on');
+      renderGrid(arts.filter(Boolean));
+    })
+    .catch(function(e){
+      document.getElementById('ld').classList.remove('on');
+      document.getElementById('out').innerHTML='<div class="count">'+e.message+'</div>';
+    })
     .finally(function(){btn.disabled=false});
 }
 
@@ -119,31 +116,37 @@ function randomArt(){
   var btn=document.getElementById('btn');btn.disabled=true;
   document.getElementById('out').innerHTML='';
   document.getElementById('ld').classList.add('on');
-  var page=Math.floor(Math.random()*200)+1;
-  fetch(API+'/artworks?limit=24&page='+page+'&fields='+FIELDS)
+  fetch(API+'/objects?hasImages=true')
     .then(function(r){return r.json()})
     .then(function(d){
-      document.getElementById('ld').classList.remove('on');
-      renderGrid(d.data||[],d.config.iiif_url,d.pagination?.total||0,'random');
+      var ids=d.objectIDs||[];
+      var picks=[];
+      for(var i=0;i<24;i++)picks.push(ids[Math.floor(Math.random()*ids.length)]);
+      return Promise.all(picks.map(function(id){
+        return fetch(API+'/objects/'+id).then(function(r){return r.json()}).catch(function(){return null});
+      }));
     })
-    .catch(function(){document.getElementById('ld').textContent='Error loading'})
+    .then(function(arts){
+      document.getElementById('ld').classList.remove('on');
+      renderGrid(arts.filter(Boolean));
+    })
+    .catch(function(e){
+      document.getElementById('ld').classList.remove('on');
+    })
     .finally(function(){btn.disabled=false});
 }
 
-function renderGrid(items,iiif,total,q){
-  var html='';
-  if(q!=='random')html+='<div class="count">'+total+' results for "'+q+'"</div>';
-  else html+='<div class="count">Random selection from 50,000+ artworks</div>';
-  html+='<div class="grid">';
-  items.forEach(function(a){
-    var img=a.image_id?iiif+'/'+a.image_id+'/full/400,/0/default.jpg':'';
-    var imgHtml=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
-    html+='<div class="art" onclick="showDetail(this)" data-id="'+a.id+'">'+
-      '<div class="frame">'+imgHtml+'</div>'+
+function renderGrid(arts){
+  var html='<div class="grid">';
+  arts.forEach(function(a){
+    var img=a.primaryImageSmall||'';
+    var imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
+    html+='<div class="art" onclick="showDetail('+a.objectID+')">'+
+      '<div class="frame">'+imgH+'</div>'+
       '<div class="label">'+
         '<div class="title">'+(a.title||'Untitled')+'</div>'+
-        '<div class="artist">'+(a.artist_display||'Unknown')+'</div>'+
-        '<div class="date">'+(a.date_display||'')+'</div>'+
+        '<div class="meta">'+(a.artistDisplayName||'Unknown')+'</div>'+
+        '<div class="date">'+(a.objectDate||'')+'</div>'+
       '</div>'+
     '</div>';
   });
@@ -151,46 +154,36 @@ function renderGrid(items,iiif,total,q){
   document.getElementById('out').innerHTML=html;
 }
 
-function showDetail(el){
-  var id=el.getAttribute('data-id');
-  fetch(API+'/artworks/'+id+'?fields='+FIELDS)
+function showDetail(id){
+  fetch(API+'/objects/'+id)
     .then(function(r){return r.json()})
-    .then(function(d){
-      var a=d.data;var iiif=d.config.iiif_url;
-      var img=a.image_id?iiif+'/'+a.image_id+'/full/843,/0/default.jpg':'';
-      var t = a.title || 'Untitled';
-      var imgHtml = img
-        ? '<img src="' + img + '" alt="' + t + '">'
-        : '<div style="width:100%;aspect-ratio:3/4;background:#e8dfd2;display:flex;align-items:center;justify-content:center;font-size:4rem">🖼</div>';
-
+    .then(function(a){
+      var img=a.primaryImage||a.primaryImageSmall||'';
+      var imgH=img?'<img src="'+img+'" alt="'+(a.title||'')">':'<div style="width:100%;aspect-ratio:3/4;background:#e8dfd2;display:flex;align-items:center;justify-content:center;font-size:4rem">🖼</div>';
       var rows=[];
-      if(a.date_display)rows.push(['Date',a.date_display]);
-      if(a.medium_display)rows.push(['Medium',a.medium_display]);
+      if(a.objectDate)rows.push(['Date',a.objectDate]);
+      if(a.medium)rows.push(['Medium',a.medium]);
       if(a.dimensions)rows.push(['Dimensions',a.dimensions]);
-      if(a.department_title)rows.push(['Department',a.department_title]);
-      if(a.style_title)rows.push(['Style',a.style_title]);
-      if(a.classification_title)rows.push(['Type',a.classification_title]);
-
+      if(a.department)rows.push(['Department',a.department]);
+      if(a.period)rows.push(['Period',a.period]);
+      if(a.culture)rows.push(['Culture',a.culture]);
+      if(a.classification)rows.push(['Type',a.classification]);
+      if(a.creditLine)rows.push(['Credit',a.creditLine]);
       var table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
-      var desc=a.description?'<div class="section-title">About</div><div>'+a.description+'</div>':'';
-
       document.getElementById('modal').innerHTML=
-        '<button class="close" onclick="closeDetail()">✕</button>'+
-        '<div class="top"><div class="img-wrap">'+imgHtml+'</div><div class="info">'+
+        '<button class="close" onclick="close()">✕</button>'+
+        '<div class="top"><div class="img-wrap">'+imgH+'</div><div class="info">'+
           '<h2>'+(a.title||'Untitled')+'</h2>'+
-          '<div class="artist">'+(a.artist_display||'Unknown artist')+'</div>'+
+          '<div class="artist">'+(a.artistDisplayName||'Unknown artist')+'</div>'+
           '<table>'+table+'</table>'+
-        '</div></div>'+
-        (desc?'<div class="bottom">'+desc+'</div>':'');
-
+        '</div></div>';
       document.getElementById('overlay').classList.add('on');
     });
 }
 
-function closeDetail(){document.getElementById('overlay').classList.remove('on')}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
+function close(){document.getElementById('overlay').classList.remove('on')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 
-// Load random on page load
 randomArt();
 </script>
 </body>
