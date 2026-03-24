@@ -121,7 +121,7 @@ function loadBatch(){
     return fetch(API+'/objects/'+id).then(function(r){return r.json()}).catch(function(){return null});
   })).then(function(arts){
     document.getElementById('ld').classList.remove('on');
-    appendGrid(arts.filter(Boolean));
+    appendGrid(arts.filter(function(a){return a&&a.primaryImageSmall}));
     document.getElementById('moreBtn').style.display=shown<allIds.length?'inline-block':'none';
   });
 }
