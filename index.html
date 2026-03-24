@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenKee Tools — API Utilities</title>
+    <meta name="description" content="API-powered tools and utilities by OpenKee." />
+    <meta property="og:title" content="OpenKee Tools" />
+    <meta property="og:description" content="API-powered tools and utilities." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/tools/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg:#000; --panel:#0a0a0a; --text:#f5f5f3; --muted:#9f9f99; --border:rgba(255,255,255,0.08); }
+      * { box-sizing:border-box; }
+      body { margin:0; font-family:"Inter",system-ui,sans-serif; color:var(--text); background:var(--bg); }
+      a { color:var(--text); text-decoration:none; }
+      h1,h2,h3,p,strong,span,small { margin:0; }
+      .shell { width:min(1000px,calc(100% - 2rem)); margin:0 auto; padding:2rem 0 4rem; }
+      .masthead { padding:0 0 2rem; border-bottom:1px solid var(--border); }
+      .eyebrow { text-transform:uppercase; letter-spacing:0.2em; font-size:0.7rem; font-weight:600; color:var(--muted); }
+      h1 { margin-top:0.5rem; font-size:clamp(2rem,5vw,3rem); line-height:1.05; letter-spacing:-0.04em; max-width:18ch; font-weight:800; }
+      .lead { margin-top:0.6rem; color:var(--muted); font-size:0.92rem; max-width:55ch; line-height:1.6; }
+      .header-right { display:flex; gap:0.8rem; align-items:center; margin-top:1rem; }
+      .gh-link { font-size:0.82rem; font-weight:500; padding:0.4rem 0.8rem; border:1px solid var(--border); border-radius:6px; transition:border-color 200ms; }
+      .gh-link:hover { border-color:var(--text); }
+      .lang-toggle { font:inherit; height:2rem; padding:0 0.6rem; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-size:0.78rem; border-radius:6px; }
+      .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:0; padding:1.5rem 0; border-bottom:1px solid var(--border); }
+      .stat-item { padding:0 1rem; border-right:1px solid var(--border); }
+      .stat-item:last-child { border-right:none; }
+      .stat-label { font-size:0.66rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+      .stat-value { font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; margin-top:0.15rem; }
+      .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1px; background:var(--border); margin-top:1.5rem; border:1px solid var(--border); }
+      .card { background:var(--bg); padding:1.5rem; display:flex; flex-direction:column; gap:0.5rem; transition:background 200ms; }
+      .card:hover { background:var(--panel); }
+      .card-tag { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; padding:0.15rem 0.4rem; border:1px solid var(--border); border-radius:3px; align-self:start; }
+      .card-tag.data { color:#56d3ff; border-color:rgba(86,211,255,0.3); }
+      .card-tag.geo { color:#34d399; border-color:rgba(52,211,153,0.3); }
+      .card-tag.finance { color:#fbbf24; border-color:rgba(251,191,36,0.3); }
+      .card-tag.media { color:#a78bfa; border-color:rgba(167,139,250,0.3); }
+      .card-tag.travel { color:#f472b6; border-color:rgba(244,114,182,0.3); }
+      .card-name { font-size:1.05rem; font-weight:700; letter-spacing:-0.01em; }
+      .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; flex:1; }
+      .card-links { display:flex; gap:0.5rem; margin-top:0.3rem; }
+      .card-link { font-size:0.74rem; font-weight:500; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:4px; transition:all 150ms; }
+      .card-link:hover { border-color:var(--text); color:var(--text); }
+      .footer { margin-top:3rem; padding:1.5rem 0; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--muted); }
+      .footer a { color:var(--muted); }
+      .footer a:hover { color:var(--text); }
+      @media (max-width:700px) {
+        .stats { grid-template-columns:repeat(3,1fr); }
+        .stat-item { border-right:none; padding:0.4rem 0; }
+        .grid { grid-template-columns:1fr; }
+        .footer { flex-direction:column; gap:0.5rem; text-align:center; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">OpenKee · Tools</p>
+          <h1 data-i18n="title">API-powered tools and utilities.</h1>
+          <p class="lead" data-i18n="lead">Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more — all powered by public APIs.</p>
+        </div>
+        <div class="header-right">
+          <a href="https://github.com/OpenKee/tools" target="_blank" class="gh-link">GitHub ↗</a>
+          <a href="https://openkee.github.io/" class="gh-link" data-i18n="allProjects">All projects ↗</a>
+          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">11</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">5</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-i18n="active">Active</div></div>
+      </section>
+
+      <section class="grid" id="projectGrid"></section>
+
+      <footer class="footer">
+        <span>Built by <a href="https://github.com/OpenKee" target="_blank">OpenKee</a></span>
+        <span><a href="https://openkee.github.io/" data-i18n="back">← All projects</a></span>
+      </footer>
+    </main>
+
+    <script>
+      const PROJECTS = [
+        {
+          name: 'Rate Board', type: 'finance', typeClass: 'finance',
+          desc: { en: 'Live exchange rates with multi-currency converter.', zh: '实时汇率与多币种换算器。' },
+        },
+        {
+          name: 'Crypto Board', type: 'finance', typeClass: 'finance',
+          desc: { en: 'Live cryptocurrency prices and market data.', zh: '实时加密货币行情与市场数据。' },
+        },
+        {
+          name: 'Atlas Info', type: 'data', typeClass: 'data',
+          desc: { en: 'Country encyclopedia with population, languages, and borders.', zh: '国家百科：人口、语言、邻国等信息。' },
+        },
+        {
+          name: 'Radio Atlas', type: 'media', typeClass: 'media',
+          desc: { en: 'Global radio explorer powered by Radio Browser API.', zh: '基于 Radio Browser API 的全球电台探索器。' },
+        },
+        {
+          name: 'Sky Brief', type: 'geo', typeClass: 'geo',
+          desc: { en: 'Weather and geolocation quick brief for any city.', zh: '任意城市的天气与地理速览。' },
+        },
+        {
+          name: 'Sky Route', type: 'travel', typeClass: 'travel',
+          desc: { en: 'Route-aware travel brief with weather, time, and distance.', zh: '路线旅行简报：天气、时差、距离一览。' },
+        },
+        {
+          name: 'Trending Atlas', type: 'data', typeClass: 'data',
+          desc: { en: 'Discover trending GitHub repos by day, week, or month.', zh: '按日/周/月发现 GitHub 热门仓库。' },
+        },
+        {
+          name: 'Repo Scope', type: 'data', typeClass: 'data',
+          desc: { en: 'GitHub repo analysis and scope overview tool.', zh: 'GitHub 仓库分析与概览工具。' },
+        },
+        {
+          name: 'Node Atlas', type: 'data', typeClass: 'data',
+          desc: { en: 'Explore and visualize node/network data.', zh: '节点与网络数据的探索与可视化。' },
+        },
+        {
+          name: 'Hour Bridge', type: 'data', typeClass: 'data',
+          desc: { en: 'Time zone bridge — compare times across regions.', zh: '时区桥梁 — 跨区域时间对照。' },
+        },
+        {
+          name: 'Offday Planner', type: 'data', typeClass: 'data',
+          desc: { en: 'Holiday and off-day planner tool.', zh: '假期与休息日规划工具。' },
+        },
+      ];
+
+      const copy = {
+        en: {
+          title: 'API-powered tools and utilities.',
+          lead: 'Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more \u2014 all powered by public APIs.',
+          allProjects: 'All projects ↗', tools: 'Tools', categories: 'Categories', status: 'Status', active: 'Live',
+          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', open: 'Open ↗', back: '\u2190 All projects',
+        },
+        zh: {
+          title: 'API 驱动的工具集。',
+          lead: '汇率、天气简报、加密行情、电台流、地理编码……全部由公共 API 驱动。',
+          allProjects: '全部项目 ↗', tools: '工具', categories: '分类', status: '状态', active: '在线',
+          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', open: '打开 ↗', back: '\u2190 全部项目',
+        },
+      };
+
+      let lang = localStorage.getItem('openkee-lang') || 'en';
+      const langToggle = document.getElementById('langToggle');
+      const projectGrid = document.getElementById('projectGrid');
+
+      function t(k) { return copy[lang][k] || k; }
+
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        langToggle.textContent = lang === 'en' ? '中文' : 'EN';
+        document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+        render();
+      }
+
+      function render() {
+        const folder = name => 'apps/' + name.toLowerCase().replace(/\s+/g, '-') + '/';
+        projectGrid.innerHTML = PROJECTS.map(p => `
+          <div class="card">
+            <span class="card-tag ${p.typeClass}">${t(p.typeClass)}</span>
+            <div class="card-name">${p.name}</div>
+            <div class="card-desc">${p.desc[lang]}</div>
+            <div class="card-links">
+              <a class="card-link" href="${folder(p.name)}">${t('open')}</a>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      langToggle.addEventListener('click', () => {
+        lang = lang === 'en' ? 'zh' : 'en';
+        localStorage.setItem('openkee-lang', lang);
+        applyLanguage();
+      });
+
+      applyLanguage();
+    </script>
+  </body>
+</html>
