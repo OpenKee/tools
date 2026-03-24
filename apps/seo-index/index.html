@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>收录查询</title>
+    <meta name="theme-color" content="#fafaf8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔎</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root{--bg:#fafaf8;--sf:#fff;--bd:#e8e6e1;--tx:#1a1a1a;--mt:#78766e;--dm:#a8a6a0;--acc:#2563eb;--gn:#16a34a;--yl:#ca8a04;--rd:#dc2626;--or:#ea580c}
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+      .wrap{max-width:720px;margin:0 auto;padding:0 1.25rem}
+      .nav{padding:1rem 0;border-bottom:1px solid var(--bd);margin-bottom:1.5rem;display:flex;align-items:baseline;gap:.5rem}
+      .nav .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);flex-shrink:0}
+      .nav .title{font-weight:700;font-size:.9rem}
+      .nav .sep{color:var(--dm);font-size:.8rem}
+      .nav .tag{font-size:.72rem;color:var(--dm);border:1px solid var(--bd);padding:.15rem .5rem;border-radius:4px;margin-left:auto}
+      .header{padding:1.5rem 0 1rem}
+      .header h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+      .header p{color:var(--mt);font-size:.88rem;margin-top:.3rem}
+      .search{margin:1rem 0 1.5rem}
+      .search form{display:flex;gap:.5rem}
+      .search input{flex:1;height:2.5rem;padding:0 .75rem;border:1px solid var(--bd);border-radius:6px;font:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;transition:border-color .2s}
+      .search input:focus{border-color:var(--acc)}
+      .search input::placeholder{color:var(--dm)}
+      .search button{height:2.5rem;padding:0 1.25rem;background:var(--tx);color:var(--bg);border:none;border-radius:6px;font:inherit;font-weight:600;font-size:.82rem;cursor:pointer;transition:opacity .15s}
+      .search button:hover{opacity:.85}
+      .search button:disabled{opacity:.4}
+      .examples{margin-top:.5rem;font-size:.78rem;color:var(--dm)}
+      .examples button{background:none;border:none;color:var(--acc);font:inherit;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+      .loading{display:none;padding:2rem 0;text-align:center;font-size:.85rem;color:var(--mt)}
+      .loading.on{display:block}
+      .error{display:none;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin:1rem 0;font-size:.85rem;color:var(--rd)}
+      .error.on{display:block}
+
+      /* URL bar */
+      .url-bar{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem;font-size:.85rem;word-break:break-all}
+      .url-bar .icon{flex-shrink:0}
+      .url-bar a{color:var(--acc);text-decoration:underline;text-underline-offset:2px}
+
+      /* Results grid */
+      .results{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+      .result{background:var(--sf);padding:1.25rem;text-align:center}
+      .result .engine{display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.78rem;color:var(--mt);margin-bottom:.6rem;font-weight:500}
+      .result .engine img{width:18px;height:18px}
+      .result .status{font-size:1rem;font-weight:700}
+      .result .status.yes{color:var(--gn)}
+      .result .status.no{color:var(--rd)}
+      .result .status.pending{color:var(--yl)}
+      .result .status.error{color:var(--or)}
+      .result .detail{font-size:.72rem;color:var(--mt);margin-top:.3rem}
+      .result .link{display:inline-block;margin-top:.5rem;font-size:.72rem;color:var(--acc);text-decoration:underline;text-underline-offset:2px}
+
+      /* Summary */
+      .summary{padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem}
+      .summary .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.4rem}
+      .summary .text{font-size:.88rem;line-height:1.7}
+
+      /* Tags */
+      .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.8rem}
+      .tag{font-size:.75rem;padding:.25rem .6rem;border-radius:4px;font-weight:500}
+      .tag.g{color:var(--gn);background:#f0fdf4;border:1px solid #bbf7d0}
+      .tag.w{color:var(--yl);background:#fefce8;border:1px solid #fef08a}
+      .tag.b{color:var(--rd);background:#fef2f2;border:1px solid #fecaca}
+      .tag.n{color:var(--mt);background:#f9f9f7;border:1px solid var(--bd)}
+
+      /* History */
+      .history{margin-bottom:2rem}
+      .history .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.5rem}
+      .history table{width:100%;border-collapse:collapse;font-size:.82rem}
+      .history tr{border-bottom:1px solid var(--bd)}
+      .history tr:last-child{border-bottom:none}
+      .history td{padding:.45rem .25rem;vertical-align:middle}
+      .history td:first-child{width:1rem}
+      .history .dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+      .history .dot.y{background:var(--gn)}
+      .history .dot.n{background:var(--rd)}
+      .history .dot.p{background:var(--yl)}
+
+      footer{padding:2rem 0;border-top:1px solid var(--bd);margin-top:2rem;font-size:.72rem;color:var(--dm);text-align:center}
+
+      @media(max-width:500px){.results{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="nav">
+        <span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>收录查询</span><span class="tag">SEO</span>
+      </nav>
+      <div class="header"><h1>收录查询</h1><p>输入 URL，查百度/Google/Bing 是否收录</p></div>
+      <div class="search">
+        <form onsubmit="go();return false">
+          <input type="text" id="inp" placeholder="https://example.com/page" autocomplete="off" />
+          <button type="submit" id="btn">查询</button>
+        </form>
+        <div class="examples">试试：<button onclick="q('https://openkee.github.io/')">openkee.github.io</button> · <button onclick="q('https://github.com/OpenKee')">github.com/OpenKee</button></div>
+      </div>
+      <div class="loading" id="ld">查询中…</div>
+      <div class="error" id="er"></div>
+      <div id="output"></div>
+      <footer>收录查询 — 结果仅供参考，非搜索引擎官方数据</footer>
+    </div>
+
+    <script>
+      const $=id=>document.getElementById(id);
+      const PROXY='https://api.allorigins.win/raw?url=';
+      let history=[];
+
+      function q(v){$('inp').value=v;go()}
+
+      function normalizeUrl(raw){
+        let u=raw.trim();
+        if(!/^https?:\/\//i.test(u))u='https://'+u;
+        try{return new URL(u).href}catch{return u}
+      }
+
+      async function go(){
+        const raw=$('inp').value.trim();if(!raw)return;
+        const url=normalizeUrl(raw);
+        const domain=new URL(url).hostname;
+        const b=$('btn');b.disabled=true;
+        $('output').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
+
+        try{
+          const [google,bing,baidu]=await Promise.all([
+            checkGoogle(domain,url),
+            checkBing(domain,url),
+            checkBaidu(domain,url),
+          ]);
+
+          render({url,domain,google,bing,baidu});
+        }catch(e){
+          $('er').textContent=e.message;$('er').classList.add('on');
+        }finally{b.disabled=false;$('ld').classList.remove('on')}
+      }
+
+      async function checkGoogle(domain,url){
+        try{
+          const r=await fetch(PROXY+encodeURIComponent(`https://www.google.com/search?q=site:${encodeURIComponent(url)}&num=1`));
+          const html=await r.text();
+          // Check if results exist
+          const hasResults=!html.includes('did not match any documents')&&!html.includes('没有找到和您查询的');
+          const countMatch=html.match(/About ([\d,]+) results/i)||html.match(/约有 ([\d,]+) 条结果/);
+          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.google.com/search?q=site:${encodeURIComponent(url)}`};
+        }catch(e){return{indexed:null,error:e.message}}
+      }
+
+      async function checkBing(domain,url){
+        try{
+          const r=await fetch(PROXY+encodeURIComponent(`https://www.bing.com/search?q=site:${encodeURIComponent(url)}&count=1`));
+          const html=await r.text();
+          const hasResults=html.includes('sb_count')||html.includes('resultCount');
+          const countMatch=html.match(/([\d,]+) results/)||html.match(/([\d,]+) results?/)||html.match(/<span class="sb_count">([\d,.]+)<\/span>/);
+          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.bing.com/search?q=site:${encodeURIComponent(url)}`};
+        }catch(e){return{indexed:null,error:e.message}}
+      }
+
+      async function checkBaidu(domain,url){
+        try{
+          const r=await fetch(PROXY+encodeURIComponent(`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}&rn=1`));
+          const html=await r.text();
+          const hasResults=!html.includes('没有找到该URL')&&!html.includes('抱歉，没有找到');
+          const countMatch=html.match(/百度为您找到相关结果约?([\d,]+)个/)||html.match(/找到相关结果([\d,.]+)/);
+          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}`};
+        }catch(e){return{indexed:null,error:e.message}}
+      }
+
+      function render(d){
+        const{url,domain,google,bing,baidu}=d;
+        let html='';
+
+        // URL
+        html+=`<div class="url-bar"><span class="icon">🔗</span><a href="${url}" target="_blank">${url}</a></div>`;
+
+        // Results
+        const engines=[
+          {name:'Google',icon:'🔍',r:google},
+          {name:'Bing',icon:'🅱️',r:bing},
+          {name:'百度',icon:'🐻',r:baidu},
+        ];
+
+        html+=`<div class="results">${engines.map(e=>{
+          const r=e.r;
+          let statusCls,statusText,detail='';
+          if(r.error){statusCls='error';statusText='查询失败';detail=r.error}
+          else if(r.indexed===true){statusCls='yes';statusText='已收录';detail=r.count?`${r.count} 条结果`:''}
+          else if(r.indexed===false){statusCls='no';statusText='未收录'}
+          else{statusCls='pending';statusText='未知'}
+          return`<div class="result">
+            <div class="engine"><span>${e.icon}</span>${e.name}</div>
+            <div class="status ${statusCls}">${statusText}</div>
+            ${detail?`<div class="detail">${detail}</div>`:''}
+            ${r.searchUrl?`<a class="link" href="${r.searchUrl}" target="_blank">查看搜索结果 ↗</a>`:''}
+          </div>`;
+        }).join('')}</div>`;
+
+        // Summary
+        const indexed=engines.filter(e=>e.r.indexed===true).length;
+        const failed=engines.filter(e=>e.r.error).length;
+        const tags=[];
+        if(indexed===3)tags.push(['全部收录','g']);
+        else if(indexed>=1)tags.push([`已收录 ${indexed}/3`,'w']);
+        else if(failed===3)tags.push(['查询失败','b']);
+        else tags.push(['未收录','b']);
+        if(google.count&&parseInt(google.count.replace(/,/g,''))>100)tags.push(['Google 大量收录','g']);
+        if(baidu.count&&parseInt(baidu.count.replace(/,/g,''))>100)tags.push(['百度大量收录','g']);
+
+        html+=`<div class="summary">
+          <div class="label">汇总</div>
+          <div class="text">域名 <strong>${domain}</strong></div>
+          <div class="tags">${tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+        </div>`;
+
+        // History
+        history.unshift({url,domain,indexed,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),g:google.indexed,b:bing.indexed,bd:baidu.indexed});
+        if(history.length>10)history.pop();
+
+        if(history.length>1){
+          html+=`<div class="history"><div class="label">查询记录</div><table>${history.map(h=>`<tr>
+            <td><span class="dot ${h.indexed>=2?'y':h.indexed>=1?'p':'n'}"></span></td>
+            <td><strong>${h.domain}</strong></td>
+            <td>${h.g?'✅':'—'} G</td>
+            <td>${h.b?'✅':'—'} B</td>
+            <td>${h.bd?'✅':'—'} 百</td>
+            <td style="color:var(--dm)">${h.time}</td>
+          </tr>`).join('')}</table></div>`;
+        }
+
+        $('output').innerHTML=html;
+      }
+    </script>
+  </body>
+</html>
