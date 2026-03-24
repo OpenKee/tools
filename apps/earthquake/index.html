@@ -27,8 +27,8 @@ body{font-family:"JetBrains Mono","Noto Sans SC",monospace;color:var(--tx);backg
 .filters button{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.72rem;padding:.3rem .7rem;border-radius:4px;cursor:pointer;transition:all .15s}
 .filters button:hover,.filters button.on{border-color:var(--bl);color:var(--bl);background:rgba(59,130,246,.08)}
 
-.map-wrap{position:relative;margin:0 1.5rem;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--sf)}
-.map-wrap canvas{width:100%;display:block;min-height:200px}
+.map-wrap{position:relative;margin:0 1.5rem;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--sf);aspect-ratio:2/1}
+.map-wrap canvas{width:100%;height:100%;display:block}
 .map-legend{position:absolute;bottom:.5rem;right:.5rem;display:flex;gap:.5rem;font-size:.6rem;color:var(--dm)}
 .map-legend span{display:flex;align-items:center;gap:.2rem}
 .map-legend i{width:8px;height:8px;border-radius:50%;display:block}
@@ -157,7 +157,7 @@ function renderList(quakes){
 function renderMap(quakes){
   var cv=document.getElementById('map');
   var ctx=cv.getContext('2d');
-  var parent=cv.parentElement;var W=cv.width=parent.offsetWidth*2;var H=cv.height=Math.round(W/2);
+  var rect=cv.parentElement.getBoundingClientRect();var W=cv.width=Math.round(rect.width);var H=cv.height=Math.round(rect.height);
   ctx.scale(1,1);
 
   // Dark map background
