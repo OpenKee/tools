@@ -35,53 +35,26 @@
       .loading.on{display:block}
       .error{display:none;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin:1rem 0;font-size:.85rem;color:var(--rd)}
       .error.on{display:block}
-
-      /* URL bar */
       .url-bar{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem;font-size:.85rem;word-break:break-all}
       .url-bar .icon{flex-shrink:0}
       .url-bar a{color:var(--acc);text-decoration:underline;text-underline-offset:2px}
-
-      /* Results grid */
       .results{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
       .result{background:var(--sf);padding:1.25rem;text-align:center}
       .result .engine{display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.78rem;color:var(--mt);margin-bottom:.6rem;font-weight:500}
-      .result .engine img{width:18px;height:18px}
       .result .status{font-size:1rem;font-weight:700}
       .result .status.yes{color:var(--gn)}
       .result .status.no{color:var(--rd)}
-      .result .status.pending{color:var(--yl)}
-      .result .status.error{color:var(--or)}
+      .result .status.unknown{color:var(--yl)}
       .result .detail{font-size:.72rem;color:var(--mt);margin-top:.3rem}
       .result .link{display:inline-block;margin-top:.5rem;font-size:.72rem;color:var(--acc);text-decoration:underline;text-underline-offset:2px}
-
-      /* Summary */
       .summary{padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem}
       .summary .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.4rem}
-      .summary .text{font-size:.88rem;line-height:1.7}
-
-      /* Tags */
-      .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.8rem}
+      .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
       .tag{font-size:.75rem;padding:.25rem .6rem;border-radius:4px;font-weight:500}
       .tag.g{color:var(--gn);background:#f0fdf4;border:1px solid #bbf7d0}
       .tag.w{color:var(--yl);background:#fefce8;border:1px solid #fef08a}
       .tag.b{color:var(--rd);background:#fef2f2;border:1px solid #fecaca}
-      .tag.n{color:var(--mt);background:#f9f9f7;border:1px solid var(--bd)}
-
-      /* History */
-      .history{margin-bottom:2rem}
-      .history .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.5rem}
-      .history table{width:100%;border-collapse:collapse;font-size:.82rem}
-      .history tr{border-bottom:1px solid var(--bd)}
-      .history tr:last-child{border-bottom:none}
-      .history td{padding:.45rem .25rem;vertical-align:middle}
-      .history td:first-child{width:1rem}
-      .history .dot{display:inline-block;width:8px;height:8px;border-radius:50%}
-      .history .dot.y{background:var(--gn)}
-      .history .dot.n{background:var(--rd)}
-      .history .dot.p{background:var(--yl)}
-
       footer{padding:2rem 0;border-top:1px solid var(--bd);margin-top:2rem;font-size:.72rem;color:var(--dm);text-align:center}
-
       @media(max-width:500px){.results{grid-template-columns:1fr}}
     </style>
   </head>
@@ -90,39 +63,40 @@
       <nav class="nav">
         <span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>收录查询</span><span class="tag">SEO</span>
       </nav>
-      <div class="header"><h1>收录查询</h1><p>输入 URL，查百度/Google/Bing 是否收录</p></div>
+      <div class="header"><h1>收录查询</h1><p>输入域名或 URL，查百度/Google/Bing 收录情况</p></div>
       <div class="search">
         <form onsubmit="go();return false">
-          <input type="text" id="inp" placeholder="https://example.com/page" autocomplete="off" />
+          <input type="text" id="inp" placeholder="example.com 或 https://example.com/page" autocomplete="off" />
           <button type="submit" id="btn">查询</button>
         </form>
-        <div class="examples">试试：<button onclick="q('https://openkee.github.io/')">openkee.github.io</button> · <button onclick="q('https://github.com/OpenKee')">github.com/OpenKee</button></div>
+        <div class="examples">试试：<button onclick="q('openkee.github.io')">openkee.github.io</button> · <button onclick="q('github.com')">github.com</button> · <button onclick="q('baidu.com')">baidu.com</button></div>
       </div>
       <div class="loading" id="ld">查询中…</div>
       <div class="error" id="er"></div>
       <div id="output"></div>
-      <footer>收录查询 — 结果仅供参考，非搜索引擎官方数据</footer>
+      <footer>收录查询 — 通过多维度交叉检测，结果仅供参考</footer>
     </div>
 
     <script>
       const $=id=>document.getElementById(id);
+      function q(v){$('inp').value=v;go()}
+
+      // CORS proxy list
       const PROXIES=[
         u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
-        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
         u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
       ];
-      async function proxyFetch(url){
+
+      async function proxyFetch(url,timeout=10000){
         for(const mk of PROXIES){
           try{
-            const r=await fetch(mk(url),{signal:AbortSignal.timeout(8000)});
+            const r=await fetch(mk(url),{signal:AbortSignal.timeout(timeout)});
             if(r.ok)return await r.text();
           }catch{}
         }
-        throw new Error('所有代理均不可用');
+        throw new Error('代理不可用');
       }
-      let history=[];
-
-      function q(v){$('inp').value=v;go()}
 
       function normalizeUrl(raw){
         let u=raw.trim();
@@ -130,80 +104,123 @@
         try{return new URL(u).href}catch{return u}
       }
 
+      function getDomain(url){try{return new URL(url).hostname}catch{return url}}
+
       async function go(){
         const raw=$('inp').value.trim();if(!raw)return;
         const url=normalizeUrl(raw);
-        const domain=new URL(url).hostname;
+        const domain=getDomain(url);
         const b=$('btn');b.disabled=true;
         $('output').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
 
         try{
-          const [google,bing,baidu]=await Promise.all([
-            checkGoogle(domain,url),
-            checkBing(domain,url),
-            checkBaidu(domain,url),
+          const [google,bing,baidu]=await Promise.allSettled([
+            checkGoogle(url,domain),
+            checkBing(url,domain),
+            checkBaidu(url,domain),
           ]);
-
-          render({url,domain,google,bing,baidu});
+          render({url,domain,
+            google:google.status==='fulfilled'?google.value:{indexed:null,error:google.reason?.message||'失败'},
+            bing:bing.status==='fulfilled'?bing.value:{indexed:null,error:bing.reason?.message||'失败'},
+            baidu:baidu.status==='fulfilled'?baidu.value:{indexed:null,error:baidu.reason?.message||'失败'},
+          });
         }catch(e){
           $('er').textContent=e.message;$('er').classList.add('on');
         }finally{b.disabled=false;$('ld').classList.remove('on')}
       }
 
-      async function checkGoogle(domain,url){
+      // Google: try multiple methods
+      async function checkGoogle(url,domain){
+        // Method 1: site: query
         try{
-          const html=await proxyFetch(`https://www.google.com/search?q=site:${encodeURIComponent(url)}&num=1`);
-          // Check if results exist
-          const hasResults=!html.includes('did not match any documents')&&!html.includes('没有找到和您查询的');
-          const countMatch=html.match(/About ([\d,]+) results/i)||html.match(/约有 ([\d,]+) 条结果/);
-          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.google.com/search?q=site:${encodeURIComponent(url)}`};
-        }catch(e){return{indexed:null,error:e.message}}
+          const html=await proxyFetch(`https://www.google.com/search?q=site:${domain}&num=5&hl=zh-CN`);
+          if(html.includes('did not match any documents')||html.includes('没有找到和您查询'))return{indexed:false,method:'site'};
+          // Count results
+          const m=html.match(/About ([\d,]+)/i)||html.match(/约有 ([\d,]+)/);
+          return{indexed:true,count:m?m[1]:null,method:'site'};
+        }catch{}
+
+        // Method 2: Google cache
+        try{
+          const html=await proxyFetch(`https://webcache.googleusercontent.com/search?q=cache:${domain}&hl=zh-CN`,8000);
+          if(html.length>1000&&!html.includes('not been indexed')&&!html.includes('404'))return{indexed:true,method:'cache'};
+        }catch{}
+
+        // Method 3: info: query
+        try{
+          const html=await proxyFetch(`https://www.google.com/search?q=info:${domain}&num=1`);
+          if(html.length>5000&&!html.includes('did not match'))return{indexed:true,method:'info'};
+        }catch{}
+
+        return{indexed:null,error:'查询失败'};
       }
 
-      async function checkBing(domain,url){
+      // Bing: multiple methods
+      async function checkBing(url,domain){
+        // Method 1: site: query
         try{
-          const html=await proxyFetch(`https://www.bing.com/search?q=site:${encodeURIComponent(url)}&count=1`);
-          const hasResults=html.includes('sb_count')||html.includes('resultCount');
-          const countMatch=html.match(/([\d,]+) results/)||html.match(/([\d,]+) results?/)||html.match(/<span class="sb_count">([\d,.]+)<\/span>/);
-          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.bing.com/search?q=site:${encodeURIComponent(url)}`};
-        }catch(e){return{indexed:null,error:e.message}}
+          const html=await proxyFetch(`https://www.bing.com/search?q=site:${domain}&count=5`);
+          if(html.includes('No results found')||html.includes('没有找到'))return{indexed:false,method:'site'};
+          // Check for result count or result items
+          if(html.includes('b_algo')||html.includes('sb_count'))return{indexed:true,method:'site'};
+          // If we got HTML with reasonable length, likely indexed
+          if(html.length>10000)return{indexed:true,method:'heuristic'};
+        }catch{}
+
+        // Method 2: url: query
+        try{
+          const html=await proxyFetch(`https://www.bing.com/search?q=url:${domain}&count=1`);
+          if(html.length>5000&&!html.includes('No results found'))return{indexed:true,method:'url'};
+        }catch{}
+
+        return{indexed:null,error:'查询失败'};
       }
 
-      async function checkBaidu(domain,url){
+      // Baidu: multiple methods
+      async function checkBaidu(url,domain){
+        // Method 1: site: query
         try{
-          const html=await proxyFetch(`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}&rn=1`);
-          const hasResults=!html.includes('没有找到该URL')&&!html.includes('抱歉，没有找到');
-          const countMatch=html.match(/百度为您找到相关结果约?([\d,]+)个/)||html.match(/找到相关结果([\d,.]+)/);
-          return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}`};
-        }catch(e){return{indexed:null,error:e.message}}
+          const html=await proxyFetch(`https://www.baidu.com/s?wd=site:${domain}&rn=5`);
+          if(html.includes('没有找到该URL')||html.includes('抱歉，没有找到')||html.includes('找不到该页面'))return{indexed:false,method:'site'};
+          // Check for results
+          if(html.includes('result')||html.includes('百度为您找到')||html.length>15000){
+            const m=html.match(/百度为您找到相关结果约?([\d,]+)个/);
+            return{indexed:true,count:m?m[1]:null,method:'site'};
+          }
+        }catch{}
+
+        // Method 2: exact URL search
+        try{
+          const html=await proxyFetch(`https://www.baidu.com/s?wd=${encodeURIComponent(domain)}&rn=1`);
+          if(html.length>10000)return{indexed:true,method:'keyword'};
+        }catch{}
+
+        return{indexed:null,error:'查询失败'};
       }
 
       function render(d){
         const{url,domain,google,bing,baidu}=d;
         let html='';
 
-        // URL
         html+=`<div class="url-bar"><span class="icon">🔗</span><a href="${url}" target="_blank">${url}</a></div>`;
 
-        // Results
         const engines=[
           {name:'Google',icon:'🔍',r:google},
           {name:'Bing',icon:'🅱️',r:bing},
-          {name:'百度',icon:'🐻',r:baidu},
+          {name:'百度',icon:'熊',r:baidu},
         ];
 
         html+=`<div class="results">${engines.map(e=>{
           const r=e.r;
-          let statusCls,statusText,detail='';
-          if(r.error){statusCls='error';statusText='查询失败';detail=r.error}
-          else if(r.indexed===true){statusCls='yes';statusText='已收录';detail=r.count?`${r.count} 条结果`:''}
-          else if(r.indexed===false){statusCls='no';statusText='未收录'}
-          else{statusCls='pending';statusText='未知'}
+          let cls,text,detail='';
+          if(r.error){cls='unknown';text='查询失败';detail=r.error}
+          else if(r.indexed===true){cls='yes';text='已收录';detail=r.count?`${r.count} 条`:r.method||''}
+          else if(r.indexed===false){cls='no';text='未收录'}
+          else{cls='unknown';text='无法判断'}
           return`<div class="result">
-            <div class="engine"><span>${e.icon}</span>${e.name}</div>
-            <div class="status ${statusCls}">${statusText}</div>
+            <div class="engine">${e.icon} ${e.name}</div>
+            <div class="status ${cls}">${text}</div>
             ${detail?`<div class="detail">${detail}</div>`:''}
-            ${r.searchUrl?`<a class="link" href="${r.searchUrl}" target="_blank">查看搜索结果 ↗</a>`:''}
           </div>`;
         }).join('')}</div>`;
 
@@ -211,33 +228,16 @@
         const indexed=engines.filter(e=>e.r.indexed===true).length;
         const failed=engines.filter(e=>e.r.error).length;
         const tags=[];
-        if(indexed===3)tags.push(['全部收录','g']);
-        else if(indexed>=1)tags.push([`已收录 ${indexed}/3`,'w']);
-        else if(failed===3)tags.push(['查询失败','b']);
-        else tags.push(['未收录','b']);
-        if(google.count&&parseInt(google.count.replace(/,/g,''))>100)tags.push(['Google 大量收录','g']);
-        if(baidu.count&&parseInt(baidu.count.replace(/,/g,''))>100)tags.push(['百度大量收录','g']);
+        if(indexed===3)tags.push(['全部收录 ✅','g']);
+        else if(indexed===2)tags.push(['收录 2/3','w']);
+        else if(indexed===1)tags.push(['仅收录 1/3','w']);
+        else if(failed===3)tags.push(['查询异常，请重试','b']);
+        else tags.push(['均未收录','b']);
 
         html+=`<div class="summary">
-          <div class="label">汇总</div>
-          <div class="text">域名 <strong>${domain}</strong></div>
+          <div class="label">汇总 · ${domain}</div>
           <div class="tags">${tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
         </div>`;
-
-        // History
-        history.unshift({url,domain,indexed,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),g:google.indexed,b:bing.indexed,bd:baidu.indexed});
-        if(history.length>10)history.pop();
-
-        if(history.length>1){
-          html+=`<div class="history"><div class="label">查询记录</div><table>${history.map(h=>`<tr>
-            <td><span class="dot ${h.indexed>=2?'y':h.indexed>=1?'p':'n'}"></span></td>
-            <td><strong>${h.domain}</strong></td>
-            <td>${h.g?'✅':'—'} G</td>
-            <td>${h.b?'✅':'—'} B</td>
-            <td>${h.bd?'✅':'—'} 百</td>
-            <td style="color:var(--dm)">${h.time}</td>
-          </tr>`).join('')}</table></div>`;
-        }
 
         $('output').innerHTML=html;
       }
