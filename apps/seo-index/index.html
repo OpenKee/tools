@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>收录查询</title>
+    <title>SEO 体检</title>
     <meta name="theme-color" content="#fafaf8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔎</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      :root{--bg:#fafaf8;--sf:#fff;--bd:#e8e6e1;--tx:#1a1a1a;--mt:#78766e;--dm:#a8a6a0;--acc:#2563eb;--gn:#16a34a;--yl:#ca8a04;--rd:#dc2626;--or:#ea580c}
+      :root{--bg:#fafaf8;--sf:#fff;--bd:#e8e6e1;--tx:#1a1a1a;--mt:#78766e;--dm:#a8a6a0;--acc:#2563eb;--gn:#16a34a;--yl:#ca8a04;--rd:#dc2626}
       *{box-sizing:border-box;margin:0;padding:0}
       body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
       .wrap{max-width:720px;margin:0 auto;padding:0 1.25rem}
@@ -35,209 +35,267 @@
       .loading.on{display:block}
       .error{display:none;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin:1rem 0;font-size:.85rem;color:var(--rd)}
       .error.on{display:block}
-      .url-bar{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem;font-size:.85rem;word-break:break-all}
-      .url-bar .icon{flex-shrink:0}
-      .url-bar a{color:var(--acc);text-decoration:underline;text-underline-offset:2px}
-      .results{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
-      .result{background:var(--sf);padding:1.25rem;text-align:center}
-      .result .engine{display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.78rem;color:var(--mt);margin-bottom:.6rem;font-weight:500}
-      .result .status{font-size:1rem;font-weight:700}
-      .result .status.yes{color:var(--gn)}
-      .result .status.no{color:var(--rd)}
-      .result .status.unknown{color:var(--yl)}
-      .result .detail{font-size:.72rem;color:var(--mt);margin-top:.3rem}
-      .result .link{display:inline-block;margin-top:.5rem;font-size:.72rem;color:var(--acc);text-decoration:underline;text-underline-offset:2px}
-      .summary{padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;margin-bottom:1.5rem}
-      .summary .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.4rem}
-      .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
-      .tag{font-size:.75rem;padding:.25rem .6rem;border-radius:4px;font-weight:500}
-      .tag.g{color:var(--gn);background:#f0fdf4;border:1px solid #bbf7d0}
-      .tag.w{color:var(--yl);background:#fefce8;border:1px solid #fef08a}
-      .tag.b{color:var(--rd);background:#fef2f2;border:1px solid #fecaca}
+
+      /* Score */
+      .score-bar{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:1.5rem}
+      .score-num{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;width:3.5rem;text-align:center}
+      .score-num.g{color:var(--gn)}.score-num.w{color:var(--yl)}.score-num.b{color:var(--rd)}
+      .score-info{flex:1}
+      .score-info .label{font-size:.82rem;font-weight:600}
+      .score-info .sub{font-size:.72rem;color:var(--mt);margin-top:.1rem}
+
+      /* Section */
+      .section{margin-bottom:1.5rem}
+      .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dm);font-weight:600;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid var(--bd)}
+
+      /* Check row */
+      .check{display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--bd)}
+      .check:last-child{border-bottom:none}
+      .check .icon{flex-shrink:0;width:1.4rem;text-align:center;font-size:.85rem;line-height:1.5}
+      .check .icon.pass{color:var(--gn)}.check .icon.warn{color:var(--yl)}.check .icon.fail{color:var(--rd)}
+      .check .body{flex:1;min-width:0}
+      .check .name{font-size:.84rem;font-weight:600}
+      .check .val{font-size:.78rem;color:var(--mt);margin-top:.1rem;word-break:break-all}
+      .check .tip{font-size:.75rem;color:var(--dm);margin-top:.2rem;font-style:italic}
+
       footer{padding:2rem 0;border-top:1px solid var(--bd);margin-top:2rem;font-size:.72rem;color:var(--dm);text-align:center}
-      @media(max-width:500px){.results{grid-template-columns:1fr}}
+      @media(max-width:500px){.score-bar{flex-direction:column;text-align:center;gap:.5rem}}
     </style>
   </head>
   <body>
     <div class="wrap">
       <nav class="nav">
-        <span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>收录查询</span><span class="tag">SEO</span>
+        <span class="dot"></span><span class="title">OpenKee</span><span class="sep">/</span><span>SEO 体检</span><span class="tag">免费</span>
       </nav>
-      <div class="header"><h1>收录查询</h1><p>输入域名或 URL，查百度/Google/Bing 收录情况</p></div>
+      <div class="header"><h1>SEO 体检</h1><p>输入网址，检查 SEO 基础健康状况</p></div>
       <div class="search">
         <form onsubmit="go();return false">
-          <input type="text" id="inp" placeholder="example.com 或 https://example.com/page" autocomplete="off" />
-          <button type="submit" id="btn">查询</button>
+          <input type="text" id="inp" placeholder="example.com 或 https://example.com" autocomplete="off" />
+          <button type="submit" id="btn">体检</button>
         </form>
-        <div class="examples">试试：<button onclick="q('openkee.github.io')">openkee.github.io</button> · <button onclick="q('github.com')">github.com</button> · <button onclick="q('baidu.com')">baidu.com</button></div>
+        <div class="examples">试试：<button onclick="q('openkee.github.io')">openkee.github.io</button> · <button onclick="q('github.com')">github.com</button></div>
       </div>
-      <div class="loading" id="ld">查询中…</div>
+      <div class="loading" id="ld">检测中…</div>
       <div class="error" id="er"></div>
       <div id="output"></div>
-      <footer>收录查询 — 通过多维度交叉检测，结果仅供参考</footer>
+      <footer>SEO 体检 — 纯前端检测，无需后端</footer>
     </div>
 
     <script>
       const $=id=>document.getElementById(id);
       function q(v){$('inp').value=v;go()}
 
-      // CORS proxy list
       const PROXIES=[
         u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
         u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
         u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
       ];
-
-      async function proxyFetch(url,timeout=10000){
+      async function fetchPage(url,timeout=12000){
         for(const mk of PROXIES){
-          try{
-            const r=await fetch(mk(url),{signal:AbortSignal.timeout(timeout)});
-            if(r.ok)return await r.text();
-          }catch{}
+          try{const r=await fetch(mk(url),{signal:AbortSignal.timeout(timeout)});if(r.ok)return await r.text()}catch{}
         }
-        throw new Error('代理不可用');
+        return null;
       }
 
-      function normalizeUrl(raw){
-        let u=raw.trim();
-        if(!/^https?:\/\//i.test(u))u='https://'+u;
-        try{return new URL(u).href}catch{return u}
-      }
-
-      function getDomain(url){try{return new URL(url).hostname}catch{return url}}
+      function norm(raw){let u=raw.trim();if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u)}catch{return null}}
+      function tag(html,re){return html.match(re)}
+      function tags(html,re){const m=html.match(new RegExp(re.source+'g',re.flags));return m||[]}
+      function esc(s){return s?.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')||''}
 
       async function go(){
         const raw=$('inp').value.trim();if(!raw)return;
-        const url=normalizeUrl(raw);
-        const domain=getDomain(url);
+        const u=norm(raw);if(!u){$('er').textContent='URL 格式不对';$('er').classList.add('on');return}
         const b=$('btn');b.disabled=true;
         $('output').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
 
         try{
-          const [google,bing,baidu]=await Promise.allSettled([
-            checkGoogle(url,domain),
-            checkBing(url,domain),
-            checkBaidu(url,domain),
-          ]);
-          render({url,domain,
-            google:google.status==='fulfilled'?google.value:{indexed:null,error:google.reason?.message||'失败'},
-            bing:bing.status==='fulfilled'?bing.value:{indexed:null,error:bing.reason?.message||'失败'},
-            baidu:baidu.status==='fulfilled'?baidu.value:{indexed:null,error:baidu.reason?.message||'失败'},
-          });
-        }catch(e){
-          $('er').textContent=e.message;$('er').classList.add('on');
-        }finally{b.disabled=false;$('ld').classList.remove('on')}
+          const checks=await analyze(u);
+          render(checks,u);
+        }catch(e){$('er').textContent=e.message;$('er').classList.add('on')}
+        finally{b.disabled=false;$('ld').classList.remove('on')}
       }
 
-      // Google: try multiple methods
-      async function checkGoogle(url,domain){
-        // Method 1: site: query
-        try{
-          const html=await proxyFetch(`https://www.google.com/search?q=site:${domain}&num=5&hl=zh-CN`);
-          if(html.includes('did not match any documents')||html.includes('没有找到和您查询'))return{indexed:false,method:'site'};
-          // Count results
-          const m=html.match(/About ([\d,]+)/i)||html.match(/约有 ([\d,]+)/);
-          return{indexed:true,count:m?m[1]:null,method:'site'};
-        }catch{}
+      async function analyze(u){
+        const origin=u.origin;
+        const url=u.href;
+        const results=[];
 
-        // Method 2: Google cache
-        try{
-          const html=await proxyFetch(`https://webcache.googleusercontent.com/search?q=cache:${domain}&hl=zh-CN`,8000);
-          if(html.length>1000&&!html.includes('not been indexed')&&!html.includes('404'))return{indexed:true,method:'cache'};
-        }catch{}
+        // Fetch main page
+        const pageStart=Date.now();
+        const html=await fetchPage(url);
+        const loadTime=Date.now()-pageStart;
+        if(!html)throw new Error('无法获取页面，请检查 URL 是否可访问');
 
-        // Method 3: info: query
-        try{
-          const html=await proxyFetch(`https://www.google.com/search?q=info:${domain}&num=1`);
-          if(html.length>5000&&!html.includes('did not match'))return{indexed:true,method:'info'};
-        }catch{}
+        // === BASICS ===
+        // HTTPS
+        results.push({cat:'基础',name:'HTTPS',status:u.protocol==='https:'?'pass':'fail',
+          val:u.protocol,tip:u.protocol!=='https:'?'建议启用 HTTPS，搜索引擎优先收录安全站点':''});
 
-        return{indexed:null,error:'查询失败'};
+        // Load time
+        results.push({cat:'基础',name:'响应时间',status:loadTime<1000?'pass':loadTime<3000?'warn':'fail',
+          val:`${loadTime}ms`,tip:loadTime>3000?'响应较慢，建议优化服务器或启用 CDN':''});
+
+        // Favicon
+        const hasFavicon=/<link[^>]*rel=["'](?:shortcut )?icon["']/i.test(html)||/\/favicon\.ico/i.test(html);
+        results.push({cat:'基础',name:'Favicon',status:hasFavicon?'pass':'warn',
+          val:hasFavicon?'已设置':'未检测到',tip:!hasFavicon?'建议添加 favicon，提升品牌识别度':''});
+
+        // === META ===
+        // Title
+        const titleM=tag(html,/<title[^>]*>([^<]*)<\/title>/i);
+        const title=titleM?titleM[1].trim():'';
+        const titleLen=[...title].length;
+        results.push({cat:'Meta',name:'Title',
+          status:!title?'fail':titleLen>60?'warn':titleLen<10?'warn':'pass',
+          val:title?`"${title}"（${titleLen}字）`:'缺失',
+          tip:!title?'必须设置 title':titleLen>60?'title 过长，建议控制在 30 字以内':titleLen<10?'title 过短，建议包含核心关键词':''});
+
+        // Description
+        const descM=tag(html,/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)||
+                     tag(html,/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i);
+        const desc=descM?descM[1].trim():'';
+        const descLen=[...desc].length;
+        results.push({cat:'Meta',name:'Description',
+          status:!desc?'fail':descLen>160?'warn':'pass',
+          val:desc?`"${desc.slice(0,80)}${descLen>80?'…':''}"（${descLen}字）`:'缺失',
+          tip:!desc?'必须设置 meta description':descLen>160?'描述过长，搜索引擎可能截断':''});
+
+        // Canonical
+        const canonicalM=tag(html,/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i);
+        results.push({cat:'Meta',name:'Canonical',status:canonicalM?'pass':'warn',
+          val:canonicalM?canonicalM[1]:'未设置',tip:!canonicalM?'建议设置 canonical 避免重复内容问题':''});
+
+        // Viewport
+        const viewportM=tag(html,/<meta[^>]*name=["']viewport["']/i);
+        results.push({cat:'Meta',name:'Viewport',status:viewportM?'pass':'fail',
+          val:viewportM?'已设置':'缺失',tip:!viewportM?'缺少 viewport 标签，移动端将无法适配':''});
+
+        // Charset
+        const charsetM=tag(html,/<meta[^>]*charset=["']?([^"' >]+)/i)||tag(html,/<meta[^>]*content=["'][^"']*charset=([^;"' ]+)/i);
+        results.push({cat:'Meta',name:'字符编码',status:charsetM?'pass':'warn',
+          val:charsetM?charsetM[1]:'未声明',tip:!charsetM?'建议声明 charset="UTF-8"':''});
+
+        // === OG / SOCIAL ===
+        const ogTitle=tag(html,/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i);
+        const ogDesc=tag(html,/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
+        const ogImage=tag(html,/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*)["']/i);
+        const ogUrl=tag(html,/<meta[^>]*property=["']og:url["'][^>]*content=["']([^"']*)["']/i);
+        const twitterCard=tag(html,/<meta[^>]*name=["']twitter:card["']/i);
+        const ogCount=[ogTitle,ogDesc,ogImage,ogUrl].filter(Boolean).length;
+        results.push({cat:'社交',name:'Open Graph',status:ogCount>=3?'pass':ogCount>=1?'warn':'fail',
+          val:`${ogCount}/4 项（title/desc/image/url）`,
+          tip:ogCount<3?'建议完善 OG 标签，社交分享时显示效果更好':''});
+        results.push({cat:'社交',name:'Twitter Card',status:twitterCard?'pass':'warn',
+          val:twitterCard?'已设置':'未设置',tip:!twitterCard?'建议添加 twitter:card 标签':''});
+
+        // === HEADINGS ===
+        const h1s=tags(html,/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+        const h2s=tags(html,/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+        results.push({cat:'内容',name:'H1 标签',
+          status:h1s.length===1?'pass':h1s.length===0?'fail':'warn',
+          val:`${h1s.length} 个`,tip:h1s.length===0?'缺少 H1 标签':h1s.length>1?'H1 应该只有 1 个':''});
+
+        // H2+
+        const headingCount=['h2','h3','h4','h5','h6'].reduce((s,t)=>{
+          return s+tags(html,new RegExp(`<${t}[^>]*>`,'gi')).length;
+        },0);
+        results.push({cat:'内容',name:'子标题（H2-H6）',status:headingCount>0?'pass':'warn',
+          val:`${headingCount} 个`,tip:headingCount===0?'建议使用子标题组织内容结构':''});
+
+        // === IMAGES ===
+        const imgs=tags(html,/<img[^>]*>/gi);
+        const imgsNoAlt=imgs.filter(i=>!/alt=["'][^"']+["']/i.test(i));
+        const imgTotal=imgs.length;
+        const imgNoAltCount=imgsNoAlt.length;
+        results.push({cat:'内容',name:'图片 alt',
+          status:imgTotal===0?'pass':imgNoAltCount===0?'pass':imgNoAltCount<3?'warn':'fail',
+          val:imgTotal===0?'无图片':`${imgTotal} 张图片，${imgNoAltCount} 张缺 alt`,
+          tip:imgNoAltCount>0?`有 ${imgNoAltCount} 张图片缺少 alt 文本，影响可访问性和图片搜索':''});
+
+        // === LINKS ===
+        const links=tags(html,/<a[^>]*href=["']([^"']+)["'][^>]*>/gi);
+        const internalLinks=links.filter(l=>l.includes(u.hostname)||l.startsWith('/')||l.startsWith('#')||l.startsWith('.'));
+        const externalLinks=links.filter(l=>!internalLinks.includes(l));
+        results.push({cat:'内容',name:'内部链接',status:internalLinks.length>0?'pass':'warn',
+          val:`${internalLinks.length} 个`,tip:internalLinks.length===0?'建议添加内部链接提升站内导航':''});
+
+        // === STRUCTURED DATA ===
+        const jsonLd=tags(html,/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        results.push({cat:'技术',name:'结构化数据（JSON-LD）',status:jsonLd.length>0?'pass':'warn',
+          val:jsonLd.length>0?`${jsonLd.length} 个块`:'未检测到',
+          tip:jsonLd.length===0?'建议添加 JSON-LD 结构化数据，帮助搜索引擎理解页面':''});
+
+        // === ROBOTS ===
+        const robotsMeta=tag(html,/<meta[^>]*name=["']robots["'][^>]*content=["']([^"']*)["']/i);
+        const robotsVal=robotsMeta?robotsMeta[1].toLowerCase():'';
+        const isNoindex=robotsVal.includes('noindex');
+        const isNofollow=robotsVal.includes('nofollow');
+        results.push({cat:'技术',name:'Robots Meta',status:isNoindex?'fail':robotsMeta?'pass':'warn',
+          val:robotsMeta?robotsMeta[1]:'未设置（默认 index,follow）',
+          tip:isNoindex?'⚠️ 页面设置了 noindex，搜索引擎不会收录！':!robotsMeta?'默认允许收录，如需精确控制建议显式设置':''});
+
+        // === FETCH ROBOTS.TXT ===
+        const robotsTxt=await fetchPage(`${origin}/robots.txt`).catch(()=>null);
+        results.push({cat:'技术',name:'robots.txt',status:robotsTxt?'pass':'warn',
+          val:robotsTxt?`${robotsTxt.split('\n').length} 行`:'不存在',
+          tip:!robotsTxt?'建议创建 robots.txt 文件':''});
+        if(robotsTxt){
+          const hasSitemap=/^sitemap:/im.test(robotsTxt);
+          results.push({cat:'技术',name:'robots.txt 中的 Sitemap',status:hasSitemap?'pass':'warn',
+            val:hasSitemap?'已声明':'未声明',
+            tip:!hasSitemap?'建议在 robots.txt 中声明 Sitemap 地址':''});
+        }
+
+        // === FETCH SITEMAP ===
+        const sitemap=await fetchPage(`${origin}/sitemap.xml`).catch(()=>null);
+        const hasSitemapXml=sitemap&&sitemap.includes('<urlset')||sitemap&&sitemap.includes('<sitemapindex');
+        results.push({cat:'技术',name:'sitemap.xml',status:hasSitemapXml?'pass':'warn',
+          val:hasSitemapXml?'存在':'不存在或格式错误',
+          tip:!hasSitemapXml?'建议创建 sitemap.xml 帮助搜索引擎发现所有页面':''});
+
+        return results;
       }
 
-      // Bing: multiple methods
-      async function checkBing(url,domain){
-        // Method 1: site: query
-        try{
-          const html=await proxyFetch(`https://www.bing.com/search?q=site:${domain}&count=5`);
-          if(html.includes('No results found')||html.includes('没有找到'))return{indexed:false,method:'site'};
-          // Check for result count or result items
-          if(html.includes('b_algo')||html.includes('sb_count'))return{indexed:true,method:'site'};
-          // If we got HTML with reasonable length, likely indexed
-          if(html.length>10000)return{indexed:true,method:'heuristic'};
-        }catch{}
-
-        // Method 2: url: query
-        try{
-          const html=await proxyFetch(`https://www.bing.com/search?q=url:${domain}&count=1`);
-          if(html.length>5000&&!html.includes('No results found'))return{indexed:true,method:'url'};
-        }catch{}
-
-        return{indexed:null,error:'查询失败'};
-      }
-
-      // Baidu: multiple methods
-      async function checkBaidu(url,domain){
-        // Method 1: site: query
-        try{
-          const html=await proxyFetch(`https://www.baidu.com/s?wd=site:${domain}&rn=5`);
-          if(html.includes('没有找到该URL')||html.includes('抱歉，没有找到')||html.includes('找不到该页面'))return{indexed:false,method:'site'};
-          // Check for results
-          if(html.includes('result')||html.includes('百度为您找到')||html.length>15000){
-            const m=html.match(/百度为您找到相关结果约?([\d,]+)个/);
-            return{indexed:true,count:m?m[1]:null,method:'site'};
-          }
-        }catch{}
-
-        // Method 2: exact URL search
-        try{
-          const html=await proxyFetch(`https://www.baidu.com/s?wd=${encodeURIComponent(domain)}&rn=1`);
-          if(html.length>10000)return{indexed:true,method:'keyword'};
-        }catch{}
-
-        return{indexed:null,error:'查询失败'};
-      }
-
-      function render(d){
-        const{url,domain,google,bing,baidu}=d;
+      function render(checks,u){
         let html='';
 
-        html+=`<div class="url-bar"><span class="icon">🔗</span><a href="${url}" target="_blank">${url}</a></div>`;
+        // Score
+        const pass=checks.filter(c=>c.status==='pass').length;
+        const total=checks.length;
+        const score=Math.round(pass/total*100);
+        const cls=score>=80?'g':score>=50?'w':'b';
+        const label=score>=80?'健康':score>=50?'需要改进':'问题较多';
 
-        const engines=[
-          {name:'Google',icon:'🔍',r:google},
-          {name:'Bing',icon:'🅱️',r:bing},
-          {name:'百度',icon:'熊',r:baidu},
-        ];
-
-        html+=`<div class="results">${engines.map(e=>{
-          const r=e.r;
-          let cls,text,detail='';
-          if(r.error){cls='unknown';text='查询失败';detail=r.error}
-          else if(r.indexed===true){cls='yes';text='已收录';detail=r.count?`${r.count} 条`:r.method||''}
-          else if(r.indexed===false){cls='no';text='未收录'}
-          else{cls='unknown';text='无法判断'}
-          return`<div class="result">
-            <div class="engine">${e.icon} ${e.name}</div>
-            <div class="status ${cls}">${text}</div>
-            ${detail?`<div class="detail">${detail}</div>`:''}
-          </div>`;
-        }).join('')}</div>`;
-
-        // Summary
-        const indexed=engines.filter(e=>e.r.indexed===true).length;
-        const failed=engines.filter(e=>e.r.error).length;
-        const tags=[];
-        if(indexed===3)tags.push(['全部收录 ✅','g']);
-        else if(indexed===2)tags.push(['收录 2/3','w']);
-        else if(indexed===1)tags.push(['仅收录 1/3','w']);
-        else if(failed===3)tags.push(['查询异常，请重试','b']);
-        else tags.push(['均未收录','b']);
-
-        html+=`<div class="summary">
-          <div class="label">汇总 · ${domain}</div>
-          <div class="tags">${tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+        html+=`<div class="score-bar">
+          <div class="score-num ${cls}">${score}</div>
+          <div class="score-info">
+            <div class="label">${label} · ${pass}/${total} 项通过</div>
+            <div class="sub">${u.hostname}</div>
+          </div>
         </div>`;
+
+        // Group by category
+        const cats={};
+        for(const c of checks){
+          if(!cats[c.cat])cats[c.cat]=[];
+          cats[c.cat].push(c);
+        }
+
+        for(const [cat,items] of Object.entries(cats)){
+          html+=`<div class="section"><div class="section-title">${cat}</div>`;
+          for(const c of items){
+            const icon=c.status==='pass'?'✓':c.status==='warn'?'⚠':'✗';
+            html+=`<div class="check">
+              <div class="icon ${c.status}">${icon}</div>
+              <div class="body">
+                <div class="name">${c.name}</div>
+                ${c.val?`<div class="val">${esc(c.val)}</div>`:''}
+                ${c.tip?`<div class="tip">${esc(c.tip)}</div>`:''}
+              </div>
+            </div>`;
+          }
+          html+=`</div>`;
+        }
 
         $('output').innerHTML=html;
       }
