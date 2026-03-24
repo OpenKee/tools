@@ -100,10 +100,10 @@ function randomArt(){
   document.getElementById('moreBtn').style.display='none';
   document.getElementById('ld').classList.add('on');
   shown=0;
-  // Random department
-  var depts=[11,21,6,13,17,23,1,7,2,3,4,5,8,9,10,14,15,16,18,19,20,22];
-  var dept=depts[Math.floor(Math.random()*depts.length)];
-  fetch(API+'/objects?departmentIds='+dept+'&hasImages=true')
+  // Random search term
+  var terms=['painting','sculpture','portrait','landscape','vase','jewelry','armor','photograph','drawing','ceramic','tapestry','furniture','mosaic','statue','bust'];
+  var term=terms[Math.floor(Math.random()*terms.length)];
+  fetch(API+'/search?q='+term+'&hasImages=true')
     .then(function(r){return r.json()})
     .then(function(d){
       allIds=d.objectIDs||[];
