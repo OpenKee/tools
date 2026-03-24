@@ -132,7 +132,7 @@
           desc: { en: 'Time zone bridge — compare times across regions.', zh: '时区桥梁 — 跨区域时间对照。' },
         },
         {
-          name: 'SEO 体检', type: 'data', typeClass: 'data',
+          name: 'SEO 体检', slug: 'seo-index', type: 'data', typeClass: 'data',
           desc: { en: 'Check your site SEO health — meta, headings, images, structured data.', zh: '检查网站 SEO 健康状况：Meta 标签、标题层级、图片 alt、结构化数据。' },
         },
         {
@@ -170,14 +170,14 @@
       }
 
       function render() {
-        const folder = name => 'apps/' + name.toLowerCase().replace(/\s+/g, '-') + '/';
+        const folder = p => 'apps/' + (p.slug || p.name.toLowerCase().replace(/\s+/g, '-')) + '/';
         projectGrid.innerHTML = PROJECTS.map(p => `
           <div class="card">
             <span class="card-tag ${p.typeClass}">${t(p.typeClass)}</span>
             <div class="card-name">${p.name}</div>
             <div class="card-desc">${p.desc[lang]}</div>
             <div class="card-links">
-              <a class="card-link" href="${folder(p.name)}">${t('open')}</a>
+              <a class="card-link" href="${folder(p)}">${t('open')}</a>
             </div>
           </div>
         `).join('');
