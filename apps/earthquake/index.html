@@ -49,8 +49,7 @@ body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);bac
 footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd);font-size:.62rem;color:var(--mt);display:flex;justify-content:space-between}
 
 /* Leaflet dark override */
-.leaflet-container{background:#0f0f23}
-.leaflet-tile{filter:brightness(.6) invert(1) contrast(3) hue-rotate(200deg) saturate(.3) brightness(.7)}
+.leaflet-container{background:#1a1a2e}
 .leaflet-popup-content-wrapper{background:var(--sf);color:var(--tx);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .leaflet-popup-tip{background:var(--sf)}
 .leaflet-popup-content{font-family:"Inter",sans-serif;font-size:.78rem}
@@ -88,7 +87,7 @@ var P='day',M=0,markers=[],map;
 // Init map
 map=L.map('map',{zoomControl:false,attributionControl:false}).setView([20,0],2);
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cnL.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);size=1L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);scale=1L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);style=7L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);x={x}L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);y={y}L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);z={z}',{subdomains:['1','2','3','4'],maxZoom:18}).addTo(map);
 
 function sp(p){P=p;document.querySelectorAll('.fbtn:not([data-m])').forEach(function(b){b.classList.toggle('on',b.textContent.indexOf(p==='day'?'24':p==='week'?'7':'30')>=0)});ld_()}
 function sm(m){M=m;document.querySelectorAll('.fbtn[data-m]').forEach(function(b){b.classList.toggle('on',parseFloat(b.dataset.m)===m)});ld_()}
