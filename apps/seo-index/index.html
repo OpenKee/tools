@@ -106,7 +106,20 @@
 
     <script>
       const $=id=>document.getElementById(id);
-      const PROXY='https://api.allorigins.win/raw?url=';
+      const PROXIES=[
+        u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+      ];
+      async function proxyFetch(url){
+        for(const mk of PROXIES){
+          try{
+            const r=await fetch(mk(url),{signal:AbortSignal.timeout(8000)});
+            if(r.ok)return await r.text();
+          }catch{}
+        }
+        throw new Error('所有代理均不可用');
+      }
       let history=[];
 
       function q(v){$('inp').value=v;go()}
@@ -139,8 +152,7 @@
 
       async function checkGoogle(domain,url){
         try{
-          const r=await fetch(PROXY+encodeURIComponent(`https://www.google.com/search?q=site:${encodeURIComponent(url)}&num=1`));
-          const html=await r.text();
+          const html=await proxyFetch(`https://www.google.com/search?q=site:${encodeURIComponent(url)}&num=1`);
           // Check if results exist
           const hasResults=!html.includes('did not match any documents')&&!html.includes('没有找到和您查询的');
           const countMatch=html.match(/About ([\d,]+) results/i)||html.match(/约有 ([\d,]+) 条结果/);
@@ -150,8 +162,7 @@
 
       async function checkBing(domain,url){
         try{
-          const r=await fetch(PROXY+encodeURIComponent(`https://www.bing.com/search?q=site:${encodeURIComponent(url)}&count=1`));
-          const html=await r.text();
+          const html=await proxyFetch(`https://www.bing.com/search?q=site:${encodeURIComponent(url)}&count=1`);
           const hasResults=html.includes('sb_count')||html.includes('resultCount');
           const countMatch=html.match(/([\d,]+) results/)||html.match(/([\d,]+) results?/)||html.match(/<span class="sb_count">([\d,.]+)<\/span>/);
           return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.bing.com/search?q=site:${encodeURIComponent(url)}`};
@@ -160,8 +171,7 @@
 
       async function checkBaidu(domain,url){
         try{
-          const r=await fetch(PROXY+encodeURIComponent(`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}&rn=1`));
-          const html=await r.text();
+          const html=await proxyFetch(`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}&rn=1`);
           const hasResults=!html.includes('没有找到该URL')&&!html.includes('抱歉，没有找到');
           const countMatch=html.match(/百度为您找到相关结果约?([\d,]+)个/)||html.match(/找到相关结果([\d,.]+)/);
           return{indexed:hasResults,count:countMatch?countMatch[1]:null,searchUrl:`https://www.baidu.com/s?wd=site:${encodeURIComponent(domain)}`};
