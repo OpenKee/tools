@@ -87,7 +87,16 @@ a{color:var(--tx);text-decoration:none}
 <input type="text" id="inp" placeholder="输入电影名…" autocomplete="off"/>
 <button type="submit" id="btn">搜索</button>
 </form>
+<div style="display:flex;gap:.5rem;margin-top:.5rem">
+  <select id="typeFilter" style="flex:1;height:2rem;background:#111;border:1px solid #222;color:#e8e8e8;border-radius:6px;font:inherit;font-size:.78rem;padding:0 .5rem">
+    <option value="">全部类型</option>
+    <option value="movie">电影</option>
+    <option value="series">剧集</option>
+  </select>
+  <input type="text" id="yearInput" placeholder="年份（可选）" style="width:100px;height:2rem;background:#111;border:1px solid #222;color:#e8e8e8;border-radius:6px;font:inherit;font-size:.78rem;padding:0 .5rem" maxlength="4">
 </div>
+</div>
+<div style="text-align:center;font-size:.72rem;color:#555;margin-top:.4rem;padding:0 1.5rem">支持英文搜索 · 中文片名建议用英文名搜索（如 Inception 而非 盗梦空间）</div>
 
 <div class="loading" id="ld">搜索中…</div>
 <div class="error" id="er"></div>
@@ -112,7 +121,11 @@ function go(){
   var q=$('inp').value.trim();if(!q)return;
   var btn=$('btn');btn.disabled=true;
   $('out').innerHTML='';$('er').classList.remove('on');$('ld').classList.add('on');
-  fetch('https://www.omdbapi.com/?s='+encodeURIComponent(q)+'&apikey='+KEY+'&type=movie')
+  var type=$('typeFilter').value||'movie';
+  var year=$('yearInput').value;
+  var url='https://www.omdbapi.com/?s='+encodeURIComponent(q)+'&apikey='+KEY+'&type='+type;
+  if(year)url+='&y='+year;
+  fetch(url)
     .then(function(r){return r.json()})
     .then(function(d){
       $('ld').classList.remove('on');
