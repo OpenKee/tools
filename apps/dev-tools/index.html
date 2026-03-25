@@ -162,7 +162,7 @@ textarea::placeholder{color:var(--mt)}
 <div class="stat"><div class="v" id="s-time">0ms</div><div class="l">Time</div></div>
 </div>
 
-<div class="main">
+<div class="main" id="mainPanel">
 <div class="panel" style="position:relative">
 <div class="panel-header"><span>Input CSS</span><div class="actions"><button onclick="loadSample()">Sample</button><button onclick="clearInput()">Clear</button></div></div>
 <textarea id="input" placeholder="Paste your CSS here..." spellcheck="false"></textarea>
@@ -767,6 +767,7 @@ function loadHtmlSample() {
     <li>Item 1</li>
     <li>Item 2</li>
   </ul>
+</div>
 </body>
 </html>`;
   compressHtml();
@@ -950,12 +951,12 @@ function updateColor(hex) {
 const tools = ['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
 function switchTool(tool) {
   document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
-  document.querySelectorAll(`.tool-tab[data-tool="${tool}"]`).forEach(t => t.classList.add('on'));
-  tools.forEach(t => {
-    const panels = {css:'main',html:'htmlPanel',json:'jsonPanel',sql:'sqlPanel',encode:'encodePanel',hash:'hashPanel',jwt:'jwtPanel',md:'mdPanel',regex:'regexPanel',diff:'diffPanel',lorem:'loremPanel',uuid:'uuidPanel',timestamp:'timestampPanel',color:'colorPanel'};
-    const el = document.getElementById(panels[t]) || document.querySelector('.main');
-    if (panels[t] === 'main') { el.style.display = t === tool ? (t==='css'?'grid':'flex') : 'none'; }
-    else { el.style.display = t === tool ? 'flex' : 'none'; }
+  document.querySelectorAll('.tool-tab[data-tool="'+tool+'"]').forEach(t => t.classList.add('on'));
+  var panels = {css:'mainPanel',html:'htmlPanel',json:'jsonPanel',sql:'sqlPanel',encode:'encodePanel',hash:'hashPanel',jwt:'jwtPanel',md:'mdPanel',regex:'regexPanel',diff:'diffPanel',lorem:'loremPanel',uuid:'uuidPanel',timestamp:'timestampPanel',color:'colorPanel'};
+  Object.keys(panels).forEach(function(k){
+    var el = document.getElementById(panels[k]);
+    if (!el) return;
+    el.style.display = (k === tool) ? (k==='css' ? 'grid' : 'flex') : 'none';
   });
 }
 
@@ -968,7 +969,7 @@ document.getElementById('jwtInput').addEventListener('input', () => { clearTimeo
 document.getElementById('regexPattern').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
 document.getElementById('regexFlags').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
 document.getElementById('regexInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-document.getElementById('colorPick').addEventListener('input', (e) => { colorHex.value = e.target.value; updateColor(e.target.value); });
+document.getElementById('colorPick').addEventListener('input', (e) => { document.getElementById('colorHex').value = e.target.value; updateColor(e.target.value); });
 document.getElementById('colorHex').addEventListener('input', (e) => { updateColor(e.target.value); });
 // Initialize color
 updateColor('#3b82f6');
