@@ -265,7 +265,55 @@ $('colPick').addEventListener('input',e=>{$('colHex').value=e.target.value;updCo
 $('colHex').addEventListener('input',e=>updColor(e.target.value));
 // i18n
 let lang=localStorage.getItem('devtools-lang')||'en';
-const i18n={en:{c:'Compress',ca:'Clear All',com:'Comments',ws:'Whitespace',col:'Colors',zer:'Zeros'},zh:{c:'压缩',ca:'全部清空',com:'注释',ws:'空白',col:'颜色',zer:'零值'}};
+const i18n={
+en:{},
+zh:{
+// Sidebar
+'CSS Compressor':'CSS 压缩','HTML Compressor':'HTML 压缩','JSON Formatter':'JSON 格式化','SQL Formatter':'SQL 格式化',
+'Encode / Decode':'编码转换','Hash Generator':'哈希生成','JWT Decoder':'JWT 解码',
+'Markdown Preview':'Markdown 预览','Regex Tester':'正则测试','Diff Checker':'文本对比','Lorem Ipsum':'占位文本',
+'UUID Generator':'UUID 生成','Timestamp':'时间戳','Color Tools':'颜色工具',
+'Code':'代码','Encoding':'编码','Text':'文本','Utility':'工具',
+// Stats
+'Original':'原始','Minified':'压缩后','Formatted':'格式化','Saved':'节省','Lines':'行数','Time':'耗时',
+'Input':'输入','Output':'输出','Decoded':'解码','Chars':'字符','Words':'词数','Length':'长度',
+'Count':'数量','HEX':'HEX','RGB':'RGB','HSL':'HSL','Pattern':'模式','Matches':'匹配',
+// Buttons
+'Sample':'示例','Clear':'清空','Copy':'复制','Download':'下载',
+'Compress':'压缩','Clear All':'全部清空','Compare':'对比','Set':'设为',
+// Panel headers
+'Minified':'压缩结果','Formatted':'格式化','Preview':'预览','Results':'结果',
+'Decoded':'解码结果','Differences':'差异','UUIDs':'UUID 列表',
+// Labels
+'Input JSON':'输入 JSON','Input CSS':'输入 CSS','Input HTML':'输入 HTML','Input SQL':'输入 SQL',
+'Minified Output':'压缩结果','Formatted Output':'格式化结果',
+'Text A':'文本 A','Text B':'文本 B','Diff':'差异',
+'Header':'头部','Payload':'载荷','Signature':'签名',
+'Timestamp → Date':'时间戳 → 日期','Date → Timestamp':'日期 → 时间戳','Now':'当前时间',
+'Comments':'注释','Whitespace':'空白','Colors':'颜色','Zeros':'零值',
+// Placeholders
+'Paste CSS...':'粘贴 CSS...','Paste HTML...':'粘贴 HTML...','Paste JSON...':'粘贴 JSON...',
+'Paste SQL...':'粘贴 SQL...','Paste JWT...':'粘贴 JWT...',
+'Text to encode/decode...':'输入编码/解码文本...','Text to hash...':'输入要哈希的文本...',
+'Test string...':'输入测试文本...','Write Markdown...':'编写 Markdown...',
+'Original...':'原文...','Modified...':'修改后...',
+'Unix timestamp':'Unix 时间戳','Flags':'标志',
+'Pattern (e.g. \\d+)':'模式 (如 \\d+)',
+'Click a button...':'点击按钮生成...','Click generate...':'点击生成...',
+'Drop .css file':'拖放 .css 文件',
+// Encode buttons
+'Base64 →':'Base64 编码 →','← Base64':'← Base64 解码',
+'URL →':'URL 编码 →','← URL':'← URL 解码',
+'Unicode →':'Unicode 编码 →','← Unicode':'← Unicode 解码',
+// Lorem buttons
+'1 Para':'1 段落','3 Paras':'3 段落','5 Paras':'5 段落','10 Sent':'10 句子','50 Words':'50 词',
+// UUID
+' Upper':' 大写',
+// Hash labels
+'SHA-1':'SHA-1','SHA-256':'SHA-256','SHA-512':'SHA-512',
+// Color
+'HEX':'HEX','RGB':'RGB','HSL':'HSL',
+}};
 function applyLang(){const t=i18n[lang];document.querySelector('.btn.p').innerHTML='🔧 '+t.c;document.querySelector('.btn.d').textContent=t.ca;const ol=document.querySelectorAll('.options label');if(ol[0])ol[0].lastChild.textContent=' '+t.com;if(ol[1])ol[1].lastChild.textContent=' '+t.ws;if(ol[2])ol[2].lastChild.textContent=' '+t.col;if(ol[3])ol[3].lastChild.textContent=' '+t.zer;document.querySelectorAll('.lt').forEach(el=>{el.style.display=lang==='zh'?(el.classList.contains('zh')?'inline':'none'):(el.classList.contains('en')?'inline':'none')})}
 function toggleLang(){lang=lang==='en'?'zh':'en';localStorage.setItem('devtools-lang',lang);applyLang()}
 applyLang();
