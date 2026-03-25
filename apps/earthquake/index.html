@@ -171,13 +171,9 @@ function renderList(q){
 
 function flyTo(lat,lon){if(map)map.flyTo({center:[lon,lat],zoom:6,duration:1500})}
 
-// Fetch token from server
-fetch('http://10.0.0.2:3456/token').then(function(r){return r.json()}).then(function(d){
-  if(d.token)initMap(d.token);
-}).catch(function(){
-  // Fallback: show manual input
-  document.getElementById('tokenOverlay').classList.remove('hidden');
-});
+// Load saved token or show input
+var saved = localStorage.getItem('mb_token');
+if (saved) { initMap(saved); } else { document.getElementById('tokenOverlay').classList.remove('hidden'); }
 </script>
 </body>
 </html>
