@@ -32,7 +32,7 @@ body{font-family:var(--sans);color:var(--tx);background:var(--bg);min-height:100
 .sidebar .tool-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
 .sidebar .tool-tab.on{background:var(--bl);color:#fff}
 .tool-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.panel{display:flex;flex-direction:column;overflow:hidden;flex:1}
+.panel{display:flex;flex-direction:column;overflow:hidden;flex:1;position:relative}
 .panel-header{padding:.5rem .8rem;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0}
 .panel-header .actions{display:flex;gap:.3rem}
 .panel-header button{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.65rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s}
@@ -54,8 +54,8 @@ textarea::placeholder{color:var(--mt)}
 .options input[type=checkbox]{accent-color:var(--gn);width:14px;height:14px}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bl);color:#fff;padding:.5rem 1.2rem;border-radius:8px;font-size:.78rem;font-weight:600;transition:transform .3s ease;z-index:100}
 .toast.show{transform:translateX(-50%) translateY(0)}
-.drop-zone{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--bl);z-index:10;font-size:1rem;color:var(--bl);font-weight:600}
-.drop-zone.active{display:flex}
+.drop-zone{position:absolute;inset:0;display:none !important;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--bl);z-index:10;font-size:1rem;color:var(--bl);font-weight:600}
+.drop-zone.active{display:flex !important}
 .json-panel,.html-panel,.sql-panel{flex:1;overflow:hidden}
 .md-panel{flex:1;overflow:hidden}
 .encode-panel{flex:1;overflow:hidden}
