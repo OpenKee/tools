@@ -25,7 +25,7 @@ body{font-family:"Inter",system-ui,sans-serif;color:var(--tx);background:var(--b
 #map{height:50vh;min-height:300px;background:var(--sf)}
 .list{max-height:40vh;overflow-y:auto}
 .list::-webkit-scrollbar{width:4px}.list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-.item{display:flex;align-items:center;gap:.7rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--bd);transition:background .15s}
+.item{display:flex;align-items:center;gap:.7rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--bd);transition:background .15s;cursor:pointer}
 .item:hover{background:var(--sf)}
 .item .mag{width:2.5rem;height:2.5rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0}
 .item .mag.g{background:rgba(74,222,128,.12);color:var(--gn)}
@@ -62,19 +62,19 @@ footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd)
 <footer><span>USGS Earthquake Hazards Program</span><span id="ft"></span></footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-var API='https://earthquake.usgs.gov/fdsnws/event/1/query';
-var P='day',M=0,mk=[];
-var tileUrl='https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}';
-var map=L.map('map',{zoomControl:false}).setView([20,0],2);
-L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer(tileUrl,{maxZoom:18}).addTo(map);
+var tileUrl = 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}';
+var API = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
+var P = 'day', M = 0, mk = [];
+var map = L.map('map', {zoomControl: false}).setView([20, 0], 2);
+L.control.zoom({position: 'topright'}).addTo(map);
+L.tileLayer(tileUrl, {subdomains: ['1','2','3','4'], maxZoom: 18}).addTo(map);
 function sp(p){P=p;document.querySelectorAll('.fbtn:not([data-m])').forEach(function(b){b.classList.toggle('on',b.textContent.indexOf(p==='day'?'24':p==='week'?'7':'30')>=0)});ld_()}
 function sm(m){M=m;document.querySelectorAll('.fbtn[data-m]').forEach(function(b){b.classList.toggle('on',parseFloat(b.dataset.m)===m)});ld_()}
 function mc(m){return m<3?'g':m<5?'y':m<6?'o':'r'}
 function ago(t){var d=Math.round((Date.now()-t)/60000);if(d<60)return d+'m';if(d<1440)return Math.round(d/60)+'h';return Math.round(d/1440)+'d'}
 function ld_(){
   document.getElementById('ld').classList.add('on');
-  var end=new Date(),start=new Date();
+  var end=new Date(), start=new Date();
   if(P==='day')start.setDate(start.getDate()-1);
   else if(P==='week')start.setDate(start.getDate()-7);
   else start.setDate(start.getDate()-30);
@@ -82,7 +82,7 @@ function ld_(){
   fetch(url).then(function(r){return r.json()}).then(function(d){
     document.getElementById('ld').classList.remove('on');
     var q=d.features||[];
-    renderStats(q);renderMap(q);renderList(q);
+    renderStats(q); renderMap(q); renderList(q);
     document.getElementById('upd').textContent=new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('ft').textContent=q.length+' events';
   }).catch(function(e){document.getElementById('ld').textContent='Error: '+e.message})
@@ -96,7 +96,7 @@ function renderStats(q){
 function renderMap(q){
   mk.forEach(function(m){map.removeLayer(m)});mk=[];
   q.forEach(function(e){
-    var p=e.properties,c=e.geometry.coordinates,m=p.mag||1;
+    var p=e.properties, c=e.geometry.coordinates, m=p.mag||1;
     var r=Math.max(4,m*3);
     var color=m<3?'#4ade80':m<5?'#facc15':m<6?'#fb923c':'#ef4444';
     var marker=L.circleMarker([c[1],c[0]],{radius:r,fillColor:color,color:color,weight:1,opacity:.8,fillOpacity:.5}).addTo(map);
@@ -108,11 +108,12 @@ function renderList(q){
   var s=q.slice().sort(function(a,b){return b.properties.time-a.properties.time});
   var html='';
   s.slice(0,50).forEach(function(e){
-    var p=e.properties,m=p.mag||0;
-    html+='<div class="item"><div class="mag '+mc(m)+'">'+(m?m.toFixed(1):'?')+'</div><div class="info"><div class="place">'+(p.place||'Unknown')+'</div><div class="meta">'+Math.round(e.geometry.coordinates[2])+'km deep</div></div><div class="ago">'+ago(p.time)+'</div></div>';
+    var p=e.properties, m=p.mag||0, c=e.geometry.coordinates;
+    html+='<div class="item" onclick="flyTo('+c[1]+','+c[0]+')"><div class="mag '+mc(m)+'">'+(m?m.toFixed(1):'?')+'</div><div class="info"><div class="place">'+(p.place||'Unknown')+'</div><div class="meta">'+Math.round(c[2])+'km deep</div></div><div class="ago">'+ago(p.time)+'</div></div>';
   });
   document.getElementById('list').innerHTML=html;
 }
+function flyTo(lat,lon){map.flyTo([lat,lon],6,{duration:1.5})}
 ld_();
 </script>
 </body>
