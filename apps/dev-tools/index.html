@@ -14,156 +14,109 @@ body{font-family:var(--sans);color:var(--tx);background:var(--bg);min-height:100
 .nav{padding:.8rem 1.5rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;border-bottom:1px solid var(--bd);background:var(--sf)}
 .nav b{font-weight:700;font-size:1rem;letter-spacing:-.02em}
 .nav .sep{color:var(--mt)}
-.nav .r{margin-left:auto;display:flex;gap:.5rem;align-items:center}
-.lt.zh{display:none}.lt.show-zh .en{display:none}.lt.show-zh .zh{display:inline}
-.hero{text-align:center;padding:3rem 1.5rem 2rem;border-bottom:1px solid var(--bd)}
-.hero h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.04em;margin-bottom:.5rem}
-.hero h1 span{color:var(--gn)}
-.hero p{color:var(--mt);font-size:.9rem;max-width:50ch;margin:0 auto;line-height:1.6}
-
+.nav .r{margin-left:auto}
+.hero{text-align:center;padding:2rem 1.5rem 1.5rem;border-bottom:1px solid var(--bd)}
+.hero h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.04em;margin-bottom:.4rem}
+.hero h1 span{color:var(--bl)}
+.hero p{color:var(--mt);font-size:.85rem;max-width:50ch;margin:0 auto;line-height:1.5}
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-bottom:1px solid var(--bd)}
+.stat{background:var(--sf);padding:.6rem .8rem;text-align:center}
+.stat .v{font-size:1.2rem;font-weight:800;font-family:var(--mono)}
+.stat .l{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem}
+.stat .v.gn{color:var(--gn)}
 .app-layout{display:flex;flex:1;overflow:hidden}
-.sidebar{width:170px;min-width:170px;background:var(--sf);border-right:1px solid var(--bd);padding:.5rem;overflow-y:auto;display:flex;flex-direction:column;gap:.15rem;flex-shrink:0}
-.sidebar-group{margin-bottom:.6rem}
-.sidebar-label{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:.3rem .5rem .2rem}
+.sidebar{width:170px;min-width:170px;background:var(--sf);border-right:1px solid var(--bd);padding:.5rem;overflow-y:auto;flex-shrink:0}
+.sidebar-group{margin-bottom:.5rem}
+.sidebar-label{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:.3rem .5rem .15rem}
 .sidebar .tool-tab{width:100%;text-align:left;background:0;border:none;color:var(--mt);font:inherit;font-size:.75rem;padding:.35rem .6rem;border-radius:6px;cursor:pointer;transition:all .15s;display:block}
 .sidebar .tool-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
 .sidebar .tool-tab.on{background:var(--bl);color:#fff}
 .tool-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-
-.tool-tab{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.78rem;font-weight:500;padding:.35rem .9rem;border-radius:6px;cursor:pointer;transition:all .15s}
-.tool-tab:hover{border-color:var(--bd2);color:var(--tx)}
-.tool-tab.on{background:var(--bl);border-color:var(--bl);color:#fff}
-.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-bottom:1px solid var(--bd)}
-.stat{background:var(--sf);padding:.8rem 1rem;text-align:center}
-.stat .v{font-size:1.3rem;font-weight:800;font-family:var(--mono)}
-.stat .l{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-top:.2rem}
-.stat .v.gn{color:var(--gn)}
-.stat .v.rd{color:var(--rd)}
-.main{flex:1;overflow:hidden;display:flex;flex-direction:column}.css-main{display:grid;grid-template-columns:1fr 50px 1fr}
 .panel{display:flex;flex-direction:column;overflow:hidden;flex:1}
-.panel-header{padding:.6rem 1rem;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0}
+.panel-header{padding:.5rem .8rem;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0}
 .panel-header .actions{display:flex;gap:.3rem}
 .panel-header button{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.65rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s}
 .panel-header button:hover{border-color:var(--bd2);color:var(--tx)}
-textarea{flex:1;width:100%;resize:none;background:var(--bg);color:var(--tx);border:none;padding:1rem;font-family:var(--mono);font-size:.82rem;line-height:1.7;outline:none;tab-size:2}
+textarea{flex:1;width:100%;resize:none;background:var(--bg);color:var(--tx);border:none;padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7;outline:none;tab-size:2}
 textarea::placeholder{color:var(--mt)}
-.divider{background:var(--bd);display:flex;align-items:center;justify-content:center}
+.divider{background:var(--bd);display:flex;align-items:center;justify-content:center;width:50px;flex-shrink:0}
 .divider svg{width:16px;height:16px;stroke:var(--mt);fill:none;stroke-width:2}
-.actions-bar{padding:.8rem 1.5rem;background:var(--sf);border-top:1px solid var(--bd);display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;flex-shrink:0}
-.btn{height:2.2rem;padding:0 1.2rem;font:inherit;font-size:.78rem;font-weight:600;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.css-main{display:grid;grid-template-columns:1fr 50px 1fr}
+.actions-bar{padding:.6rem 1.5rem;background:var(--sf);border-top:1px solid var(--bd);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;flex-shrink:0}
+.btn{height:2rem;padding:0 1rem;font:inherit;font-size:.75rem;font-weight:600;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem}
 .btn:hover{background:rgba(255,255,255,.06);border-color:var(--bd2)}
-.btn.p{background:var(--gn);border-color:var(--gn);color:#000}
-.btn.p:hover{background:#16a34a}
+.btn.p{background:var(--bl);border-color:var(--bl);color:#fff}
+.btn.p:hover{background:#2563eb}
 .btn.d{color:var(--rd);border-color:rgba(239,68,68,.3)}
 .btn.d:hover{background:rgba(239,68,68,.1)}
-.options{margin-left:auto;display:flex;gap:.6rem;align-items:center;font-size:.7rem;color:var(--mt)}
-.options label{display:flex;align-items:center;gap:.3rem;cursor:pointer;user-select:none}
+.options{margin-left:auto;display:flex;gap:.5rem;align-items:center;font-size:.7rem;color:var(--mt)}
+.options label{display:flex;align-items:center;gap:.25rem;cursor:pointer;user-select:none}
 .options input[type=checkbox]{accent-color:var(--gn);width:14px;height:14px}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gn);color:#000;padding:.5rem 1.2rem;border-radius:8px;font-size:.78rem;font-weight:600;transition:transform .3s ease;z-index:100}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bl);color:#fff;padding:.5rem 1.2rem;border-radius:8px;font-size:.78rem;font-weight:600;transition:transform .3s ease;z-index:100}
 .toast.show{transform:translateX(-50%) translateY(0)}
-.json-panel{display:grid;grid-template-columns:1fr 50px 1fr;flex:1;overflow:hidden}
-.encode-panel{flex:1;overflow:hidden;display:none}
-.encode-grid{display:grid;grid-template-columns:1fr 140px 1fr;height:100%;overflow:hidden}
+.drop-zone{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--bl);z-index:10;font-size:1rem;color:var(--bl);font-weight:600}
+.drop-zone.active{display:flex}
+.json-panel,.html-panel,.sql-panel{flex:1;overflow:hidden}
+.md-panel{flex:1;overflow:hidden}
+.encode-panel{flex:1;overflow:hidden}
+.encode-grid{display:grid;grid-template-columns:1fr 140px 1fr;height:100%}
 .enc-section{display:flex;flex-direction:column;overflow:hidden}
-.enc-btns{display:flex;flex-direction:column;gap:.4rem;padding:1rem .5rem;justify-content:center;background:var(--sf);border-left:1px solid var(--bd);border-right:1px solid var(--bd)}
-.enc-btn{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.68rem;font-weight:500;padding:.4rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.enc-btns{display:flex;flex-direction:column;gap:.35rem;padding:.8rem .4rem;justify-content:center;background:var(--sf);border-left:1px solid var(--bd);border-right:1px solid var(--bd)}
+.enc-btn{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.68rem;font-weight:500;padding:.35rem .4rem;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .enc-btn:hover{border-color:var(--bd2);color:var(--tx);background:rgba(255,255,255,.04)}
-.md-panel{flex:1;overflow:hidden;display:none}
 .md-grid{display:grid;grid-template-columns:1fr 50px 1fr;height:100%}
-.md-preview{flex:1;overflow-y:auto;padding:1rem;font-size:.85rem;line-height:1.7;color:var(--tx)}
-.md-preview h1{font-size:1.5rem;font-weight:800;margin:1rem 0 .5rem;border-bottom:1px solid var(--bd);padding-bottom:.3rem}
-.md-preview h2{font-size:1.2rem;font-weight:700;margin:.8rem 0 .4rem}
-.md-preview h3{font-size:1rem;font-weight:600;margin:.6rem 0 .3rem}
-.md-preview p{margin:.5rem 0}
+.md-preview{flex:1;overflow-y:auto;padding:.8rem;font-size:.85rem;line-height:1.7}
+.md-preview h1{font-size:1.4rem;font-weight:800;margin:.8rem 0 .4rem;border-bottom:1px solid var(--bd);padding-bottom:.2rem}
+.md-preview h2{font-size:1.15rem;font-weight:700;margin:.7rem 0 .3rem}
+.md-preview h3{font-size:1rem;font-weight:600;margin:.5rem 0 .2rem}
+.md-preview p{margin:.4rem 0}
 .md-preview code{background:rgba(255,255,255,.08);padding:.1rem .3rem;border-radius:3px;font-family:var(--mono);font-size:.82em}
-.md-preview pre{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:6px;padding:.8rem;overflow-x:auto;margin:.5rem 0}
+.md-preview pre{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:6px;padding:.7rem;overflow-x:auto;margin:.4rem 0}
 .md-preview pre code{background:0;padding:0}
-.md-preview blockquote{border-left:3px solid var(--bl);padding-left:.8rem;color:var(--mt);margin:.5rem 0}
-.md-preview ul,.md-preview ol{padding-left:1.5rem;margin:.5rem 0}
-.md-preview li{margin:.2rem 0}
+.md-preview blockquote{border-left:3px solid var(--bl);padding-left:.7rem;color:var(--mt);margin:.4rem 0}
+.md-preview ul,.md-preview ol{padding-left:1.3rem;margin:.4rem 0}
+.md-preview li{margin:.15rem 0}
 .md-preview a{color:var(--bl)}
 .md-preview strong{font-weight:700}
 .md-preview em{font-style:italic}
-.md-preview hr{border:none;border-top:1px solid var(--bd);margin:1rem 0}
-.md-preview table{border-collapse:collapse;width:100%;margin:.5rem 0}
-.md-preview th,.md-preview td{border:1px solid var(--bd);padding:.4rem .6rem;text-align:left;font-size:.82rem}
+.md-preview hr{border:none;border-top:1px solid var(--bd);margin:.8rem 0}
+.md-preview table{border-collapse:collapse;width:100%;margin:.4rem 0}
+.md-preview th,.md-preview td{border:1px solid var(--bd);padding:.3rem .5rem;text-align:left;font-size:.82rem}
 .md-preview th{background:rgba(255,255,255,.05);font-weight:600}
-.hash-wrap,.uuid-wrap,.lorem-wrap,.color-wrap,.ts-wrap,.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
-.hash-wrap,.jwt-output,.regex-results,.diff-result{border-top:1px solid var(--bd);overflow-y:auto}
-.hash-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
+.hash-panel,.jwt-panel,.regex-panel,.diff-panel,.lorem-panel,.uuid-panel,.ts-panel,.color-panel{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.hash-wrap,.uuid-wrap,.lorem-wrap,.color-wrap,.ts-wrap,.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:.8rem;gap:.4rem}
+.hash-results,.jwt-output{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
+.hash-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .7rem;border-bottom:1px solid var(--bd)}
 .hash-label{font-size:.7rem;font-weight:600;color:var(--mt);min-width:60px}
 .hash-val{flex:1;font-family:var(--mono);font-size:.78rem;word-break:break-all}
-.jwt-output{flex:1;display:flex;flex-direction:column}
 .jwt-sections{display:flex;flex-direction:column;flex:1;overflow-y:auto}
-.jwt-section{padding:.6rem 1rem;border-bottom:1px solid var(--bd)}
-.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.3rem}
+.jwt-section{padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
+.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.2rem}
 .jwt-pre{font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;word-break:break-all}
-.regex-wrap{gap:.5rem}
-.regex-row{display:flex;gap:.5rem}
-.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono)}
+.regex-row{display:flex;gap:.4rem}
+.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.45rem .7rem;border-radius:6px;outline:none;font-family:var(--mono)}
 .regex-input:focus{border-color:var(--bl)}
-.regex-flags{width:60px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
+.regex-flags{width:55px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.45rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
 .regex-flags:focus{border-color:var(--bl)}
-.regex-results,.diff-result{flex:1;overflow-y:auto}
+.regex-results{flex:1;overflow-y:auto}
 .diff-grid{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
 .diff-grid .panel{overflow:hidden}
 .diff-grid textarea{min-height:0}
-.ts-row{display:flex;gap:.5rem;margin-top:.3rem}
-.uuid-opts,.lorem-opts{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
-.color-picker-row{display:flex;gap:.8rem;align-items:center;margin-bottom:1rem}
+.diff-result{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
+.uuid-opts,.lorem-opts{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem}
+.ts-section{margin-bottom:.8rem}
+.ts-row{display:flex;gap:.4rem;margin-top:.2rem}
+.color-picker-row{display:flex;gap:.6rem;align-items:center;margin-bottom:.8rem}
 .color-values{display:flex;flex-direction:column;gap:0}
+.color-preview{width:100%;height:70px;border-radius:8px;margin-top:.8rem;border:1px solid var(--bd)}
 .diff-add{background:rgba(34,197,94,.12);color:var(--gn)}
 .diff-del{background:rgba(239,68,68,.12);color:var(--rd)}
-
-.drop-zone{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--gn);z-index:10;font-size:1rem;color:var(--gn);font-weight:600}
-.drop-zone.active{display:flex}
-@media(max-width:768px){.main{grid-template-columns:1fr;grid-template-rows:1fr auto 1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
-
-.html-panel,.sql-panel,.hash-panel,.jwt-panel,.regex-panel,.diff-panel,.lorem-panel,.uuid-panel,.ts-panel,.color-panel{flex:1;overflow:hidden;display:none}
-.hash-results{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
-.diff-panel{display:flex;flex-direction:column}
-.diff-grid{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
-.diff-grid .panel{overflow:hidden}
-.diff-grid textarea{min-height:0}
-.regex-panel{display:flex;flex-direction:column}
-.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem;gap:.5rem}
-.regex-row{display:flex;gap:.5rem}
-.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono)}
-.regex-input:focus{border-color:var(--bl)}
-.regex-flags{width:60px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
-.regex-results{flex:1;overflow-y:auto}
-.hash-panel{display:flex;flex-direction:column}
-.hash-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
-.hash-wrap .panel,.hash-results .panel-header{flex-shrink:0}
-.jwt-panel{display:flex;flex-direction:column}
-.jwt-output{flex:1;display:flex;flex-direction:column;border-top:1px solid var(--bd);overflow-y:auto}
-.jwt-sections{display:flex;flex-direction:column;flex:1;overflow-y:auto}
-.jwt-section{padding:.6rem 1rem;border-bottom:1px solid var(--bd)}
-.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.3rem}
-.jwt-pre{font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;word-break:break-all}
-.hash-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
-.hash-label{font-size:.7rem;font-weight:600;color:var(--mt);min-width:60px}
-.hash-val{flex:1;font-family:var(--mono);font-size:.78rem;word-break:break-all}
-.lorem-panel,.uuid-panel,.ts-panel,.color-panel{display:flex;flex-direction:column}
-.lorem-wrap,.uuid-wrap,.ts-wrap,.color-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
-.uuid-opts,.lorem-opts{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
-.ts-wrap{gap:0}
-.ts-section{margin-bottom:1rem}
-.ts-row{display:flex;gap:.5rem;margin-top:.3rem}
-.color-picker-row{display:flex;gap:.8rem;align-items:center;margin-bottom:1rem}
-.color-values{display:flex;flex-direction:column;gap:0}
-.color-preview{width:100%;height:80px;border-radius:8px;margin-top:1rem;border:1px solid var(--bd)}
+@media(max-width:768px){.sidebar{width:140px;min-width:140px}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
 </style>
 </head>
 <body>
-
-<div class="nav"><b>openkee</b><span class="sep">/</span>dev-tools<div class="r"><button class="btn" onclick="toggleLang()" style="height:1.8rem;padding:0 .6rem;font-size:.72rem"><span class="lt en">中 / EN</span><span class="lt zh" style="display:none">EN / 中</span></button></div></div>
-
-<div class="hero">
-<h1>Dev <span>Tools</span></h1>
-<p>Browser-based developer utilities. Pure frontend, no server, no data leaves your machine.</p>
-</div>
-
+<div class="nav"><b>openkee</b><span class="sep">/</span>dev-tools<div class="r"><button class="btn" onclick="toggleLang()" style="height:1.8rem;padding:0 .6rem;font-size:.72rem"><span class="lt en">EN</span><span class="lt zh" style="display:none">中文</span></button></div></div>
+<div class="hero"><h1>Dev <span>Tools</span></h1><p>Browser-based developer utilities. Pure frontend, no server.</p></div>
 <div class="app-layout">
 <div class="sidebar" id="sidebar">
 <div class="sidebar-group"><div class="sidebar-label">Code</div>
@@ -196,854 +149,138 @@ textarea::placeholder{color:var(--mt)}
 <div class="stat"><div class="v gn" id="s-save">0%</div><div class="l">Saved</div></div>
 <div class="stat"><div class="v" id="s-time">0ms</div><div class="l">Time</div></div>
 </div>
-
-<div class="main css-main" id="mainPanel">
-<div class="panel" style="position:relative">
-<div class="panel-header"><span>Input CSS</span><div class="actions"><button onclick="loadSample()">Sample</button><button onclick="clearInput()">Clear</button></div></div>
-<textarea id="input" placeholder="Paste your CSS here..." spellcheck="false"></textarea>
-<div class="drop-zone" id="dropZone">Drop .css file here</div>
-</div>
+<!-- CSS Tool -->
+<div class="css-main" id="panel-css">
+<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="cssSample()">Sample</button><button onclick="clearEl('cssIn')">Clear</button></div></div><textarea id="cssIn" placeholder="Paste CSS..." spellcheck="false"></textarea><div class="drop-zone" id="dropZone">Drop .css file</div></div>
 <div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel">
-<div class="panel-header"><span>Minified Output</span><div class="actions"><button onclick="copyOutput()">Copy</button><button onclick="downloadOutput()">Download</button></div></div>
-<textarea id="output" readonly placeholder="Minified CSS will appear here..." spellcheck="false"></textarea>
+<div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('cssOut')">Copy</button></div></div><textarea id="cssOut" readonly></textarea></div>
 </div>
-</div>
-
-<div class="actions-bar">
-<button class="btn p" onclick="compress()">🔧 Compress</button>
-<button class="btn d" onclick="clearAll()">Clear All</button>
-<div class="options">
-<label><input type="checkbox" id="optComments" checked> Remove comments</label>
-<label><input type="checkbox" id="optWhitespace" checked> Minify whitespace</label>
-<label><input type="checkbox" id="optColors" checked> Shorten colors</label>
-<label><input type="checkbox" id="optZeros" checked> Clean zeros</label>
-</div>
-</div>
-
-<div class="json-panel" id="jsonPanel" style="display:none">
-<div class="panel" style="position:relative">
-<div class="panel-header"><span>Input JSON</span><div class="actions"><button onclick="loadJsonSample()">Sample</button><button onclick="clearJsonInput()">Clear</button></div></div>
-<textarea id="jsonInput" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
-</div>
+<!-- HTML Tool -->
+<div id="panel-html" style="display:none" class="css-main">
+<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="htmlSample()">Sample</button></div></div><textarea id="htmlIn" placeholder="Paste HTML..." spellcheck="false"></textarea></div>
 <div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel">
-<div class="panel-header"><span>Formatted Output</span><div class="actions"><button onclick="copyJsonOutput()">Copy</button><button onclick="downloadJsonOutput()">Download</button></div></div>
-<textarea id="jsonOutput" readonly placeholder="Formatted JSON will appear here..." spellcheck="false"></textarea>
+<div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('htmlOut')">Copy</button></div></div><textarea id="htmlOut" readonly></textarea></div>
 </div>
-</div>
-<div class="encode-panel" id="encodePanel" style="display:none">
-<div class="encode-grid">
-  <div class="enc-section">
-    <div class="panel-header"><span>Input</span></div>
-    <textarea id="encInput" placeholder="Enter text to encode or decode..." spellcheck="false"></textarea>
-  </div>
-  <div class="enc-btns">
-    <button class="enc-btn" onclick="encBase64()">Base64 Encode →</button>
-    <button class="enc-btn" onclick="decBase64()">← Base64 Decode</button>
-    <button class="enc-btn" onclick="encUrl()">URL Encode →</button>
-    <button class="enc-btn" onclick="decUrl()">← URL Decode</button>
-    <button class="enc-btn" onclick="encUnicode()">Unicode →</button>
-    <button class="enc-btn" onclick="decUnicode()">← Unicode</button>
-    <button class="enc-btn" onclick="encHtml()">HTML Encode →</button>
-    <button class="enc-btn" onclick="decHtml()">← HTML Decode</button>
-  </div>
-  <div class="enc-section">
-    <div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEncOutput()">Copy</button></div></div>
-    <textarea id="encOutput" readonly placeholder="Result..." spellcheck="false"></textarea>
-  </div>
-</div>
-</div>
-<div class="md-panel" id="mdPanel" style="display:none">
-<div class="md-grid">
-  <div class="panel" style="position:relative">
-    <div class="panel-header"><span>Markdown</span><div class="actions"><button onclick="loadMdSample()">Sample</button></div></div>
-    <textarea id="mdInput" placeholder="Write Markdown here..." spellcheck="false"></textarea>
-  </div>
-  <div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-  <div class="panel">
-    <div class="panel-header"><span>Preview</span></div>
-    <div id="mdPreview" class="md-preview"></div>
-  </div>
-</div>
-</div>
-</div>
-
-<div class="html-panel" id="htmlPanel" style="display:none">
-<div class="main css-main"><div class="panel" style="position:relative">
-<div class="panel-header"><span data-i18n="input">Input</span><div class="actions"><button onclick="loadHtmlSample()" data-i18n="sample">Sample</button><button onclick="clearHtmlInput()" data-i18n="clear">Clear</button></div></div>
-<textarea id="htmlInput" placeholder="Paste HTML..." spellcheck="false"></textarea>
-<div class="drop-zone" id="htmlDropZone">Drop .html file here</div>
-</div>
+<!-- JSON Tool -->
+<div id="panel-json" style="display:none" class="css-main">
+<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="jsonSample()">Sample</button></div></div><textarea id="jsonIn" placeholder="Paste JSON..." spellcheck="false"></textarea></div>
 <div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span data-i18n="minified">Minified</span><div class="actions"><button onclick="copyHtmlOutput()" data-i18n="copy">Copy</button><button onclick="downloadText('htmlOutput','minified.html')" data-i18n="download">Download</button></div></div>
-<textarea id="htmlOutput" readonly placeholder="Minified HTML..." spellcheck="false"></textarea></div>
+<div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('jsonOut')">Copy</button></div></div><textarea id="jsonOut" readonly></textarea></div>
+</div>
+<!-- SQL Tool -->
+<div id="panel-sql" style="display:none" class="css-main">
+<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="sqlSample()">Sample</button></div></div><textarea id="sqlIn" placeholder="Paste SQL..." spellcheck="false"></textarea></div>
+<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('sqlOut')">Copy</button></div></div><textarea id="sqlOut" readonly></textarea></div>
+</div>
+<!-- Encode Tool -->
+<div id="panel-encode" style="display:none" class="encode-grid">
+<div class="enc-section"><div class="panel-header"><span>Input</span></div><textarea id="encIn" placeholder="Text to encode/decode..." spellcheck="false"></textarea></div>
+<div class="enc-btns">
+<button class="enc-btn" onclick="encOut(btoa(unescape(encodeURIComponent(encIn.value))))">Base64 →</button>
+<button class="enc-btn" onclick="try{encOut(decodeURIComponent(escape(atob(encIn.value))))}catch(e){encOut('Error')}">← Base64</button>
+<button class="enc-btn" onclick="encOut(encodeURIComponent(encIn.value))">URL →</button>
+<button class="enc-btn" onclick="try{encOut(decodeURIComponent(encIn.value))}catch(e){encOut('Error')}">← URL</button>
+<button class="enc-btn" onclick="encOut(Array.from(encIn.value).map(c=>'\\\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join(''))">Unicode →</button>
+<button class="enc-btn" onclick="try{encOut(encIn.value.replace(/\\\\u([0-9a-fA-F]{4})/g,(_,h)=>String.fromCharCode(parseInt(h,16))))}catch(e){encOut('Error')}">← Unicode</button>
+</div>
+<div class="enc-section"><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEl('encOutEl')">Copy</button></div></div><textarea id="encOutEl" readonly></textarea></div>
+</div>
+<!-- Hash Tool -->
+<div id="panel-hash" style="display:none"><div class="hash-wrap"><div class="panel-header"><span>Input</span></div><textarea id="hashIn" placeholder="Text to hash..." spellcheck="false"></textarea><div class="hash-results"><div class="panel-header"><span>Results</span></div><div class="hash-item"><div class="hash-label">SHA-1</div><div class="hash-val" id="h-sha1">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">SHA-256</div><div class="hash-val" id="h-sha256">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">SHA-512</div><div class="hash-val" id="h-sha512">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div></div></div></div>
+<!-- JWT Tool -->
+<div id="panel-jwt" style="display:none"><div class="panel-header"><span>JWT Token</span></div><textarea id="jwtIn" placeholder="Paste JWT..." spellcheck="false" style="flex:0;height:120px"></textarea><div class="jwt-output"><div class="panel-header"><span>Decoded</span><div class="actions"><button onclick="copyText(jwtPayload.textContent)">Copy</button></div></div><div class="jwt-sections"><div class="jwt-section"><div class="jwt-label">Header</div><pre id="jwtHeader" class="jwt-pre">—</pre></div><div class="jwt-section"><div class="jwt-label">Payload</div><pre id="jwtPayload" class="jwt-pre">—</pre></div><div class="jwt-section"><div class="jwt-label">Signature</div><div id="jwtSig" class="jwt-pre" style="color:var(--mt)">—</div></div></div></div></div>
+<!-- MD Tool -->
+<div id="panel-md" style="display:none" class="md-grid">
+<div class="panel" style="position:relative"><div class="panel-header"><span>Markdown</span><div class="actions"><button onclick="mdSample()">Sample</button></div></div><textarea id="mdIn" placeholder="Write Markdown..." spellcheck="false"></textarea></div>
+<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="panel"><div class="panel-header"><span>Preview</span></div><div id="mdPrev" class="md-preview"></div></div>
+</div>
+<!-- Regex Tool -->
+<div id="panel-regex" style="display:none"><div class="regex-wrap"><div class="regex-row"><input id="rxPat" placeholder="Pattern (e.g. \\d+)" class="regex-input"/><input id="rxFlg" placeholder="Flags" class="regex-flags" value="g"/></div><div class="panel-header"><span>Test String</span></div><textarea id="rxIn" placeholder="Test string..." spellcheck="false"></textarea><div class="regex-results"><div class="panel-header"><span>Matches</span></div><div id="rxMatch" style="padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
+<!-- Diff Tool -->
+<div id="panel-diff" style="display:none"><div class="diff-grid"><div class="panel" style="position:relative"><div class="panel-header"><span>Text A</span></div><textarea id="diffA" placeholder="Original..."></textarea></div><div class="panel" style="position:relative"><div class="panel-header"><span>Text B</span></div><textarea id="diffB" placeholder="Modified..."></textarea></div></div><div class="diff-result"><div class="panel-header"><span>Diff</span><div class="actions"><button onclick="runDiff()">Compare</button></div></div><div id="diffOut" style="padding:.8rem;font-family:var(--mono);font-size:.8rem;line-height:1.8;overflow-y:auto;flex:1">—</div></div></div>
+<!-- Lorem Tool -->
+<div id="panel-lorem" style="display:none"><div class="lorem-wrap"><div class="lorem-opts"><button class="enc-btn" onclick="genLorem('p',1)">1 Para</button><button class="enc-btn" onclick="genLorem('p',3)">3 Paras</button><button class="enc-btn" onclick="genLorem('p',5)">5 Paras</button><button class="enc-btn" onclick="genLorem('s',10)">10 Sent</button><button class="enc-btn" onclick="genLorem('w',50)">50 Words</button></div><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEl('loremOut')">Copy</button></div></div><textarea id="loremOut" readonly placeholder="Click a button..."></textarea></div></div>
+<!-- UUID Tool -->
+<div id="panel-uuid" style="display:none"><div class="uuid-wrap"><div class="uuid-opts"><button class="btn p" onclick="genUuid(5)">5</button><button class="btn p" onclick="genUuid(10)">10</button><button class="btn p" onclick="genUuid(20)">20</button><label style="font-size:.75rem;color:var(--mt);display:flex;align-items:center;gap:.25rem"><input type="checkbox" id="uuidUp"> Upper</label></div><div class="panel-header"><span>UUIDs</span><div class="actions"><button onclick="copyEl('uuidOut')">Copy</button></div></div><textarea id="uuidOut" readonly placeholder="Click generate..."></textarea></div></div>
+<!-- Timestamp Tool -->
+<div id="panel-timestamp" style="display:none"><div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div><div class="ts-row"><input id="tsIn" placeholder="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="ts2date()">→</button></div><div id="tsDateOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Date → Timestamp</span></div><div class="ts-row"><input id="dateIn" type="datetime-local" class="regex-input"/><button class="enc-btn" onclick="date2ts()">→</button></div><div id="tsOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set</button></div></div><div id="tsNow" style="padding:.6rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
+<!-- Color Tool -->
+<div id="panel-color" style="display:none"><div class="color-wrap"><div class="color-picker-row"><input type="color" id="colPick" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/><input id="colHex" placeholder="#3b82f6" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div><div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">—</div><button class="enc-btn" onclick="copyText(cvHex.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">—</div><button class="enc-btn" onclick="copyText(cvRgb.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">—</div><button class="enc-btn" onclick="copyText(cvHsl.textContent)">Copy</button></div></div><div class="color-preview" id="colPrev"></div></div></div>
 </div></div>
-<div class="sql-panel" id="sqlPanel" style="display:none">
-<div class="main css-main"><div class="panel" style="position:relative">
-<div class="panel-header"><span data-i18n="input">Input</span><div class="actions"><button onclick="loadSqlSample()" data-i18n="sample">Sample</button></div></div>
-<textarea id="sqlInput" placeholder="Paste SQL..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span data-i18n="formatted">Formatted</span><div class="actions"><button onclick="copySqlOutput()" data-i18n="copy">Copy</button></div></div>
-<textarea id="sqlOutput" readonly placeholder="Formatted SQL..." spellcheck="false"></textarea></div>
-</div></div>
-<div class="hash-panel" id="hashPanel" style="display:none">
-<div class="hash-wrap"><div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>Input Text</span></div>
-<textarea id="hashInput" placeholder="Enter text to hash..." spellcheck="false"></textarea></div>
-<div class="hash-results"><div class="panel-header"><span>Hash Results</span></div>
-<div class="hash-item"><div class="hash-label">MD5</div><div class="hash-val" id="hashMd5">—</div><button class="enc-btn" onclick="copyHash('hashMd5')">Copy</button></div>
-<div class="hash-item"><div class="hash-label">SHA-1</div><div class="hash-val" id="hashSha1">—</div><button class="enc-btn" onclick="copyHash('hashSha1')">Copy</button></div>
-<div class="hash-item"><div class="hash-label">SHA-256</div><div class="hash-val" id="hashSha256">—</div><button class="enc-btn" onclick="copyHash('hashSha256')">Copy</button></div>
-<div class="hash-item"><div class="hash-label">SHA-512</div><div class="hash-val" id="hashSha512">—</div><button class="enc-btn" onclick="copyHash('hashSha512')">Copy</button></div></div></div></div>
-<div class="jwt-panel" id="jwtPanel" style="display:none">
-<div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>JWT Token</span></div>
-<textarea id="jwtInput" placeholder="Paste JWT token..." spellcheck="false"></textarea></div>
-<div class="jwt-output"><div class="panel-header"><span>Decoded</span><div class="actions"><button onclick="copyJwtOutput()">Copy</button></div></div>
-<div class="jwt-sections"><div class="jwt-section"><div class="jwt-label">Header</div><pre id="jwtHeader" class="jwt-pre">—</pre></div>
-<div class="jwt-section"><div class="jwt-label">Payload</div><pre id="jwtPayload" class="jwt-pre">—</pre></div>
-<div class="jwt-section"><div class="jwt-label">Signature</div><div id="jwtSig" class="jwt-pre" style="color:var(--mt)">—</div></div></div></div></div>
-<div class="regex-panel" id="regexPanel" style="display:none">
-<div class="regex-wrap"><div class="regex-row"><input id="regexPattern" placeholder="Pattern (e.g. \\d+)" class="regex-input"/><input id="regexFlags" placeholder="Flags (gim)" class="regex-flags" value="g"/></div>
-<div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>Test String</span></div>
-<textarea id="regexInput" placeholder="Enter text to test..." spellcheck="false"></textarea></div>
-<div class="regex-results"><div class="panel-header"><span>Matches</span></div>
-<div id="regexMatches" style="padding:1rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
-<div class="diff-panel" id="diffPanel" style="display:none">
-<div class="diff-grid"><div class="panel" style="position:relative"><div class="panel-header"><span>Text A</span></div><textarea id="diffA" placeholder="Original..." spellcheck="false"></textarea></div>
-<div class="panel" style="position:relative"><div class="panel-header"><span>Text B</span></div><textarea id="diffB" placeholder="Modified..." spellcheck="false"></textarea></div></div>
-<div class="diff-result"><div class="panel-header"><span>Differences</span><div class="actions"><button onclick="runDiff()">Compare</button></div></div>
-<div id="diffOutput" style="padding:1rem;font-family:var(--mono);font-size:.8rem;line-height:1.8;overflow-y:auto;flex:1">—</div></div></div>
-<div class="lorem-panel" id="loremPanel" style="display:none">
-<div class="lorem-wrap"><div class="lorem-opts">
-<button class="enc-btn" onclick="genLorem('p',1)">1 Paragraph</button><button class="enc-btn" onclick="genLorem('p',3)">3 Paragraphs</button><button class="enc-btn" onclick="genLorem('p',5)">5 Paragraphs</button>
-<button class="enc-btn" onclick="genLorem('s',10)">10 Sentences</button><button class="enc-btn" onclick="genLorem('w',50)">50 Words</button><button class="enc-btn" onclick="genLorem('w',100)">100 Words</button></div>
-<div class="panel" style="flex:1"><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyLorem()">Copy</button></div></div>
-<textarea id="loremOutput" readonly placeholder="Click a button..." spellcheck="false"></textarea></div></div></div>
-<div class="uuid-panel" id="uuidPanel" style="display:none">
-<div class="uuid-wrap"><div class="uuid-opts">
-<button class="btn p" onclick="genUuids(5)">5</button><button class="btn p" onclick="genUuids(10)">10</button><button class="btn p" onclick="genUuids(20)">20</button>
-<label style="font-size:.75rem;color:var(--mt);display:flex;align-items:center;gap:.3rem"><input type="checkbox" id="uuidUpper"> Upper</label></div>
-<div class="panel" style="flex:1"><div class="panel-header"><span>UUIDs</span><div class="actions"><button onclick="copyUuids()">Copy All</button></div></div>
-<textarea id="uuidOutput" readonly placeholder="Click generate..." spellcheck="false"></textarea></div></div></div>
-<div class="ts-panel" id="timestampPanel" style="display:none">
-<div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div>
-<div class="ts-row"><input id="tsInput" placeholder="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="tsToDate()">→</button></div>
-<div id="tsDateResult" style="padding:.8rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div>
-<div class="ts-section" style="margin-top:1rem"><div class="panel-header"><span>Date → Timestamp</span></div>
-<div class="ts-row"><input id="dateInput" type="datetime-local" class="regex-input"/><button class="enc-btn" onclick="dateToTs()">→</button></div>
-<div id="tsResult" style="padding:.8rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div>
-<div class="ts-section" style="margin-top:1rem"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set Now</button></div></div>
-<div id="tsNow" style="padding:.8rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
-<div class="color-panel" id="colorPanel" style="display:none">
-<div class="color-wrap"><div class="color-picker-row">
-<input type="color" id="colorPick" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/>
-<input id="colorHex" placeholder="#3b82f6" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div>
-<div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">#3b82f6</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvHex').textContent)">Copy</button></div>
-<div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">rgb(59,130,246)</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvRgb').textContent)">Copy</button></div>
-<div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">hsl(217,91%,60%)</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvHsl').textContent)">Copy</button></div></div>
-<div class="color-preview" id="colorPreview" style="width:100%;height:80px;border-radius:8px;margin-top:1rem;border:1px solid var(--bd)"></div></div></div>
-
+<div class="actions-bar"><button class="btn p" onclick="doCompress()">🔧 Compress</button><button class="btn d" onclick="clearAll()">Clear All</button><div class="options"><label><input type="checkbox" id="optCom" checked> Comments</label><label><input type="checkbox" id="optWs" checked> Whitespace</label><label><input type="checkbox" id="optCol" checked> Colors</label><label><input type="checkbox" id="optZer" checked> Zeros</label></div></div>
 <div class="toast" id="toast"></div>
-
 <script>
-const input = document.getElementById('input');
-const output = document.getElementById('output');
-
-function fmtSize(b) {
-  if (b < 1024) return b + ' B';
-  return (b / 1024).toFixed(1) + ' KB';
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
-
-function compress() {
-  const css = input.value;
-  if (!css.trim()) return;
-
-  const t0 = performance.now();
-  let result = css;
-
-  // Remove comments
-  if (document.getElementById('optComments').checked) {
-    result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-  }
-
-  // Remove whitespace
-  if (document.getElementById('optWhitespace').checked) {
-    result = result.replace(/\s+/g, ' ');
-    result = result.replace(/\s*{\s*/g, '{');
-    result = result.replace(/\s*}\s*/g, '}');
-    result = result.replace(/\s*;\s*/g, ';');
-    result = result.replace(/\s*:\s*/g, ':');
-    result = result.replace(/\s*,\s*/g, ',');
-    result = result.replace(/\s*>\s*/g, '>');
-    result = result.replace(/\s*\+\s*/g, '+');
-    result = result.replace(/\s*~\s*/g, '~');
-    result = result.replace(/;}/g, '}');
-    result = result.trim();
-  }
-
-  // Shorten colors
-  if (document.getElementById('optColors').checked) {
-    // #aabbcc → #abc
-    result = result.replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g, '#$1$2$3');
-    // rgb(255,255,255) → #fff, rgb(0,0,0) → #000
-    result = result.replace(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g, function(_, r, g, b) {
-      r = parseInt(r); g = parseInt(g); b = parseInt(b);
-      if (r > 255 || g > 255 || b > 255) return _;
-      const hex = '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
-      // Try to shorten #aabbcc → #abc
-      if (hex[1]===hex[2] && hex[3]===hex[4] && hex[5]===hex[6]) {
-        return '#' + hex[1] + hex[3] + hex[5];
-      }
-      return hex;
-    });
-    // Named colors to shorter hex
-    const named = {white:'#fff',black:'#000',red:'#f00',lime:'#0f0',blue:'#00f',cyan:'#0ff',magenta:'#f0f',yellow:'#ff0'};
-    for (const [name, hex] of Object.entries(named)) {
-      result = result.replace(new RegExp(':' + name + '(;|})', 'gi'), ':' + hex + '$1');
-    }
-  }
-
-  // Clean zeros
-  if (document.getElementById('optZeros').checked) {
-    result = result.replace(/:0(px|em|rem|vh|vw|vmin|vmax|%|pt|pc|in|mm|cm|ex|ch|lh)/g, ':0');
-    result = result.replace(/ 0\.([0-9]+)/g, ' .$1');
-    result = result.replace(/:0\.([0-9]+)/g, ':.$1');
-    // 0.5s → .5s etc in values
-    result = result.replace(/([ ,:])0\./g, '$1.');
-  }
-
-  const elapsed = (performance.now() - t0).toFixed(1);
-  output.value = result;
-
-  const origSize = new Blob([css]).size;
-  const minSize = new Blob([result]).size;
-  const saved = origSize > 0 ? ((1 - minSize / origSize) * 100).toFixed(1) : 0;
-
-  document.getElementById('s-orig').textContent = fmtSize(origSize);
-  document.getElementById('s-min').textContent = fmtSize(minSize);
-  document.getElementById('s-save').textContent = saved + '%';
-  document.getElementById('s-time').textContent = elapsed + 'ms';
-}
-
-function copyOutput() {
-  if (!output.value) return;
-  navigator.clipboard.writeText(output.value);
-  showToast('Copied to clipboard');
-}
-
-function downloadOutput() {
-  if (!output.value) return;
-  const blob = new Blob([output.value], {type: 'text/css'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'minified.css';
-  a.click();
-  showToast('Downloaded minified.css');
-}
-
-function clearInput() { input.value = ''; }
-function clearAll() { input.value = ''; output.value = '';
-  ['s-orig','s-min','s-save','s-time'].forEach(id => {
-    document.getElementById(id).textContent = id === 's-save' ? '0%' : id === 's-time' ? '0ms' : '0 B';
-  });
-}
-
-function loadSample() {
-  input.value = `/* Main Styles */
-body {
-  margin: 0;
-  padding: 0px;
-  font-family: 'Inter', sans-serif;
-  background-color: #ffffff;
-  color: rgb(51, 51, 51);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0px auto;
-  padding: 2rem 1.5rem;
-}
-
-.header {
-  background: linear-gradient(135deg, #aabbcc, #112233);
-  padding: 1.0rem;
-  border-radius: 8px;
-}
-
-/* Button styles */
-.btn-primary {
-  display: inline-block;
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.5rem 1.0rem;
-  border-radius: 6px;
-  border: 0px solid transparent;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-  transform: translateY(-1px);
-}
-
-/* Grid Layout */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem 0px;
-}
-
-.card {
-  background: #f5f5f5;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 1rem 0px;
-  }
-  .container {
-    padding: 1rem 0.5rem;
-  }
-}`;
-  compress();
-}
-
-// Auto-compress on input (debounced)
+const $=id=>document.getElementById(id);
 let timer;
-input.addEventListener('input', () => {
-  clearTimeout(timer);
-  timer = setTimeout(compress, 500);
-});
-
-// Drag and drop
-const dz = document.getElementById('dropZone');
-input.parentElement.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('active'); });
-input.parentElement.addEventListener('dragleave', () => dz.classList.remove('active'));
-input.parentElement.addEventListener('drop', e => {
-  e.preventDefault();
-  dz.classList.remove('active');
-  const file = e.dataTransfer.files[0];
-  if (file && (file.type === 'text/css' || file.name.endsWith('.css'))) {
-    const reader = new FileReader();
-    reader.onload = () => { input.value = reader.result; compress(); };
-    reader.readAsText(file);
-  }
-});
-
-
-
+// Tool switching
+const panels=['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
+function switchTool(t){document.querySelectorAll('.tool-tab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('[data-tool="'+t+'"]').forEach(b=>b.classList.add('on'));panels.forEach(p=>{const el=$('panel-'+p);if(el)el.style.display=p===t?'':''});const types={css:{o:'Original',m:'Minified',s:'Saved'},html:{o:'Original',m:'Minified',s:'Saved'},json:{o:'Original',m:'Formatted',s:'Lines'},sql:{o:'Original',m:'Formatted',s:'Lines'},encode:{o:'Input',m:'Output',s:'Length'},hash:{o:'Input',m:'—',s:'—'},jwt:{o:'Input',m:'Decoded',s:'—'},md:{o:'Chars',m:'Words',s:'Lines'},regex:{o:'Pattern',m:'Matches',s:'—'},diff:{o:'Text A',m:'Text B',s:'Lines'},lorem:{o:'—',m:'—',s:'—'},uuid:{o:'Count',m:'—',s:'—'},timestamp:{o:'—',m:'—',s:'—'},color:{o:'HEX',m:'RGB',s:'HSL'}};const cfg=types[t]||types.css;const labels=document.querySelectorAll('.stat .l');if(labels[0])labels[0].textContent=cfg.o;if(labels[1])labels[1].textContent=cfg.m;if(labels[2])labels[2].textContent=cfg.s}
+$('sidebar').addEventListener('click',e=>{const b=e.target.closest('.tool-tab');if(b)switchTool(b.dataset.tool)});
+// Helpers
+function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function copyEl(id){const v=$(id).value;if(!v)return;navigator.clipboard.writeText(v);showToast('Copied')}
+function copyText(t){if(!t||t==='—')return;navigator.clipboard.writeText(t);showToast('Copied')}
+function clearEl(id){$(id).value=''}
+function clearAll(){clearEl('cssIn');clearEl('cssOut');['s-orig','s-min','s-save','s-time'].forEach(id=>{$(id).textContent=id==='s-save'?'0%':id==='s-time'?'0ms':'0 B'})}
+function encOut(v){$('encOutEl').value=v}
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function fmtSz(b){return b<1024?b+' B':(b/1024).toFixed(1)+' KB'}
+// CSS Compressor
+function doCompress(){const v=$('cssIn').value;if(!v.trim())return;const t0=performance.now();let r=v;if($('optCom').checked)r=r.replace(/\/\*[\s\S]*?\*\//g,'');if($('optWs').checked){r=r.replace(/\s+/g,' ');r=r.replace(/\s*\{\s*/g,'{');r=r.replace(/\s*\}\s*/g,'}');r=r.replace(/\s*;\s*/g,';');r=r.replace(/\s*:\s*/g,':');r=r.replace(/\s*,\s*/g,',');r=r.replace(/;\}/g,'}');r=r.trim()}if($('optCol').checked){r=r.replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g,'#$1$2$3');r=r.replace(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g,(_,R,g,b)=>{R=parseInt(R);g=parseInt(g);b=parseInt(b);if(R>255||g>255||b>255)return _;const h='#'+[R,g,b].map(c=>c.toString(16).padStart(2,'0')).join('');return h[1]===h[2]&&h[3]===h[4]&&h[5]===h[6]?'#'+h[1]+h[3]+h[5]:h})}if($('optZer').checked){r=r.replace(/:0(px|em|rem|vh|vw|%|pt|pc|in|mm|cm|ex|ch|lh)/g,':0');r=r.replace(/ 0\.(\d+)/g,' .$1');r=r.replace(/:0\.(\d+)/g,':.$1')}const ms=(performance.now()-t0).toFixed(1);$('cssOut').value=r;const os=new Blob([v]).size,ns=new Blob([r]).size;$('s-orig').textContent=fmtSz(os);$('s-min').textContent=fmtSz(ns);$('s-save').textContent=os?((1-ns/os)*100).toFixed(1)+'%':'0%';$('s-time').textContent=ms+'ms'}
+$('cssIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(doCompress,400)});
+// Drag & drop
+const dz=$('dropZone');$('cssIn').parentElement.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('active')});$('cssIn').parentElement.addEventListener('dragleave',()=>dz.classList.remove('active'));$('cssIn').parentElement.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('active');const f=e.dataTransfer.files[0];if(f&&(f.type==='text/css'||f.name.endsWith('.css'))){const r=new FileReader();r.onload=()=>{$('cssIn').value=r.result;doCompress()};r.readAsText(f)}});
+// HTML Compressor
+function compressHtml(){const v=$('htmlIn').value;if(!v.trim())return;$('htmlOut').value=v.replace(/<!--[\s\S]*?-->/g,'').replace(/\s+/g,' ').replace(/>\s+</g,'><').replace(/\s+>/g,'>').replace(/<\s+/g,'<').trim()}
+$('htmlIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(compressHtml,400)});
 // JSON Formatter
-const jsonInput = document.getElementById('jsonInput');
-const jsonOutput = document.getElementById('jsonOutput');
-
-function formatJson() {
-  const raw = jsonInput.value;
-  if (!raw.trim()) return;
-  const t0 = performance.now();
-  try {
-    const parsed = JSON.parse(raw);
-    const formatted = JSON.stringify(parsed, null, 2);
-    jsonOutput.value = formatted;
-    const elapsed = (performance.now() - t0).toFixed(1);
-    const origSize = new Blob([raw]).size;
-    const fmtSize = new Blob([formatted]).size;
-    const lines = formatted.split('\n').length;
-    document.getElementById('s-orig').textContent = fmtSizeB(origSize);
-    document.getElementById('s-min').textContent = fmtSizeB(fmtSize);
-    document.getElementById('s-save').textContent = lines;
-    document.getElementById('s-time').textContent = elapsed + 'ms';
-    jsonOutput.style.color = '';
-  } catch (e) {
-    jsonOutput.value = '❌ Invalid JSON:\n' + e.message;
-    jsonOutput.style.color = 'var(--rd)';
-  }
-}
-
-function fmtSizeB(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
-
-function loadJsonSample() {
-  jsonInput.value = JSON.stringify({
-    name: "OpenKee",
-    tools: ["Rate Board", "Crypto Board", "CSS Compressor"],
-    stats: { total: 14, categories: 5, active: true },
-    github: "https://github.com/OpenKee",
-    config: { theme: "dark", language: "zh", features: { offline: false, tracking: false } }
-  });
-  formatJson();
-}
-function clearJsonInput() { jsonInput.value = ''; jsonOutput.value = '';
-  ['s-orig','s-min','s-save','s-time'].forEach(id => {
-    document.getElementById(id).textContent = id === 's-save' ? '0%' : id === 's-time' ? '0ms' : '0 B';
-  });
-}
-function copyJsonOutput() { if (!jsonOutput.value) return; navigator.clipboard.writeText(jsonOutput.value); showToast('Copied'); }
-function downloadJsonOutput() { if (!jsonOutput.value) return; const b = new Blob([jsonOutput.value],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'formatted.json'; a.click(); showToast('Downloaded'); }
-
-document.getElementById('jsonInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatJson, 500); });
-
-// Encode/Decode functions
-function encBase64() { document.getElementById('encOutput').value = btoa(unescape(encodeURIComponent(document.getElementById('encInput').value))); }
-function decBase64() { try { document.getElementById('encOutput').value = decodeURIComponent(escape(atob(document.getElementById('encInput').value))); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid Base64'; } }
-function encUrl() { document.getElementById('encOutput').value = encodeURIComponent(document.getElementById('encInput').value); }
-function decUrl() { try { document.getElementById('encOutput').value = decodeURIComponent(document.getElementById('encInput').value); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid URL encoding'; } }
-function encUnicode() { const v = document.getElementById('encInput').value; document.getElementById('encOutput').value = Array.from(v).map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0')).join(''); }
-function decUnicode() { try { document.getElementById('encOutput').value = document.getElementById('encInput').value.replace(/\\u([0-9a-fA-F]{4})/g, (_,h) => String.fromCharCode(parseInt(h,16))); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid Unicode'; } }
-function encHtml() { const d = document.createElement('div'); d.textContent = document.getElementById('encInput').value; document.getElementById('encOutput').value = d.innerHTML; }
-function decHtml() { const d = document.createElement('div'); d.innerHTML = document.getElementById('encInput').value; document.getElementById('encOutput').value = d.textContent; }
-function copyEncOutput() { const v = document.getElementById('encOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// Markdown live preview (simple parser)
-function renderMd() {
-  const raw = document.getElementById('mdInput').value;
-  let h = raw;
-  // Escape HTML
-  h = h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  // Code blocks
-  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-  // Inline code
-  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Headers
-  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-  // Bold & italic
-  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  // Links
-  h = h.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>');
-  // Blockquote
-  h = h.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-  // Horizontal rule
-  h = h.replace(/^---$/gm, '<hr>');
-  // Unordered list
-  h = h.replace(/^- (.+)$/gm, '<li>$1</li>');
-  h = h.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-  // Paragraphs
-  h = h.replace(/\n\n/g, '</p><p>');
-  h = '<p>' + h + '</p>';
-  h = h.replace(/<p><(h[1-3]|ul|ol|pre|blockquote|hr)/g, '<$1');
-  h = h.replace(/<\/(h[1-3]|ul|ol|pre|blockquote)><\/p>/g, '</$1>');
-  document.getElementById('mdPreview').innerHTML = h;
-}
-function loadMdSample() {
-  document.getElementById('mdInput').value = `# Dev Tools
-
-A collection of **browser-based** developer utilities.
-
-## Features
-
-- CSS Compressor
-- JSON Formatter
-- Encode / Decode
-- Markdown Preview
-
-### Why?
-
-> Every tool is a single HTML file. No backend needed.
-
-\`\`\`javascript
-const tool = "dev-tools";
-console.log("Pure frontend: " + tool);
-\`\`\`
-
----
-
-| Tool | Status |
-|------|--------|
-| CSS | ✅ |
-| JSON | ✅ |
-| Encode | ✅ |
-| Markdown | ✅ |
-
-Check out [OpenKee](https://github.com/OpenKee) for more.`;
-  renderMd();
-}
-document.getElementById('mdInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderMd, 300); });
-
-// Extend tool switcher
-// Tool switching via sidebar
-document.getElementById('sidebar').addEventListener('click', e => {
-  const tab = e.target.closest('.tool-tab');
-  if (!tab) return;
-  switchTool(tab.dataset.tool);
-});
-
+function formatJson(){const v=$('jsonIn').value;if(!v.trim())return;try{$('jsonOut').value=JSON.stringify(JSON.parse(v),null,2);$('jsonOut').style.color=''}catch(e){$('jsonOut').value='Error: '+e.message;$('jsonOut').style.color='var(--rd)'}}
+$('jsonIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(formatJson,400)});
+// SQL Formatter
+function formatSql(){const v=$('sqlIn').value;if(!v.trim())return;const kw=['SELECT','FROM','WHERE','AND','OR','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM'];let r=v.replace(/\s+/g,' ').trim();for(const k of kw.sort((a,b)=>b.length-a.length))r=r.replace(new RegExp('\\b'+k.replace(/ /g,'\\s+'),'gi'),'\n'+k);$('sqlOut').value=r.trim()}
+$('sqlIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(formatSql,400)});
+// MD Preview
+function renderMd(){const raw=$('mdIn').value;let h=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');h=h.replace(/`([^`]+)`/g,'<code>$1</code>');h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');h=h.replace(/\*(.+?)\*/g,'<em>$1</em>');h=h.replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank">$1</a>');h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');h=h.replace(/^---$/gm,'<hr>');h=h.replace(/^- (.+)$/gm,'<li>$1</li>');h=h.replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>');h=h.replace(/\n\n/g,'</p><p>');h='<p>'+h+'</p>';$('mdPrev').innerHTML=h}
+$('mdIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(renderMd,300)});
+// Hash
+function runHash(){const v=$('hashIn').value;if(!v)return;const enc=new TextEncoder().encode(v);['SHA-1','SHA-256','SHA-512'].forEach(async a=>{try{const buf=await crypto.subtle.digest(a,enc);const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');const el=$('h-'+a.toLowerCase().replace('-',''));if(el)el.textContent=hex}catch(e){}})}
+$('hashIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(runHash,400)});
+// JWT
+function decodeJwt(){const v=$('jwtIn').value.trim();if(!v)return;try{const p=v.split('.');if(p.length<2)throw new Error('Invalid');const h=JSON.parse(atob(p[0].replace(/-/g,'+').replace(/_/g,'/')));const pay=JSON.parse(atob(p[1].replace(/-/g,'+').replace(/_/g,'/')));$('jwtHeader').textContent=JSON.stringify(h,null,2);$('jwtHeader').style.color='';$('jwtPayload').textContent=JSON.stringify(pay,null,2);$('jwtPayload').style.color='';$('jwtSig').textContent=p[2]?p[2].substring(0,40)+'...':'(none)'}catch(e){$('jwtHeader').textContent='Error: '+e.message;$('jwtHeader').style.color='var(--rd)';$('jwtPayload').textContent='';$('jwtSig').textContent=''}}
+$('jwtIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(decodeJwt,400)});
+// Regex
+function testRegex(){const p=$('rxPat').value,f=$('rxFlg').value,t=$('rxIn').value,el=$('rxMatch');if(!p||!t){el.textContent='—';return}try{const re=new RegExp(p,f);const m=[...t.matchAll(re)];if(!m.length){el.textContent='No matches';return}el.innerHTML=m.map((x,i)=>'<div><span style="color:var(--bl);font-weight:600">#'+(i+1)+'</span> <span style="color:var(--gn)">'+escHtml(x[0])+'</span> <span style="color:var(--mt)">@'+x.index+'</span></div>').join('')}catch(e){el.textContent='Error: '+e.message}}
+['rxPat','rxFlg','rxIn'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(testRegex,300)}));
+// Diff
+function runDiff(){const a=$('diffA').value.split('\n'),b=$('diffB').value.split('\n'),out=[];const mx=Math.max(a.length,b.length);for(let i=0;i<mx;i++){if(a[i]===undefined)out.push('<div class="diff-add">+ '+escHtml(b[i])+'</div>');else if(b[i]===undefined)out.push('<div class="diff-del">- '+escHtml(a[i])+'</div>');else if(a[i]!==b[i])out.push('<div class="diff-del">- '+escHtml(a[i])+'</div><div class="diff-add">+ '+escHtml(b[i])+'</div>');else out.push('<div>  '+escHtml(a[i])+'</div>')}$('diffOut').innerHTML=out.join('')}
+// Lorem
+const _lorem='Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat'.split(' ');
+function genLorem(t,n){let r='';if(t==='p'){for(let i=0;i<n;i++){const s=(i*30)%_lorem.length;r+=_lorem.slice(s,s+40+Math.floor(Math.random()*20)).join(' ').replace(/[^a-zA-Z]*$/,'')+'.\n\n'}}else{for(let i=0;i<n;i++)r+=_lorem[i%_lorem.length]+' '}$('loremOut').value=r.trim()}
+// UUID
+function genUuid(n){const u=document.getElementById('uuidUp').checked;$('uuidOut').value=Array.from({length:n},()=>{const v=crypto.randomUUID();return u?v.toUpperCase():v}).join('\n')}
+// Timestamp
+function ts2date(){const v=$('tsIn').value.trim(),n=parseInt(v);if(!n){$('tsDateOut').textContent='Invalid';return}const d=new Date(v.length>10?n:n*1000);$('tsDateOut').innerHTML='ISO: '+d.toISOString()+'<br>Local: '+d.toLocaleString()}
+function date2ts(){const v=$('dateIn').value;if(!v)return;const d=new Date(v);$('tsOut').innerHTML='Seconds: '+Math.floor(d.getTime()/1000)+'<br>Ms: '+d.getTime()}
+function setNow(){const d=new Date();$('tsNow').innerHTML='ISO: '+d.toISOString()+'<br>Unix: '+Math.floor(d.getTime()/1000)}
+// Color
+function updColor(hex){hex=hex.replace(/[^#0-9a-fA-F]/g,'');if(!hex.startsWith('#'))hex='#'+hex;if(hex.length===4)hex='#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];if(hex.length!==7)return;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);$('cvHex').textContent=hex;$('cvRgb').textContent='rgb('+r+','+g+','+b+')';const rn=r/255,gn=g/255,bn=b/255,mx=Math.max(rn,gn,bn),mn=Math.min(rn,gn,bn),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===rn)h=((gn-bn)/d+(gn<bn?6:0))*60;else if(mx===gn)h=((bn-rn)/d+2)*60;else h=((rn-gn)/d+4)*60}$('cvHsl').textContent='hsl('+Math.round(h)+','+Math.round(s*100)+'%,'+Math.round(l*100)+'%)';$('colPrev').style.background=hex;$('colPick').value=hex}
+$('colPick').addEventListener('input',e=>{$('colHex').value=e.target.value;updColor(e.target.value)});
+$('colHex').addEventListener('input',e=>updColor(e.target.value));
 // i18n
-let lang = localStorage.getItem('devtools-lang') || 'en';
-const i18n = {
-  en: {
-    hero_h1: 'Dev <span>Tools</span>',
-    hero_p: 'Browser-based developer utilities. Pure frontend, no server, no data leaves your machine.',
-    tabs: ['CSS Compressor', 'JSON Formatter', 'Encode / Decode', 'Markdown Preview'],
-    input: 'Input', output: 'Output', minified: 'Minified Output', formatted: 'Formatted Output', preview: 'Preview',
-    sample: 'Sample', clear: 'Clear', copy: 'Copy', download: 'Download',
-    original: 'Original', saved: 'Saved', lines: 'Lines', time: 'Time', length: 'Length',
-    chars: 'Characters', words: 'Words',
-    compress: '🗜️ Compress', clearAll: 'Clear All',
-    optComments: 'Remove comments', optWhitespace: 'Minify whitespace', optColors: 'Shorten colors', optZeros: 'Clean zeros',
-    cssPlaceholder: 'Paste your CSS here...', cssOutPlaceholder: 'Minified CSS will appear here...',
-    jsonPlaceholder: 'Paste your JSON here...', jsonOutPlaceholder: 'Formatted JSON will appear here...',
-    encPlaceholder: 'Enter text to encode or decode...', encOutPlaceholder: 'Result...',
-    mdPlaceholder: 'Write Markdown here...',
-    b64enc: 'Base64 Encode →', b64dec: '← Base64 Decode',
-    urlEnc: 'URL Encode →', urlDec: '← URL Decode',
-    uniEnc: 'Unicode →', uniDec: '← Unicode',
-    htmlEnc: 'HTML Encode →', htmlDec: '← HTML Decode',
-    dropZone: 'Drop .css file here',
-  },
-  zh: {
-    hero_h1: '开发者 <span>工具</span>',
-    hero_p: '浏览器端开发工具。纯前端，无需服务器，数据不出浏览器。',
-    tabs: ['CSS 压缩', 'JSON 格式化', '编码转换', 'Markdown 预览'],
-    input: '输入', output: '输出', minified: '压缩结果', formatted: '格式化结果', preview: '预览',
-    sample: '示例', clear: '清空', copy: '复制', download: '下载',
-    original: '原始大小', saved: '节省', lines: '行数', time: '耗时', length: '长度',
-    chars: '字符数', words: '词数',
-    compress: '🗜️ 压缩', clearAll: '全部清空',
-    optComments: '删除注释', optWhitespace: '压缩空白', optColors: '缩写颜色', optZeros: '清理零值',
-    cssPlaceholder: '粘贴 CSS 代码...', cssOutPlaceholder: '压缩后的 CSS 将显示在这里...',
-    jsonPlaceholder: '粘贴 JSON 代码...', jsonOutPlaceholder: '格式化后的 JSON 将显示在这里...',
-    encPlaceholder: '输入要编码或解码的文本...', encOutPlaceholder: '结果...',
-    mdPlaceholder: '编写 Markdown...',
-    b64enc: 'Base64 编码 →', b64dec: '← Base64 解码',
-    urlEnc: 'URL 编码 →', urlDec: '← URL 解码',
-    uniEnc: 'Unicode 编码 →', uniDec: '← Unicode 解码',
-    htmlEnc: 'HTML 编码 →', htmlDec: '← HTML 解码',
-    dropZone: '拖放 .css 文件到这里',
-  }
-};
-
-function applyLang() {
-  const t = i18n[lang];
-  document.querySelector('.hero h1').innerHTML = t.hero_h1;
-  document.querySelector('.hero p').textContent = t.hero_p;
-  document.querySelectorAll('.tool-tab').forEach((tab, i) => { if (t.tabs[i]) tab.textContent = t.tabs[i]; });
-  document.querySelector('[data-tool="css"]').textContent = t.tabs[0];
-  document.querySelector('[data-tool="json"]').textContent = t.tabs[1];
-  document.querySelector('[data-tool="encode"]').textContent = t.tabs[2];
-  document.querySelector('[data-tool="md"]').textContent = t.tabs[3];
-  // Placeholders
-  document.getElementById('input').placeholder = t.cssPlaceholder;
-  document.getElementById('output').placeholder = t.cssOutPlaceholder;
-  document.getElementById('jsonInput').placeholder = t.jsonPlaceholder;
-  document.getElementById('jsonOutput').placeholder = t.jsonOutPlaceholder;
-  document.getElementById('encInput').placeholder = t.encPlaceholder;
-  document.getElementById('encOutput').placeholder = t.encOutPlaceholder;
-  document.getElementById('mdInput').placeholder = t.mdPlaceholder;
-  document.getElementById('dropZone').textContent = t.dropZone;
-  // Buttons
-  document.querySelector('.btn.p').innerHTML = t.compress;
-  document.querySelector('.btn.d').textContent = t.clearAll;
-  document.querySelectorAll('.panel-header .actions button').forEach(b => {
-    if (b.textContent === 'Sample' || b.textContent === '示例') b.textContent = t.sample;
-    if (b.textContent === 'Clear' || b.textContent === '清空') b.textContent = t.clear;
-    if (b.textContent === 'Copy' || b.textContent === '复制') b.textContent = t.copy;
-    if (b.textContent === 'Download' || b.textContent === '下载') b.textContent = t.download;
-  });
-  // Encode buttons
-  document.querySelectorAll('.enc-btn').forEach((b, i) => {
-    const keys = ['b64enc','b64dec','urlEnc','urlDec','uniEnc','uniDec','htmlEnc','htmlDec'];
-    if (t[keys[i]]) b.textContent = t[keys[i]];
-  });
-  // Options
-  const optLabels = document.querySelectorAll('.options label');
-  if (optLabels[0]) optLabels[0].lastChild.textContent = ' ' + t.optComments;
-  if (optLabels[1]) optLabels[1].lastChild.textContent = ' ' + t.optWhitespace;
-  if (optLabels[2]) optLabels[2].lastChild.textContent = ' ' + t.optColors;
-  if (optLabels[3]) optLabels[3].lastChild.textContent = ' ' + t.optZeros;
-  // Lang button
-  document.querySelectorAll('.lt').forEach(el => {
-    el.style.display = lang === 'zh' ? (el.classList.contains('zh') ? 'inline' : 'none') : (el.classList.contains('en') ? 'inline' : 'none');
-  });
-}
-
-function toggleLang() {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('devtools-lang', lang);
-  applyLang();
-}
-
+let lang=localStorage.getItem('devtools-lang')||'en';
+const i18n={en:{h1:'Dev <span>Tools</span>',p:'Browser-based developer utilities. Pure frontend, no server.',c:'Compress',ca:'Clear All',com:'Comments',ws:'Whitespace',col:'Colors',zer:'Zeros'},zh:{h1:'开发者 <span>工具</span>',p:'浏览器端开发工具。纯前端，无需服务器。',c:'压缩',ca:'全部清空',com:'注释',ws:'空白',col:'颜色',zer:'零值'}};
+function applyLang(){const t=i18n[lang];document.querySelector('.hero h1').innerHTML=t.h1;document.querySelector('.hero p').textContent=t.p;document.querySelector('.btn.p').innerHTML='🔧 '+t.c;document.querySelector('.btn.d').textContent=t.ca;const ol=document.querySelectorAll('.options label');if(ol[0])ol[0].lastChild.textContent=' '+t.com;if(ol[1])ol[1].lastChild.textContent=' '+t.ws;if(ol[2])ol[2].lastChild.textContent=' '+t.col;if(ol[3])ol[3].lastChild.textContent=' '+t.zer;document.querySelectorAll('.lt').forEach(el=>{el.style.display=lang==='zh'?(el.classList.contains('zh')?'inline':'none'):(el.classList.contains('en')?'inline':'none')})}
+function toggleLang(){lang=lang==='en'?'zh':'en';localStorage.setItem('devtools-lang',lang);applyLang()}
 applyLang();
-
-// ===== HTML Compressor =====
-function compressHtml() {
-  const v = document.getElementById('htmlInput').value;
-  if (!v.trim()) return;
-  let r = v.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').replace(/>\s+</g, '><').replace(/\s+>/g, '>').replace(/<\s+/g, '<').trim();
-  document.getElementById('htmlOutput').value = r;
-}
-function loadHtmlSample() {
-  document.getElementById('htmlInput').value = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Hello World</title>
-  <style>
-    body { margin: 0; padding: 20px; }
-  
-.html-panel,.sql-panel,.hash-panel,.jwt-panel,.regex-panel,.diff-panel,.lorem-panel,.uuid-panel,.ts-panel,.color-panel{flex:1;overflow:hidden;display:none}
-.hash-results{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
-.diff-panel{display:flex;flex-direction:column}
-.diff-grid{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
-.diff-grid .panel{overflow:hidden}
-.diff-grid textarea{min-height:0}
-.regex-panel{display:flex;flex-direction:column}
-.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem;gap:.5rem}
-.regex-row{display:flex;gap:.5rem}
-.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono)}
-.regex-input:focus{border-color:var(--bl)}
-.regex-flags{width:60px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
-.regex-results{flex:1;overflow-y:auto}
-.hash-panel{display:flex;flex-direction:column}
-.hash-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
-.hash-wrap .panel,.hash-results .panel-header{flex-shrink:0}
-.jwt-panel{display:flex;flex-direction:column}
-.jwt-output{flex:1;display:flex;flex-direction:column;border-top:1px solid var(--bd);overflow-y:auto}
-.jwt-sections{display:flex;flex-direction:column;flex:1;overflow-y:auto}
-.jwt-section{padding:.6rem 1rem;border-bottom:1px solid var(--bd)}
-.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.3rem}
-.jwt-pre{font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;word-break:break-all}
-.hash-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
-.hash-label{font-size:.7rem;font-weight:600;color:var(--mt);min-width:60px}
-.hash-val{flex:1;font-family:var(--mono);font-size:.78rem;word-break:break-all}
-.lorem-panel,.uuid-panel,.ts-panel,.color-panel{display:flex;flex-direction:column}
-.lorem-wrap,.uuid-wrap,.ts-wrap,.color-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
-.uuid-opts,.lorem-opts{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
-.ts-wrap{gap:0}
-.ts-section{margin-bottom:1rem}
-.ts-row{display:flex;gap:.5rem;margin-top:.3rem}
-.color-picker-row{display:flex;gap:.8rem;align-items:center;margin-bottom:1rem}
-.color-values{display:flex;flex-direction:column;gap:0}
-.color-preview{width:100%;height:80px;border-radius:8px;margin-top:1rem;border:1px solid var(--bd)}
-</style>
-</head>
-<body>
-  <h1>Hello</h1>
-  <p>This is a <strong>sample</strong> HTML page.</p>
-  <!-- Comment to remove -->
-  <ul>
-    <li>Item 1</li>
-    <li>Item 2</li>
-  </ul>
-</div>
-</body>
-</html>`;
-  compressHtml();
-}
-function clearHtmlInput() { document.getElementById('htmlInput').value = ''; document.getElementById('htmlOutput').value = ''; }
-function copyHtmlOutput() { const v = document.getElementById('htmlOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// ===== SQL Formatter =====
-function formatSql() {
-  const v = document.getElementById('sqlInput').value;
-  if (!v.trim()) return;
-  const kw = ['SELECT','FROM','WHERE','AND','OR','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','OUTER JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','CREATE TABLE','ALTER TABLE','DROP TABLE','INDEX','UNIQUE','NOT NULL','DEFAULT','PRIMARY KEY','FOREIGN KEY','REFERENCES','INNER','LEFT','RIGHT','OUTER','CROSS','UNION','ALL','AS','IN','BETWEEN','LIKE','IS','NULL','EXISTS','DISTINCT','CASE','WHEN','THEN','ELSE','END','ASC','DESC','INTO'];
-  let r = v.replace(/\s+/g, ' ').trim();
-  for (const k of kw.sort((a,b)=>b.length-a.length)) {
-    r = r.replace(new RegExp('\\b' + k.replace(/ /g,'\\s+') + '\\b', 'gi'), '\n' + k);
-  }
-  r = r.replace(/\n+/g, '\n').trim();
-  document.getElementById('sqlOutput').value = r;
-}
-function loadSqlSample() {
-  document.getElementById('sqlInput').value = `SELECT u.id, u.name, u.email, COUNT(o.id) as order_count, SUM(o.total) as total_spent FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.created_at > '2025-01-01' AND u.status = 'active' GROUP BY u.id, u.name, u.email HAVING COUNT(o.id) > 5 ORDER BY total_spent DESC LIMIT 20;`;
-  formatSql();
-}
-function copySqlOutput() { const v = document.getElementById('sqlOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// ===== Hash Generator =====
-function runHash() {
-  const v = document.getElementById('hashInput').value;
-  if (!v) return;
-  // SHA-1, SHA-256, SHA-512 via SubtleCrypto
-  const enc = new TextEncoder().encode(v);
-  ['SHA-1','SHA-256','SHA-512'].forEach(async algo => {
-    try {
-      const buf = await crypto.subtle.digest(algo, enc);
-      const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-      const id = 'hash' + algo.replace(/[- ]/g,'');
-      const el = document.getElementById(id);
-      if (el) el.textContent = hex;
-    } catch(e) {}
-  });
-  // MD5 manual (simple implementation)
-  document.getElementById('hashMd5').textContent = md5(v);
-}
-function copyHash(id) { const v = document.getElementById(id).textContent; if(v==='—') return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// Simple MD5
-function md5(s){function L(k,d){return(k<<d)|(k>>>(32-d))}function G(a,b,c,d,x,s,t){return L(a+((b&c)|((~b)&d))+x+t,s)+b}function K(a,b,c,d,x,s,t){return L(a+((b&d)|(c&(~d)))+x+t,s)+b}function J(a,b,c,d,x,s,t){return L(a+(b^c^d)+x+t,s)+b}function H(a,b,c,d,x,s,t){return L(a+(c^(b|(~d)))+x+t,s)+b}var n=unescape(encodeURIComponent(s)),b=[],i;for(i=0;i<n.length;i++)b.push(n.charCodeAt(i)&0xff);var len=b.length;b.push(0x80);while(b.length%64!==0)b.push(0);var bits=len*8;for(i=0;i<8;i++)b.push((bits>>>(i*8))&0xff);var a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;for(var j=0;j<b.length;j+=64){var M=[];for(i=0;i<16;i++)M.push(b[j+i*4]|(b[j+i*4+1]<<8)|(b[j+i*4+2]<<16)|(b[j+i*4+3]<<24));var A=a0,B=b0,C=c0,D=d0;A=G(A,B,C,D,M[0],7,0xd76aa478);D=G(D,A,B,C,M[1],12,0xe8c7b756);C=G(C,D,A,B,M[2],17,0x242070db);B=G(B,C,D,A,M[3],22,0xc1bdceee);A=G(A,B,C,D,M[4],7,0xf57c0faf);D=G(D,A,B,C,M[5],12,0x4787c62a);C=G(C,D,A,B,M[6],17,0xa8304613);B=G(B,C,D,A,M[7],22,0xfd469501);A=G(A,B,C,D,M[8],7,0x698098d8);D=G(D,A,B,C,M[9],12,0x8b44f7af);C=G(C,D,A,B,M[10],17,0xffff5bb1);B=G(B,C,D,A,M[11],22,0x895cd7be);A=G(A,B,C,D,M[12],7,0x6b901122);D=G(D,A,B,C,M[13],12,0xfd987193);C=G(C,D,A,B,M[14],17,0xa679438e);B=G(B,C,D,A,M[15],22,0x49b40821);A=K(A,B,C,D,M[1],5,0xf61e2562);D=K(D,A,B,C,M[6],9,0xc040b340);C=K(C,D,A,B,M[11],14,0x265e5a51);B=K(B,C,D,A,M[0],20,0xe9b6c7aa);A=K(A,B,C,D,M[5],5,0xd62f105d);D=K(D,A,B,C,M[10],9,0x02441453);C=K(C,D,A,B,M[15],14,0xd8a1e681);B=K(B,C,D,A,M[4],20,0xe7d3fbc8);A=K(A,B,C,D,M[9],5,0x21e1cde6);D=K(D,A,B,C,M[14],9,0xc33707d6);C=K(C,D,A,B,M[3],14,0xf4d50d87);B=K(B,C,D,A,M[8],20,0x455a14ed);A=K(A,B,C,D,M[13],5,0xa9e3e905);D=K(D,A,B,C,M[2],9,0xfcefa3f8);C=K(C,D,A,B,M[7],14,0x676f02d9);B=K(B,C,D,A,M[12],20,0x8d2a4c8a);A=J(A,B,C,D,M[5],4,0xfffa3942);D=J(D,A,B,C,M[8],11,0x8771f681);C=J(C,D,A,B,M[11],16,0x6d9d6122);B=J(B,C,D,A,M[14],23,0xfde5380c);A=J(A,B,C,D,M[1],4,0xa4beea44);D=J(D,A,B,C,M[4],11,0x4bdecfa9);C=J(C,D,A,B,M[7],16,0xf6bb4b60);B=J(B,C,D,A,M[10],23,0xbebfbc70);A=J(A,B,C,D,M[13],4,0x289b7ec6);D=J(D,A,B,C,M[0],11,0xeaa127fa);C=J(C,D,A,B,M[3],16,0xd4ef3085);B=J(B,C,D,A,M[6],23,0x04881d05);A=J(A,B,C,D,M[9],4,0xd9d4d039);D=J(D,A,B,C,M[12],11,0xe6db99e5);C=J(C,D,A,B,M[15],16,0x1fa27cf8);B=J(B,C,D,A,M[2],23,0xc4ac5665);A=H(A,B,C,D,M[0],6,0xf4292244);D=H(D,A,B,C,M[7],10,0x432aff97);C=H(C,D,A,B,M[14],15,0xab9423a7);B=H(B,C,D,A,M[5],21,0xfc93a039);A=H(A,B,C,D,M[12],6,0x655b59c3);D=H(D,A,B,C,M[3],10,0x8f0ccc92);C=H(C,D,A,B,M[10],15,0xffeff47d);B=H(B,C,D,A,M[1],21,0x85845dd1);A=H(A,B,C,D,M[8],6,0x6fa87e4f);D=H(D,A,B,C,M[15],10,0xfe2ce6e0);C=H(C,D,A,B,M[6],15,0xa3014314);B=H(B,C,D,A,M[13],21,0x4e0811a1);A=H(A,B,C,D,M[4],6,0xf7537e82);D=H(D,A,B,C,M[11],10,0xbd3af235);C=H(C,D,A,B,M[2],15,0x2ad7d2bb);B=H(B,C,D,A,M[9],21,0xeb86d391);a0=(a0+A)>>>0;b0=(b0+B)>>>0;c0=(c0+C)>>>0;d0=(d0+D)>>>0}function Hx(n){var s='',v;for(i=0;i<4;i++){v=(n>>>(i*8))&0xff;s+=v.toString(16).padStart(2,'0')}return s}return Hx(a0)+Hx(b0)+Hx(c0)+Hx(d0)}
-
-// ===== JWT Decoder =====
-function decodeJwt() {
-  const v = document.getElementById('jwtInput').value.trim();
-  if (!v) return;
-  try {
-    const parts = v.split('.');
-    if (parts.length < 2) throw new Error('Invalid JWT');
-    const hdr = JSON.parse(atob(parts[0].replace(/-/g,'+').replace(/_/g,'/')));
-    const pay = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
-    document.getElementById('jwtHeader').textContent = JSON.stringify(hdr, null, 2);
-    document.getElementById('jwtHeader').style.color = '';
-    document.getElementById('jwtPayload').textContent = JSON.stringify(pay, null, 2);
-    document.getElementById('jwtPayload').style.color = '';
-    document.getElementById('jwtSig').textContent = parts[2] ? parts[2].substring(0,40) + '...' : '(none)';
-  } catch(e) {
-    document.getElementById('jwtHeader').textContent = '❌ ' + e.message;
-    document.getElementById('jwtHeader').style.color = 'var(--rd)';
-    document.getElementById('jwtPayload').textContent = '';
-    document.getElementById('jwtSig').textContent = '';
-  }
-}
-function copyJwtOutput() { const p = document.getElementById('jwtPayload').textContent; if(!p) return; navigator.clipboard.writeText(p); showToast('Copied'); }
-
-// ===== Regex Tester =====
-function testRegex() {
-  const p = document.getElementById('regexPattern').value;
-  const f = document.getElementById('regexFlags').value;
-  const t = document.getElementById('regexInput').value;
-  const el = document.getElementById('regexMatches');
-  if (!p || !t) { el.textContent = '—'; return; }
-  try {
-    const re = new RegExp(p, f);
-    const matches = [...t.matchAll(re)];
-    if (!matches.length) { el.textContent = 'No matches'; return; }
-    el.innerHTML = matches.map((m,i) => `<div style="padding:.2rem 0"><span style="color:var(--bl);font-weight:600">#${i+1}</span> <span style="color:var(--gn)">${escHtml(m[0])}</span> <span style="color:var(--mt)">@ index ${m.index}</span>${m.length>1?m.slice(1).map((g,j)=>`<div style="padding-left:1rem;color:var(--yl)">$${j+1}: ${escHtml(g||'undefined')}</div>`).join(''):''}</div>`).join('');
-  } catch(e) { el.textContent = '❌ ' + e.message; }
-}
-function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-// ===== Diff Checker =====
-function runDiff() {
-  const a = document.getElementById('diffA').value.split('\n');
-  const b = document.getElementById('diffB').value.split('\n');
-  const el = document.getElementById('diffOutput');
-  // Simple line-by-line diff
-  let out = [];
-  const max = Math.max(a.length, b.length);
-  for (let i = 0; i < max; i++) {
-    const la = a[i], lb = b[i];
-    if (la === undefined) out.push(`<div class="diff-add">+ ${escHtml(lb)}</div>`);
-    else if (lb === undefined) out.push(`<div class="diff-del">- ${escHtml(la)}</div>`);
-    else if (la !== lb) {
-      out.push(`<div class="diff-del">- ${escHtml(la)}</div><div class="diff-add">+ ${escHtml(lb)}</div>`);
-    } else {
-      out.push(`<div>  ${escHtml(la)}</div>`);
-    }
-  }
-  el.innerHTML = out.join('');
-}
-
-// ===== Lorem Ipsum =====
-const _lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
-function genLorem(type, count) {
-  const words = _lorem.split(' ');
-  let r = '';
-  if (type === 'p') {
-    for (let i = 0; i < count; i++) {
-      const start = (i * 30) % words.length;
-      const slice = words.slice(start, start + 50 + Math.floor(Math.random()*30));
-      r += slice.join(' ').replace(/[^a-zA-Z]*$/, '') + '.\n\n';
-    }
-  } else if (type === 's') {
-    const sentences = _lorem.match(/[^.!?]+[.!?]+/g) || [];
-    for (let i = 0; i < count; i++) r += sentences[i % sentences.length].trim() + ' ';
-  } else {
-    for (let i = 0; i < count; i++) r += words[i % words.length] + ' ';
-  }
-  document.getElementById('loremOutput').value = r.trim();
-}
-function copyLorem() { const v = document.getElementById('loremOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// ===== UUID Generator =====
-function genUuids(n) {
-  const upper = document.getElementById('uuidUpper').checked;
-  let uuids = [];
-  for (let i = 0; i < n; i++) {
-    let u = crypto.randomUUID();
-    uuids.push(upper ? u.toUpperCase() : u);
-  }
-  document.getElementById('uuidOutput').value = uuids.join('\n');
-}
-function copyUuids() { const v = document.getElementById('uuidOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
-
-// ===== Timestamp =====
-function tsToDate() {
-  const v = document.getElementById('tsInput').value.trim();
-  const el = document.getElementById('tsDateResult');
-  const n = parseInt(v);
-  if (!n) { el.textContent = 'Invalid'; return; }
-  const ms = v.length > 10 ? n : n * 1000;
-  const d = new Date(ms);
-  el.innerHTML = `<div>ISO: ${d.toISOString()}</div><div>Local: ${d.toLocaleString()}</div><div>UTC: ${d.toUTCString()}</div>`;
-}
-function dateToTs() {
-  const v = document.getElementById('dateInput').value;
-  const el = document.getElementById('tsResult');
-  if (!v) return;
-  const d = new Date(v);
-  el.innerHTML = `<div>Seconds: ${Math.floor(d.getTime()/1000)}</div><div>Milliseconds: ${d.getTime()}</div>`;
-}
-function setNow() {
-  const now = new Date();
-  document.getElementById('tsNow').innerHTML = `<div>ISO: ${now.toISOString()}</div><div>Local: ${now.toLocaleString()}</div><div>Unix: ${Math.floor(now.getTime()/1000)}</div>`;
-}
-
-// ===== Color Tools =====
-function updateColor(hex) {
-  hex = hex.replace(/[^#0-9a-fA-F]/g,'');
-  if (!hex.startsWith('#')) hex = '#' + hex;
-  if (hex.length === 4) hex = '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
-  if (hex.length !== 7) return;
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  const rnorm=r/255,gmax=Math.max(rnorm,g/255),gmin=Math.min(rnorm,g/255),bmax=Math.max(gmax,b/255),bmin=Math.min(gmin,b/255);
-  const l=(bmax+bmin)/2;let h=0,s=0;if(bmax!==bmin){const d=bmax-bmin;s=l>.5?d/(2-bmax-bmin):d/(bmax+bmin);if(bmax===rnorm)h=((g/255-b/255)/d+(g/255<b/255?6:0))*60;else if(bmax===g/255)h=((b/255-rnorm)/d+2)*60;else h=((rnorm-g/255)/d+4)*60}
-  document.getElementById('cvHex').textContent = hex;
-  document.getElementById('cvRgb').textContent = `rgb(${r},${g},${b})`;
-  document.getElementById('cvHsl').textContent = `hsl(${Math.round(h)},${Math.round(s*100)}%,${Math.round(l*100)}%)`;
-  document.getElementById('colorPreview').style.background = hex;
-  document.getElementById('colorPick').value = hex;
-}
-
-// ===== Tool switching =====
-const tools = ['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
-function switchTool(tool) {
-  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
-  document.querySelectorAll('.tool-tab[data-tool="'+tool+'"]').forEach(t => t.classList.add('on'));
-  var panels = {css:'mainPanel',html:'htmlPanel',json:'jsonPanel',sql:'sqlPanel',encode:'encodePanel',hash:'hashPanel',jwt:'jwtPanel',md:'mdPanel',regex:'regexPanel',diff:'diffPanel',lorem:'loremPanel',uuid:'uuidPanel',timestamp:'timestampPanel',color:'colorPanel'};
-  Object.keys(panels).forEach(function(k){
-    var el = document.getElementById(panels[k]);
-    if (!el) return;
-    el.style.display = (k === tool) ? (k==='css' ? 'grid' : 'flex') : 'none';
-  });
-}
-
-
-// Input listeners for new tools
-document.getElementById('htmlInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(compressHtml, 500); });
-document.getElementById('sqlInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatSql, 500); });
-document.getElementById('hashInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(runHash, 400); });
-document.getElementById('jwtInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(decodeJwt, 400); });
-document.getElementById('regexPattern').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-document.getElementById('regexFlags').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-document.getElementById('regexInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-document.getElementById('colorPick').addEventListener('input', (e) => { document.getElementById('colorHex').value = e.target.value; updateColor(e.target.value); });
-document.getElementById('colorHex').addEventListener('input', (e) => { updateColor(e.target.value); });
-// Initialize color
-updateColor('#3b82f6');
-setNow();
+// Samples
+function cssSample(){$('cssIn').value='body{margin:0;padding:0;font-family:sans-serif;background:#fff;color:#333}.container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}.header{background:linear-gradient(135deg,#aabbcc,#112233);padding:1rem;border-radius:8px}.btn-primary{display:inline-block;background:#3b82f6;color:#fff;padding:.5rem 1rem;border-radius:6px;border:0 solid transparent;font-weight:600}';doCompress()}
+function htmlSample(){$('htmlIn').value='<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>Hello</title>\n</head>\n<body>\n<h1>Hello</h1>\n<p>A <strong>sample</strong> page.</p>\n<!-- remove me -->\n<ul><li>A</li><li>B</li></ul>\n</body>\n</html>';compressHtml()}
+function jsonSample(){$('jsonIn').value=JSON.stringify({name:"OpenKee",tools:["Rate Board","Crypto Board"],stats:{total:14,active:true},config:{theme:"dark",features:{offline:false}}});formatJson()}
+function sqlSample(){$('sqlIn').value='SELECT u.id, u.name, COUNT(o.id) as orders FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.status = \'active\' AND u.created_at > \'2025-01-01\' GROUP BY u.id, u.name HAVING COUNT(o.id) > 5 ORDER BY orders DESC LIMIT 20;';formatSql()}
+function mdSample(){$('mdIn').value='# Dev Tools\n\nA collection of **browser-based** utilities.\n\n## Features\n\n- CSS Compressor\n- JSON Formatter\n- Encode / Decode\n\n### Why?\n\n> Every tool is a single HTML file.\n\n```js\nconst tool = "dev-tools";\n```\n\n---\n\n| Tool | Status |\n|------|--------|\n| CSS | ✅ |\n| JSON | ✅ |';renderMd()}
+updColor('#3b82f6');setNow();
 </script>
 </body>
 </html>
