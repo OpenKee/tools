@@ -52,6 +52,32 @@ textarea::placeholder{color:var(--mt)}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gn);color:#000;padding:.5rem 1.2rem;border-radius:8px;font-size:.78rem;font-weight:600;transition:transform .3s ease;z-index:100}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .json-panel{display:grid;grid-template-columns:1fr 50px 1fr;flex:1;overflow:hidden}
+.encode-panel{flex:1;overflow:hidden;display:none}
+.encode-grid{display:grid;grid-template-columns:1fr 140px 1fr;height:100%;overflow:hidden}
+.enc-section{display:flex;flex-direction:column;overflow:hidden}
+.enc-btns{display:flex;flex-direction:column;gap:.4rem;padding:1rem .5rem;justify-content:center;background:var(--sf);border-left:1px solid var(--bd);border-right:1px solid var(--bd)}
+.enc-btn{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.68rem;font-weight:500;padding:.4rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.enc-btn:hover{border-color:var(--bd2);color:var(--tx);background:rgba(255,255,255,.04)}
+.md-panel{flex:1;overflow:hidden;display:none}
+.md-grid{display:grid;grid-template-columns:1fr 50px 1fr;height:100%}
+.md-preview{flex:1;overflow-y:auto;padding:1rem;font-size:.85rem;line-height:1.7;color:var(--tx)}
+.md-preview h1{font-size:1.5rem;font-weight:800;margin:1rem 0 .5rem;border-bottom:1px solid var(--bd);padding-bottom:.3rem}
+.md-preview h2{font-size:1.2rem;font-weight:700;margin:.8rem 0 .4rem}
+.md-preview h3{font-size:1rem;font-weight:600;margin:.6rem 0 .3rem}
+.md-preview p{margin:.5rem 0}
+.md-preview code{background:rgba(255,255,255,.08);padding:.1rem .3rem;border-radius:3px;font-family:var(--mono);font-size:.82em}
+.md-preview pre{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:6px;padding:.8rem;overflow-x:auto;margin:.5rem 0}
+.md-preview pre code{background:0;padding:0}
+.md-preview blockquote{border-left:3px solid var(--bl);padding-left:.8rem;color:var(--mt);margin:.5rem 0}
+.md-preview ul,.md-preview ol{padding-left:1.5rem;margin:.5rem 0}
+.md-preview li{margin:.2rem 0}
+.md-preview a{color:var(--bl)}
+.md-preview strong{font-weight:700}
+.md-preview em{font-style:italic}
+.md-preview hr{border:none;border-top:1px solid var(--bd);margin:1rem 0}
+.md-preview table{border-collapse:collapse;width:100%;margin:.5rem 0}
+.md-preview th,.md-preview td{border:1px solid var(--bd);padding:.4rem .6rem;text-align:left;font-size:.82rem}
+.md-preview th{background:rgba(255,255,255,.05);font-weight:600}
 .drop-zone{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--gn);z-index:10;font-size:1rem;color:var(--gn);font-weight:600}
 .drop-zone.active{display:flex}
 @media(max-width:768px){.main{grid-template-columns:1fr;grid-template-rows:1fr auto 1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
@@ -69,6 +95,8 @@ textarea::placeholder{color:var(--mt)}
 <div class="tool-tabs" id="toolTabs">
 <button class="tool-tab on" data-tool="css">CSS Compressor</button>
 <button class="tool-tab" data-tool="json">JSON Formatter</button>
+<button class="tool-tab" data-tool="encode">Encode / Decode</button>
+<button class="tool-tab" data-tool="md">Markdown Preview</button>
 </div>
 <div class="stats-bar" id="stats">
 <div class="stat"><div class="v" id="s-orig">0 B</div><div class="l">Original</div></div>
@@ -110,6 +138,41 @@ textarea::placeholder{color:var(--mt)}
 <div class="panel">
 <div class="panel-header"><span>Formatted Output</span><div class="actions"><button onclick="copyJsonOutput()">Copy</button><button onclick="downloadJsonOutput()">Download</button></div></div>
 <textarea id="jsonOutput" readonly placeholder="Formatted JSON will appear here..." spellcheck="false"></textarea>
+</div>
+</div>
+<div class="encode-panel" id="encodePanel" style="display:none">
+<div class="encode-grid">
+  <div class="enc-section">
+    <div class="panel-header"><span>Input</span></div>
+    <textarea id="encInput" placeholder="Enter text to encode or decode..." spellcheck="false"></textarea>
+  </div>
+  <div class="enc-btns">
+    <button class="enc-btn" onclick="encBase64()">Base64 Encode →</button>
+    <button class="enc-btn" onclick="decBase64()">← Base64 Decode</button>
+    <button class="enc-btn" onclick="encUrl()">URL Encode →</button>
+    <button class="enc-btn" onclick="decUrl()">← URL Decode</button>
+    <button class="enc-btn" onclick="encUnicode()">Unicode →</button>
+    <button class="enc-btn" onclick="decUnicode()">← Unicode</button>
+    <button class="enc-btn" onclick="encHtml()">HTML Encode →</button>
+    <button class="enc-btn" onclick="decHtml()">← HTML Decode</button>
+  </div>
+  <div class="enc-section">
+    <div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEncOutput()">Copy</button></div></div>
+    <textarea id="encOutput" readonly placeholder="Result..." spellcheck="false"></textarea>
+  </div>
+</div>
+</div>
+<div class="md-panel" id="mdPanel" style="display:none">
+<div class="md-grid">
+  <div class="panel" style="position:relative">
+    <div class="panel-header"><span>Markdown</span><div class="actions"><button onclick="loadMdSample()">Sample</button></div></div>
+    <textarea id="mdInput" placeholder="Write Markdown here..." spellcheck="false"></textarea>
+  </div>
+  <div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+  <div class="panel">
+    <div class="panel-header"><span>Preview</span></div>
+    <div id="mdPreview" class="md-preview"></div>
+  </div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -382,6 +445,120 @@ function copyJsonOutput() { if (!jsonOutput.value) return; navigator.clipboard.w
 function downloadJsonOutput() { if (!jsonOutput.value) return; const b = new Blob([jsonOutput.value],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'formatted.json'; a.click(); showToast('Downloaded'); }
 
 jsonInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatJson, 500); });
+
+// Encode/Decode functions
+function encBase64() { document.getElementById('encOutput').value = btoa(unescape(encodeURIComponent(document.getElementById('encInput').value))); }
+function decBase64() { try { document.getElementById('encOutput').value = decodeURIComponent(escape(atob(document.getElementById('encInput').value))); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid Base64'; } }
+function encUrl() { document.getElementById('encOutput').value = encodeURIComponent(document.getElementById('encInput').value); }
+function decUrl() { try { document.getElementById('encOutput').value = decodeURIComponent(document.getElementById('encInput').value); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid URL encoding'; } }
+function encUnicode() { const v = document.getElementById('encInput').value; document.getElementById('encOutput').value = Array.from(v).map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0')).join(''); }
+function decUnicode() { try { document.getElementById('encOutput').value = document.getElementById('encInput').value.replace(/\\u([0-9a-fA-F]{4})/g, (_,h) => String.fromCharCode(parseInt(h,16))); } catch(e) { document.getElementById('encOutput').value = '❌ Invalid Unicode'; } }
+function encHtml() { const d = document.createElement('div'); d.textContent = document.getElementById('encInput').value; document.getElementById('encOutput').value = d.innerHTML; }
+function decHtml() { const d = document.createElement('div'); d.innerHTML = document.getElementById('encInput').value; document.getElementById('encOutput').value = d.textContent; }
+function copyEncOutput() { const v = document.getElementById('encOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// Markdown live preview (simple parser)
+function renderMd() {
+  const raw = document.getElementById('mdInput').value;
+  let h = raw;
+  // Escape HTML
+  h = h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Code blocks
+  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+  // Inline code
+  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Headers
+  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // Bold & italic
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Links
+  h = h.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>');
+  // Blockquote
+  h = h.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  // Horizontal rule
+  h = h.replace(/^---$/gm, '<hr>');
+  // Unordered list
+  h = h.replace(/^- (.+)$/gm, '<li>$1</li>');
+  h = h.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+  // Paragraphs
+  h = h.replace(/\n\n/g, '</p><p>');
+  h = '<p>' + h + '</p>';
+  h = h.replace(/<p><(h[1-3]|ul|ol|pre|blockquote|hr)/g, '<$1');
+  h = h.replace(/<\/(h[1-3]|ul|ol|pre|blockquote)><\/p>/g, '</$1>');
+  document.getElementById('mdPreview').innerHTML = h;
+}
+function loadMdSample() {
+  document.getElementById('mdInput').value = `# Dev Tools
+
+A collection of **browser-based** developer utilities.
+
+## Features
+
+- CSS Compressor
+- JSON Formatter
+- Encode / Decode
+- Markdown Preview
+
+### Why?
+
+> Every tool is a single HTML file. No backend needed.
+
+\`\`\`javascript
+const tool = "dev-tools";
+console.log("Pure frontend: " + tool);
+\`\`\`
+
+---
+
+| Tool | Status |
+|------|--------|
+| CSS | ✅ |
+| JSON | ✅ |
+| Encode | ✅ |
+| Markdown | ✅ |
+
+Check out [OpenKee](https://github.com/OpenKee) for more.`;
+  renderMd();
+}
+document.getElementById('mdInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderMd, 300); });
+
+// Extend tool switcher
+document.getElementById('toolTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tool-tab');
+  if (!tab) return;
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
+  tab.classList.add('on');
+  const tool = tab.dataset.tool;
+  document.querySelector('.main').style.display = tool === 'css' ? 'grid' : 'none';
+  document.getElementById('jsonPanel').style.display = tool === 'json' ? 'grid' : 'none';
+  document.getElementById('encodePanel').style.display = tool === 'encode' ? 'flex' : 'none';
+  document.getElementById('mdPanel').style.display = tool === 'md' ? 'grid' : 'none';
+  // Update stats for different tools
+  if (tool === 'json') {
+    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
+    document.querySelectorAll('.stat .l')[1].textContent = 'Formatted';
+    document.querySelectorAll('.stat .l')[2].textContent = 'Lines';
+    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
+  } else if (tool === 'encode') {
+    document.querySelectorAll('.stat .l')[0].textContent = 'Input';
+    document.querySelectorAll('.stat .l')[1].textContent = 'Output';
+    document.querySelectorAll('.stat .l')[2].textContent = 'Length';
+    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
+  } else if (tool === 'md') {
+    document.querySelectorAll('.stat .l')[0].textContent = 'Characters';
+    document.querySelectorAll('.stat .l')[1].textContent = 'Words';
+    document.querySelectorAll('.stat .l')[2].textContent = 'Lines';
+    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
+  } else {
+    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
+    document.querySelectorAll('.stat .l')[1].textContent = 'Minified';
+    document.querySelectorAll('.stat .l')[2].textContent = 'Saved';
+    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
+  }
+});
 </script>
 </body>
 </html>
