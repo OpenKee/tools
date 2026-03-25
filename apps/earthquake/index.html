@@ -101,6 +101,14 @@ L.control.zoom({position:"topleft"}).addTo(map);
 darkBL.addTo(map);
 var lg=L.layerGroup().addTo(map);
 var popPts=[];
+var platesL=null;
+document.querySelector('[data-overlay="plates"]').addEventListener('click',async function(e){
+  var b=e.currentTarget;b.classList.toggle('on');
+  if(b.classList.contains('on')){
+    if(!platesL){try{var r=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');var d=await r.json();platesL=L.layerGroup();L.geoJSON(d,{style:{color:'#ef4444',weight:1.5,opacity:0.7}}).eachLayer(function(l){platesL.addLayer(l)})}catch(e){}}
+    if(platesL&&!map.hasLayer(platesL))platesL.addTo(map);
+  }else{if(platesL&&map.hasLayer(platesL))map.removeLayer(platesL)}
+});
 function mc(m){return m==null?"g":m<3?"g":m<5?"y":m<6?"o":"r"}
 function mcol(m){return m==null?"#4ade80":m<3?"#4ade80":m<5?"#facc15":m<6?"#fb923c":"#ef4444"}
 function ta(t){var d=Math.max(0,Math.round((Date.now()-t)/60000));if(d<60)return d+"m ago";if(d<1440)return Math.round(d/60)+"h ago";return Math.round(d/1440)+"d ago"}
