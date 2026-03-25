@@ -63,14 +63,20 @@ footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd)
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var API="https://earthquake.usgs.gov/fdsnws/event/1/query";
-var P="day",M=0,mk=[];
-var m=L.map("map",{zoomControl:false}).setView([20,0],2);
+var P="day",M=0,eqData=[],mk=[];
+var m=L.map("map",{zoomControl:false,worldCopyJump:true}).setView([20,0],2);
 L.control.zoom({position:"topright"}).addTo(m);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:""}).addTo(m);
+
+/* base radius at zoom 2 — scales with zoom */
+var BASE_ZOOM=2;
+function magRadius(v,z){return Math.max(3,v*2.5*Math.pow(1.4,z-BASE_ZOOM))}
+
 function sp(p){P=p;document.querySelectorAll(".fb:not([data-m])").forEach(function(b){b.classList.toggle("on",b.textContent.indexOf(p==="day"?"24":p==="week"?"7":"30")>=0)});ld_()}
 function sm(v){M=v;document.querySelectorAll(".fb[data-m]").forEach(function(b){b.classList.toggle("on",parseFloat(b.dataset.m)===v)});ld_()}
 function c_(v){return v<3?"g":v<5?"y":v<6?"o":"r"}
 function ag_(t){var d=Math.round((Date.now()-t)/60000);if(d<60)return d+"m";if(d<1440)return Math.round(d/60)+"h";return Math.round(d/1440)+"d"}
+
 function ld_(){
   document.getElementById("ld").classList.add("on");
   var e=new Date(),s=new Date();
@@ -80,29 +86,50 @@ function ld_(){
   var u=API+"?format=geojson&starttime="+s.toISOString().slice(0,10)+"&endtime="+e.toISOString().slice(0,10)+"&minmagnitude="+M+"&orderby=time";
   fetch(u).then(function(r){return r.json()}).then(function(d){
     document.getElementById("ld").classList.remove("on");
-    var q=d.features||[];
-    rS(q);rM(q);rL(q);
+    eqData=d.features||[];
+    rS(eqData);rM();rL(eqData);
     document.getElementById("up").textContent=new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"});
-    document.getElementById("ft").textContent=q.length+" events";
+    document.getElementById("ft").textContent=eqData.length+" events";
   }).catch(function(e){document.getElementById("ld").textContent="Error: "+e.message})
 }
+
 function rS(q){
   var x=0,p=0,g=0;
   q.forEach(function(e){var v=e.properties.mag;if(v>x)x=v;p+=e.geometry.coordinates[2];if(v>=5)g++});
   var a=q.length?Math.round(p/q.length):0;
   document.getElementById("st").innerHTML="<div class=\"st\"><div class=\"v\">"+q.length+"</div><div class=\"l\">Events</div></div><div class=\"st\"><div class=\"v\">"+(x?x.toFixed(1):"-")+"</div><div class=\"l\">Max</div></div><div class=\"st\"><div class=\"v\">"+a+"km</div><div class=\"l\">Avg Depth</div></div><div class=\"st\"><div class=\"v\">"+g+"</div><div class=\"l\">M5+</div></div>";
 }
-function rM(q){
+
+/* render markers — duplicates across ±360° for world wrap */
+function rM(){
   mk.forEach(function(v){m.removeLayer(v)});mk=[];
-  q.forEach(function(e){
+  var z=m.getZoom();
+  eqData.forEach(function(e){
     var p=e.properties,c=e.geometry.coordinates,v=p.mag||1;
-    var r=Math.max(4,v*3);
     var co=v<3?"#4ade80":v<5?"#facc15":v<6?"#fb923c":"#ef4444";
-    var k=L.circleMarker([c[1],c[0]],{radius:r,fillColor:co,color:co,weight:1,opacity:.8,fillOpacity:.5}).addTo(m);
-    k.bindPopup("<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km");
-    mk.push(k);
+    var popup="<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km";
+    /* place at lng, lng+360, lng-360 */
+    [-360,0,360].forEach(function(off){
+      var k=L.circleMarker([c[1],c[0]+off],{radius:magRadius(v,z),fillColor:co,color:co,weight:1,opacity:.8,fillOpacity:.5}).addTo(m);
+      k.bindPopup(popup);
+      mk.push(k);
+    });
   });
 }
+
+/* rescale markers on zoom */
+m.on("zoomend",function(){
+  var z=m.getZoom();
+  var i=0;
+  eqData.forEach(function(e){
+    var v=e.properties.mag||1;
+    [-360,0,360].forEach(function(){
+      if(mk[i])mk[i].setRadius(magRadius(v,z));
+      i++;
+    });
+  });
+});
+
 function rL(q){
   var s=q.slice().sort(function(a,b){return b.properties.time-a.properties.time});
   var h="";
