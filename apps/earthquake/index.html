@@ -98,31 +98,19 @@ function rS(q){
   document.getElementById("st").innerHTML="<div class=\"st\"><div class=\"v\">"+q.length+"</div><div class=\"l\">Events</div></div><div class=\"st\"><div class=\"v\">"+(x?x.toFixed(1):"-")+"</div><div class=\"l\">Max</div></div><div class=\"st\"><div class=\"v\">"+a+"km</div><div class=\"l\">Avg Depth</div></div><div class=\"st\"><div class=\"v\">"+g+"</div><div class=\"l\">M5+</div></div>";
 }
 
-/* render markers */
+/* render markers — radius from Gutenberg-Richter: log10(A)=1.02M-4, R=sqrt(A/pi) km */
+function eqRadius(mag){var A=Math.pow(10,1.02*mag-4);return Math.sqrt(A/Math.PI)*1000}
 function rM(){
   mk.forEach(function(v){m.removeLayer(v)});mk=[];
-  var z=m.getZoom();
-  var sc=1+Math.max(0,(z-2))*0.3;
   eqData.forEach(function(e){
     var p=e.properties,c=e.geometry.coordinates,v=p.mag||1;
-    var r=Math.max(3,v*sc);
+    var r=Math.max(5000,eqRadius(v));
     var co=v<3?"#4ade80":v<5?"#facc15":v<6?"#fb923c":"#ef4444";
-    var k=L.circleMarker([c[1],c[0]],{radius:r,fillColor:co,color:co,weight:1,opacity:.8,fillOpacity:.5}).addTo(m);
-    k.bindPopup("<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km");
+    var k=L.circle([c[1],c[0]],{radius:r,fillColor:co,color:co,weight:1,opacity:.5,fillOpacity:.2}).addTo(m);
+    k.bindPopup("<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km<br>R: "+Math.round(eqRadius(v)/1000)+"km");
     mk.push(k);
   });
 }
-
-m.on("zoomend",function(){
-  var z=m.getZoom();
-  var sc=1+Math.max(0,(z-2))*0.3;
-  var i=0;
-  eqData.forEach(function(e){
-    var v=e.properties.mag||1;
-    if(mk[i])mk[i].setRadius(Math.max(3,v*sc));
-    i++;
-  });
-});
 
 function rL(q){
   var s=q.slice().sort(function(a,b){return b.properties.time-a.properties.time});
