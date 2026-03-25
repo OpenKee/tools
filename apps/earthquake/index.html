@@ -6,7 +6,6 @@
 <title>Earthquake Monitor</title>
 <meta name="theme-color" content="#0f172a"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌋</text></svg>"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -22,7 +21,7 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg)
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd)}
 .st{background:var(--sf);padding:.5rem .8rem;text-align:center}
 .st .v{font-size:1.1rem;font-weight:800}.st .l{font-size:.55rem;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
-#map{height:50vh;min-height:300px}
+#map{height:50vh;min-height:300px;position:relative}
 .list{max-height:40vh;overflow-y:auto}
 .list::-webkit-scrollbar{width:4px}.list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 .it{display:flex;align-items:center;gap:.7rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s}
@@ -38,9 +37,12 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg)
 .it .ag{font-size:.65rem;color:var(--mt);flex-shrink:0}
 .ld{text-align:center;padding:1.5rem;color:var(--mt);font-size:.82rem;display:none}.ld.on{display:block}
 footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd);font-size:.62rem;color:var(--mt);display:flex;justify-content:space-between}
-.leaflet-container{background:#0f172a}
-.leaflet-popup-content-wrapper{background:var(--sf)!important;color:var(--tx)!important;border-radius:8px!important}
-.leaflet-popup-tip{background:var(--sf)!important}
+.ol-zoom{right:.5em;top:.5em;left:auto !important}
+.ol-zoom button{background:var(--sf) !important;color:var(--tx) !important;border:1px solid var(--bd) !important;width:28px;height:28px;border-radius:4px !important;font-size:14px}
+.ol-zoom button:hover{border-color:var(--bl) !important}
+.ol-attribution{display:none}
+.ol-popup{background:var(--sf);color:var(--tx);border-radius:8px;padding:.6rem 1rem;font-size:.78rem;box-shadow:0 4px 20px rgba(0,0,0,.5);border:1px solid var(--bd)}
+.ol-popup::after{border-top-color:var(--sf)}
 @media(max-width:600px){#map{height:40vh;min-height:250px}.stats{grid-template-columns:repeat(2,1fr)}.it .ag{display:none}}
 </style>
 </head>
@@ -60,15 +62,78 @@ footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd)
 <div id="map"></div>
 <div class="list" id="ls"></div>
 <footer><span>USGS Earthquake Hazards Program</span><span id="ft"></span></footer>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
 <script>
 var API="https://earthquake.usgs.gov/fdsnws/event/1/query";
-var P="day",M=0,eqData=[],mk=[];
-var m=L.map("map",{zoomControl:false,worldCopyJump:true}).setView([20,0],2);
-L.control.zoom({position:"topright"}).addTo(m);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:""}).addTo(m);
+var P="day",M=0,eqData=[],quakeLayer=null,overlay=null;
 
-/* base radius at zoom 2 — scales with zoom */
+// OpenLayers map
+var map = new ol.Map({
+  target: 'map',
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.OSM({url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png'})
+    })
+  ],
+  view: new ol.View({
+    center: ol.proj.fromLonLat([0, 20]),
+    zoom: 2.5,
+    minZoom: 1
+  }),
+  controls: ol.control.defaults.defaults({attribution:false, zoom:true})
+});
+
+// Popup overlay
+var popupEl = document.createElement('div');
+popupEl.className = 'ol-popup';
+popupEl.style.cssText = 'position:absolute;pointer-events:none;display:none;z-index:100';
+document.getElementById('map').appendChild(popupEl);
+
+overlay = new ol.Overlay({element: popupEl, positioning:'bottom-center', offset:[0,-12]});
+map.addOverlay(overlay);
+
+// Earthquake vector layer
+var vectorSource = new ol.source.Vector({});
+var vectorLayer = new ol.layer.Vector({
+  source: vectorSource,
+  style: function(feature){
+    var mag = feature.get('mag')||1;
+    var r = Math.max(5, Math.sqrt(Math.pow(10, 1.02*mag-4)/Math.PI)*0.08);
+    var color = mag<3?'#4ade80':mag<5?'#facc15':mag<6?'#fb923c':'#ef4444';
+    return new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: r,
+        fill: new ol.style.Fill({color: color}),
+        stroke: new ol.style.Stroke({color: color, width: 1})
+      }),
+      fill: new ol.style.Fill({color: color.replace(')',',0.15)').replace('rgb','rgba')}),
+      stroke: new ol.style.Stroke({color: color, width: 1.5})
+    });
+  }
+});
+map.addLayer(vectorLayer);
+
+// Click handler
+map.on('singleclick', function(evt){
+  var found = map.forEachFeatureAtPixel(evt.pixel, function(f){return f});
+  if(found){
+    var mag = found.get('mag')||'?';
+    var place = found.get('place')||'';
+    var depth = found.get('depth')||0;
+    popupEl.innerHTML = '<b>M'+parseFloat(mag).toFixed(1)+'</b> '+place+'<br><span style="color:#94a3b8">Depth: '+Math.round(depth)+'km</span>';
+    popupEl.style.display = 'block';
+    overlay.setPosition(evt.coordinate);
+  } else {
+    popupEl.style.display = 'none';
+  }
+});
+
+// Hover cursor
+map.on('pointermove', function(evt){
+  var hit = map.hasFeatureAtPixel(evt.pixel);
+  map.getTargetElement().style.cursor = hit?'pointer':'';
+});
 
 function sp(p){P=p;document.querySelectorAll(".fb:not([data-m])").forEach(function(b){b.classList.toggle("on",b.textContent.indexOf(p==="day"?"24":p==="week"?"7":"30")>=0)});ld_()}
 function sm(v){M=v;document.querySelectorAll(".fb[data-m]").forEach(function(b){b.classList.toggle("on",parseFloat(b.dataset.m)===v)});ld_()}
@@ -85,7 +150,7 @@ function ld_(){
   fetch(u).then(function(r){return r.json()}).then(function(d){
     document.getElementById("ld").classList.remove("on");
     eqData=d.features||[];
-    rS(eqData);rM();rL(eqData);
+    rS(eqData);rM(eqData);rL(eqData);
     document.getElementById("up").textContent=new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"});
     document.getElementById("ft").textContent=eqData.length+" events";
   }).catch(function(e){document.getElementById("ld").textContent="Error: "+e.message})
@@ -95,20 +160,17 @@ function rS(q){
   var x=0,p=0,g=0;
   q.forEach(function(e){var v=e.properties.mag;if(v>x)x=v;p+=e.geometry.coordinates[2];if(v>=5)g++});
   var a=q.length?Math.round(p/q.length):0;
-  document.getElementById("st").innerHTML="<div class=\"st\"><div class=\"v\">"+q.length+"</div><div class=\"l\">Events</div></div><div class=\"st\"><div class=\"v\">"+(x?x.toFixed(1):"-")+"</div><div class=\"l\">Max</div></div><div class=\"st\"><div class=\"v\">"+a+"km</div><div class=\"l\">Avg Depth</div></div><div class=\"st\"><div class=\"v\">"+g+"</div><div class=\"l\">M5+</div></div>";
+  document.getElementById("st").innerHTML='<div class="st"><div class="v">'+q.length+'</div><div class="l">Events</div></div><div class="st"><div class="v">'+(x?x.toFixed(1):'-')+'</div><div class="l">Max</div></div><div class="st"><div class="v">'+a+'km</div><div class="l">Avg Depth</div></div><div class="st"><div class="v">'+g+'</div><div class="l">M5+</div></div>';
 }
 
-/* render markers — radius from Gutenberg-Richter: log10(A)=1.02M-4, R=sqrt(A/pi) km */
-function eqRadius(mag){var A=Math.pow(10,1.02*mag-4);return Math.sqrt(A/Math.PI)*1000}
-function rM(){
-  mk.forEach(function(v){m.removeLayer(v)});mk=[];
-  eqData.forEach(function(e){
-    var p=e.properties,c=e.geometry.coordinates,v=p.mag||1;
-    var r=Math.max(5000,eqRadius(v));
-    var co=v<3?"#4ade80":v<5?"#facc15":v<6?"#fb923c":"#ef4444";
-    var k=L.circle([c[1],c[0]],{radius:r,fillColor:co,color:co,weight:1,opacity:.5,fillOpacity:.2}).addTo(m);
-    k.bindPopup("<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km<br>R: "+Math.round(eqRadius(v)/1000)+"km");
-    mk.push(k);
+function rM(q){
+  vectorSource.clear();
+  q.forEach(function(e){
+    var p=e.properties,c=e.geometry.coordinates;
+    var coord = ol.proj.fromLonLat([c[0],c[1]]);
+    var geom = new ol.geom.Point(coord);
+    var feat = new ol.Feature({geometry: geom, mag: p.mag||1, place: p.place||'', depth: c[2]});
+    vectorSource.addFeature(feat);
   });
 }
 
@@ -117,11 +179,15 @@ function rL(q){
   var h="";
   s.slice(0,50).forEach(function(e){
     var p=e.properties,v=p.mag||0,c=e.geometry.coordinates;
-    h+="<div class=\"it\" onclick=\"fl("+c[1]+","+c[0]+")\"><div class=\"mg "+c_(v)+"\">"+(v?v.toFixed(1):"?")+"</div><div class=\"inf\"><div class=\"pl\">"+(p.place||"Unknown")+"</div><div class=\"mt\">"+Math.round(c[2])+"km deep</div></div><div class=\"ag\">"+ag_(p.time)+"</div></div>";
+    h+='<div class="it" onclick="fl('+c[0]+','+c[1]+')"><div class="mg '+c_(v)+'">'+(v?v.toFixed(1):'?')+'</div><div class="inf"><div class="pl">'+(p.place||'Unknown')+'</div><div class="mt">'+Math.round(c[2])+'km deep</div></div><div class="ag">'+ag_(p.time)+'</div></div>';
   });
   document.getElementById("ls").innerHTML=h;
 }
-function fl(a,o){m.flyTo([a,o],6,{duration:1.5})}
+
+function fl(lon,lat){
+  map.getView().animate({center: ol.proj.fromLonLat([lon,lat]), zoom:6, duration:800});
+}
+
 ld_();
 </script>
 </body>
