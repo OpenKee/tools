@@ -98,33 +98,29 @@ function rS(q){
   document.getElementById("st").innerHTML="<div class=\"st\"><div class=\"v\">"+q.length+"</div><div class=\"l\">Events</div></div><div class=\"st\"><div class=\"v\">"+(x?x.toFixed(1):"-")+"</div><div class=\"l\">Max</div></div><div class=\"st\"><div class=\"v\">"+a+"km</div><div class=\"l\">Avg Depth</div></div><div class=\"st\"><div class=\"v\">"+g+"</div><div class=\"l\">M5+</div></div>";
 }
 
-/* render markers — duplicates across ±360° for world wrap */
+/* render markers */
 function rM(){
   mk.forEach(function(v){m.removeLayer(v)});mk=[];
   var z=m.getZoom();
+  var sc=1+Math.max(0,(z-2))*0.3;
   eqData.forEach(function(e){
     var p=e.properties,c=e.geometry.coordinates,v=p.mag||1;
+    var r=Math.max(3,v*sc);
     var co=v<3?"#4ade80":v<5?"#facc15":v<6?"#fb923c":"#ef4444";
-    var popup="<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km";
-    /* place at lng, lng+360, lng-360 */
-    [-360,0,360].forEach(function(off){
-      var k=L.circleMarker([c[1],c[0]+off],{radius:magRadius(v,z),fillColor:co,color:co,weight:1,opacity:.8,fillOpacity:.5}).addTo(m);
-      k.bindPopup(popup);
-      mk.push(k);
-    });
+    var k=L.circleMarker([c[1],c[0]],{radius:r,fillColor:co,color:co,weight:1,opacity:.8,fillOpacity:.5}).addTo(m);
+    k.bindPopup("<b>M"+(v?v.toFixed(1):"?")+"</b> "+(p.place||"")+"<br>Depth: "+Math.round(c[2])+"km");
+    mk.push(k);
   });
 }
 
-/* rescale markers on zoom */
 m.on("zoomend",function(){
   var z=m.getZoom();
+  var sc=1+Math.max(0,(z-2))*0.3;
   var i=0;
   eqData.forEach(function(e){
     var v=e.properties.mag||1;
-    [-360,0,360].forEach(function(){
-      if(mk[i])mk[i].setRadius(magRadius(v,z));
-      i++;
-    });
+    if(mk[i])mk[i].setRadius(Math.max(3,v*sc));
+    i++;
   });
 });
 
