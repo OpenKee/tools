@@ -20,7 +20,16 @@ body{font-family:var(--sans);color:var(--tx);background:var(--bg);min-height:100
 .hero h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.04em;margin-bottom:.5rem}
 .hero h1 span{color:var(--gn)}
 .hero p{color:var(--mt);font-size:.9rem;max-width:50ch;margin:0 auto;line-height:1.6}
-.tool-tabs{display:flex;gap:.3rem;padding:.6rem 1.5rem;background:var(--sf);border-bottom:1px solid var(--bd);flex-wrap:wrap}
+
+.app-layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:170px;min-width:170px;background:var(--sf);border-right:1px solid var(--bd);padding:.5rem;overflow-y:auto;display:flex;flex-direction:column;gap:.15rem;flex-shrink:0}
+.sidebar-group{margin-bottom:.6rem}
+.sidebar-label{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:.3rem .5rem .2rem}
+.sidebar .tool-tab{width:100%;text-align:left;background:0;border:none;color:var(--mt);font:inherit;font-size:.75rem;padding:.35rem .6rem;border-radius:6px;cursor:pointer;transition:all .15s;display:block}
+.sidebar .tool-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.sidebar .tool-tab.on{background:var(--bl);color:#fff}
+.tool-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
 .tool-tab{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.78rem;font-weight:500;padding:.35rem .9rem;border-radius:6px;cursor:pointer;transition:all .15s}
 .tool-tab:hover{border-color:var(--bd2);color:var(--tx)}
 .tool-tab.on{background:var(--bl);border-color:var(--bl);color:#fff}
@@ -30,8 +39,8 @@ body{font-family:var(--sans);color:var(--tx);background:var(--bg);min-height:100
 .stat .l{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-top:.2rem}
 .stat .v.gn{color:var(--gn)}
 .stat .v.rd{color:var(--rd)}
-.main{display:grid;grid-template-columns:1fr 50px 1fr;flex:1;overflow:hidden}
-.panel{display:flex;flex-direction:column;overflow:hidden}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.panel{display:flex;flex-direction:column;overflow:hidden;flex:1}
 .panel-header{padding:.6rem 1rem;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0}
 .panel-header .actions{display:flex;gap:.3rem}
 .panel-header button{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.65rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s}
@@ -79,6 +88,33 @@ textarea::placeholder{color:var(--mt)}
 .md-preview table{border-collapse:collapse;width:100%;margin:.5rem 0}
 .md-preview th,.md-preview td{border:1px solid var(--bd);padding:.4rem .6rem;text-align:left;font-size:.82rem}
 .md-preview th{background:rgba(255,255,255,.05);font-weight:600}
+.hash-wrap,.uuid-wrap,.lorem-wrap,.color-wrap,.ts-wrap,.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:1rem}
+.hash-wrap,.jwt-output,.regex-results,.diff-result{border-top:1px solid var(--bd);overflow-y:auto}
+.hash-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
+.hash-label{font-size:.7rem;font-weight:600;color:var(--mt);min-width:60px}
+.hash-val{flex:1;font-family:var(--mono);font-size:.78rem;word-break:break-all}
+.jwt-output{flex:1;display:flex;flex-direction:column}
+.jwt-sections{display:flex;flex-direction:column;flex:1;overflow-y:auto}
+.jwt-section{padding:.6rem 1rem;border-bottom:1px solid var(--bd)}
+.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.3rem}
+.jwt-pre{font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;word-break:break-all}
+.regex-wrap{gap:.5rem}
+.regex-row{display:flex;gap:.5rem}
+.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono)}
+.regex-input:focus{border-color:var(--bl)}
+.regex-flags{width:60px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.5rem .8rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
+.regex-flags:focus{border-color:var(--bl)}
+.regex-results,.diff-result{flex:1;overflow-y:auto}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
+.diff-grid .panel{overflow:hidden}
+.diff-grid textarea{min-height:0}
+.ts-row{display:flex;gap:.5rem;margin-top:.3rem}
+.uuid-opts,.lorem-opts{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.color-picker-row{display:flex;gap:.8rem;align-items:center;margin-bottom:1rem}
+.color-values{display:flex;flex-direction:column;gap:0}
+.diff-add{background:rgba(34,197,94,.12);color:var(--gn)}
+.diff-del{background:rgba(239,68,68,.12);color:var(--rd)}
+
 .drop-zone{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--gn);z-index:10;font-size:1rem;color:var(--gn);font-weight:600}
 .drop-zone.active{display:flex}
 @media(max-width:768px){.main{grid-template-columns:1fr;grid-template-rows:1fr auto 1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
@@ -93,12 +129,32 @@ textarea::placeholder{color:var(--mt)}
 <p>Browser-based developer utilities. Pure frontend, no server, no data leaves your machine.</p>
 </div>
 
-<div class="tool-tabs" id="toolTabs">
+<div class="app-layout">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-group"><div class="sidebar-label">Code</div>
 <button class="tool-tab on" data-tool="css">CSS Compressor</button>
+<button class="tool-tab" data-tool="html">HTML Compressor</button>
 <button class="tool-tab" data-tool="json">JSON Formatter</button>
-<button class="tool-tab" data-tool="encode">Encode / Decode</button>
-<button class="tool-tab" data-tool="md">Markdown Preview</button>
+<button class="tool-tab" data-tool="sql">SQL Formatter</button>
 </div>
+<div class="sidebar-group"><div class="sidebar-label">Encoding</div>
+<button class="tool-tab" data-tool="encode">Encode / Decode</button>
+<button class="tool-tab" data-tool="hash">Hash Generator</button>
+<button class="tool-tab" data-tool="jwt">JWT Decoder</button>
+</div>
+<div class="sidebar-group"><div class="sidebar-label">Text</div>
+<button class="tool-tab" data-tool="md">Markdown Preview</button>
+<button class="tool-tab" data-tool="regex">Regex Tester</button>
+<button class="tool-tab" data-tool="diff">Diff Checker</button>
+<button class="tool-tab" data-tool="lorem">Lorem Ipsum</button>
+</div>
+<div class="sidebar-group"><div class="sidebar-label">Utility</div>
+<button class="tool-tab" data-tool="uuid">UUID Generator</button>
+<button class="tool-tab" data-tool="timestamp">Timestamp</button>
+<button class="tool-tab" data-tool="color">Color Tools</button>
+</div>
+</div>
+<div class="tool-area">
 <div class="stats-bar" id="stats">
 <div class="stat"><div class="v" id="s-orig">0 B</div><div class="l">Original</div></div>
 <div class="stat"><div class="v" id="s-min">0 B</div><div class="l">Minified</div></div>
@@ -176,6 +232,82 @@ textarea::placeholder{color:var(--mt)}
   </div>
 </div>
 </div>
+</div>
+
+<div class="html-panel" id="htmlPanel" style="display:none">
+<div class="main"><div class="panel" style="position:relative">
+<div class="panel-header"><span data-i18n="input">Input</span><div class="actions"><button onclick="loadHtmlSample()" data-i18n="sample">Sample</button><button onclick="clearHtmlInput()" data-i18n="clear">Clear</button></div></div>
+<textarea id="htmlInput" placeholder="Paste HTML..." spellcheck="false"></textarea>
+<div class="drop-zone" id="htmlDropZone">Drop .html file here</div>
+</div>
+<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="panel"><div class="panel-header"><span data-i18n="minified">Minified</span><div class="actions"><button onclick="copyHtmlOutput()" data-i18n="copy">Copy</button><button onclick="downloadText('htmlOutput','minified.html')" data-i18n="download">Download</button></div></div>
+<textarea id="htmlOutput" readonly placeholder="Minified HTML..." spellcheck="false"></textarea></div>
+</div></div>
+<div class="sql-panel" id="sqlPanel" style="display:none">
+<div class="main"><div class="panel" style="position:relative">
+<div class="panel-header"><span data-i18n="input">Input</span><div class="actions"><button onclick="loadSqlSample()" data-i18n="sample">Sample</button></div></div>
+<textarea id="sqlInput" placeholder="Paste SQL..." spellcheck="false"></textarea></div>
+<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="panel"><div class="panel-header"><span data-i18n="formatted">Formatted</span><div class="actions"><button onclick="copySqlOutput()" data-i18n="copy">Copy</button></div></div>
+<textarea id="sqlOutput" readonly placeholder="Formatted SQL..." spellcheck="false"></textarea></div>
+</div></div>
+<div class="hash-panel" id="hashPanel" style="display:none">
+<div class="hash-wrap"><div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>Input Text</span></div>
+<textarea id="hashInput" placeholder="Enter text to hash..." spellcheck="false"></textarea></div>
+<div class="hash-results"><div class="panel-header"><span>Hash Results</span></div>
+<div class="hash-item"><div class="hash-label">MD5</div><div class="hash-val" id="hashMd5">—</div><button class="enc-btn" onclick="copyHash('hashMd5')">Copy</button></div>
+<div class="hash-item"><div class="hash-label">SHA-1</div><div class="hash-val" id="hashSha1">—</div><button class="enc-btn" onclick="copyHash('hashSha1')">Copy</button></div>
+<div class="hash-item"><div class="hash-label">SHA-256</div><div class="hash-val" id="hashSha256">—</div><button class="enc-btn" onclick="copyHash('hashSha256')">Copy</button></div>
+<div class="hash-item"><div class="hash-label">SHA-512</div><div class="hash-val" id="hashSha512">—</div><button class="enc-btn" onclick="copyHash('hashSha512')">Copy</button></div></div></div></div>
+<div class="jwt-panel" id="jwtPanel" style="display:none">
+<div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>JWT Token</span></div>
+<textarea id="jwtInput" placeholder="Paste JWT token..." spellcheck="false"></textarea></div>
+<div class="jwt-output"><div class="panel-header"><span>Decoded</span><div class="actions"><button onclick="copyJwtOutput()">Copy</button></div></div>
+<div class="jwt-sections"><div class="jwt-section"><div class="jwt-label">Header</div><pre id="jwtHeader" class="jwt-pre">—</pre></div>
+<div class="jwt-section"><div class="jwt-label">Payload</div><pre id="jwtPayload" class="jwt-pre">—</pre></div>
+<div class="jwt-section"><div class="jwt-label">Signature</div><div id="jwtSig" class="jwt-pre" style="color:var(--mt)">—</div></div></div></div></div>
+<div class="regex-panel" id="regexPanel" style="display:none">
+<div class="regex-wrap"><div class="regex-row"><input id="regexPattern" placeholder="Pattern (e.g. \\d+)" class="regex-input"/><input id="regexFlags" placeholder="Flags (gim)" class="regex-flags" value="g"/></div>
+<div class="panel" style="position:relative;flex:1"><div class="panel-header"><span>Test String</span></div>
+<textarea id="regexInput" placeholder="Enter text to test..." spellcheck="false"></textarea></div>
+<div class="regex-results"><div class="panel-header"><span>Matches</span></div>
+<div id="regexMatches" style="padding:1rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
+<div class="diff-panel" id="diffPanel" style="display:none">
+<div class="diff-grid"><div class="panel" style="position:relative"><div class="panel-header"><span>Text A</span></div><textarea id="diffA" placeholder="Original..." spellcheck="false"></textarea></div>
+<div class="panel" style="position:relative"><div class="panel-header"><span>Text B</span></div><textarea id="diffB" placeholder="Modified..." spellcheck="false"></textarea></div></div>
+<div class="diff-result"><div class="panel-header"><span>Differences</span><div class="actions"><button onclick="runDiff()">Compare</button></div></div>
+<div id="diffOutput" style="padding:1rem;font-family:var(--mono);font-size:.8rem;line-height:1.8;overflow-y:auto;flex:1">—</div></div></div>
+<div class="lorem-panel" id="loremPanel" style="display:none">
+<div class="lorem-wrap"><div class="lorem-opts">
+<button class="enc-btn" onclick="genLorem('p',1)">1 Paragraph</button><button class="enc-btn" onclick="genLorem('p',3)">3 Paragraphs</button><button class="enc-btn" onclick="genLorem('p',5)">5 Paragraphs</button>
+<button class="enc-btn" onclick="genLorem('s',10)">10 Sentences</button><button class="enc-btn" onclick="genLorem('w',50)">50 Words</button><button class="enc-btn" onclick="genLorem('w',100)">100 Words</button></div>
+<div class="panel" style="flex:1"><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyLorem()">Copy</button></div></div>
+<textarea id="loremOutput" readonly placeholder="Click a button..." spellcheck="false"></textarea></div></div></div>
+<div class="uuid-panel" id="uuidPanel" style="display:none">
+<div class="uuid-wrap"><div class="uuid-opts">
+<button class="btn p" onclick="genUuids(5)">5</button><button class="btn p" onclick="genUuids(10)">10</button><button class="btn p" onclick="genUuids(20)">20</button>
+<label style="font-size:.75rem;color:var(--mt);display:flex;align-items:center;gap:.3rem"><input type="checkbox" id="uuidUpper"> Upper</label></div>
+<div class="panel" style="flex:1"><div class="panel-header"><span>UUIDs</span><div class="actions"><button onclick="copyUuids()">Copy All</button></div></div>
+<textarea id="uuidOutput" readonly placeholder="Click generate..." spellcheck="false"></textarea></div></div></div>
+<div class="ts-panel" id="timestampPanel" style="display:none">
+<div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div>
+<div class="ts-row"><input id="tsInput" placeholder="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="tsToDate()">→</button></div>
+<div id="tsDateResult" style="padding:.8rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div>
+<div class="ts-section" style="margin-top:1rem"><div class="panel-header"><span>Date → Timestamp</span></div>
+<div class="ts-row"><input id="dateInput" type="datetime-local" class="regex-input"/><button class="enc-btn" onclick="dateToTs()">→</button></div>
+<div id="tsResult" style="padding:.8rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div>
+<div class="ts-section" style="margin-top:1rem"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set Now</button></div></div>
+<div id="tsNow" style="padding:.8rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
+<div class="color-panel" id="colorPanel" style="display:none">
+<div class="color-wrap"><div class="color-picker-row">
+<input type="color" id="colorPick" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/>
+<input id="colorHex" placeholder="#3b82f6" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div>
+<div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">#3b82f6</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvHex').textContent)">Copy</button></div>
+<div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">rgb(59,130,246)</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvRgb').textContent)">Copy</button></div>
+<div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">hsl(217,91%,60%)</div><button class="enc-btn" onclick="navigator.clipboard.writeText(document.getElementById('cvHsl').textContent)">Copy</button></div></div>
+<div class="color-preview" id="colorPreview" style="width:100%;height:80px;border-radius:8px;margin-top:1rem;border:1px solid var(--bd)"></div></div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -527,38 +659,11 @@ Check out [OpenKee](https://github.com/OpenKee) for more.`;
 document.getElementById('mdInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderMd, 300); });
 
 // Extend tool switcher
-document.getElementById('toolTabs').addEventListener('click', e => {
+// Tool switching via sidebar
+document.getElementById('sidebar').addEventListener('click', e => {
   const tab = e.target.closest('.tool-tab');
   if (!tab) return;
-  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
-  tab.classList.add('on');
-  const tool = tab.dataset.tool;
-  document.querySelector('.main').style.display = tool === 'css' ? 'grid' : 'none';
-  document.getElementById('jsonPanel').style.display = tool === 'json' ? 'grid' : 'none';
-  document.getElementById('encodePanel').style.display = tool === 'encode' ? 'flex' : 'none';
-  document.getElementById('mdPanel').style.display = tool === 'md' ? 'grid' : 'none';
-  // Update stats for different tools
-  if (tool === 'json') {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Formatted';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Lines';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  } else if (tool === 'encode') {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Input';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Output';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Length';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  } else if (tool === 'md') {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Characters';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Words';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Lines';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  } else {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Minified';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Saved';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  }
+  switchTool(tab.dataset.tool);
 });
 
 // i18n
@@ -657,6 +762,238 @@ function toggleLang() {
 }
 
 applyLang();
+
+// ===== HTML Compressor =====
+function compressHtml() {
+  const v = document.getElementById('htmlInput').value;
+  if (!v.trim()) return;
+  let r = v.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').replace(/>\s+</g, '><').replace(/\s+>/g, '>').replace(/<\s+/g, '<').trim();
+  document.getElementById('htmlOutput').value = r;
+}
+function loadHtmlSample() {
+  document.getElementById('htmlInput').value = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello World</title>
+  <style>
+    body { margin: 0; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Hello</h1>
+  <p>This is a <strong>sample</strong> HTML page.</p>
+  <!-- Comment to remove -->
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+</body>
+</html>`;
+  compressHtml();
+}
+function clearHtmlInput() { document.getElementById('htmlInput').value = ''; document.getElementById('htmlOutput').value = ''; }
+function copyHtmlOutput() { const v = document.getElementById('htmlOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// ===== SQL Formatter =====
+function formatSql() {
+  const v = document.getElementById('sqlInput').value;
+  if (!v.trim()) return;
+  const kw = ['SELECT','FROM','WHERE','AND','OR','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','OUTER JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','CREATE TABLE','ALTER TABLE','DROP TABLE','INDEX','UNIQUE','NOT NULL','DEFAULT','PRIMARY KEY','FOREIGN KEY','REFERENCES','INNER','LEFT','RIGHT','OUTER','CROSS','UNION','ALL','AS','IN','BETWEEN','LIKE','IS','NULL','EXISTS','DISTINCT','CASE','WHEN','THEN','ELSE','END','ASC','DESC','INTO'];
+  let r = v.replace(/\s+/g, ' ').trim();
+  for (const k of kw.sort((a,b)=>b.length-a.length)) {
+    r = r.replace(new RegExp('\\b' + k.replace(/ /g,'\\s+') + '\\b', 'gi'), '\n' + k);
+  }
+  r = r.replace(/\n+/g, '\n').trim();
+  document.getElementById('sqlOutput').value = r;
+}
+function loadSqlSample() {
+  document.getElementById('sqlInput').value = `SELECT u.id, u.name, u.email, COUNT(o.id) as order_count, SUM(o.total) as total_spent FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.created_at > '2025-01-01' AND u.status = 'active' GROUP BY u.id, u.name, u.email HAVING COUNT(o.id) > 5 ORDER BY total_spent DESC LIMIT 20;`;
+  formatSql();
+}
+function copySqlOutput() { const v = document.getElementById('sqlOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// ===== Hash Generator =====
+function runHash() {
+  const v = document.getElementById('hashInput').value;
+  if (!v) return;
+  // SHA-1, SHA-256, SHA-512 via SubtleCrypto
+  const enc = new TextEncoder().encode(v);
+  ['SHA-1','SHA-256','SHA-512'].forEach(async algo => {
+    try {
+      const buf = await crypto.subtle.digest(algo, enc);
+      const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+      const id = 'hash' + algo.replace(/[- ]/g,'');
+      const el = document.getElementById(id);
+      if (el) el.textContent = hex;
+    } catch(e) {}
+  });
+  // MD5 manual (simple implementation)
+  document.getElementById('hashMd5').textContent = md5(v);
+}
+function copyHash(id) { const v = document.getElementById(id).textContent; if(v==='—') return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// Simple MD5
+function md5(s){function L(k,d){return(k<<d)|(k>>>(32-d))}function G(a,b,c,d,x,s,t){return L(a+((b&c)|((~b)&d))+x+t,s)+b}function K(a,b,c,d,x,s,t){return L(a+((b&d)|(c&(~d)))+x+t,s)+b}function J(a,b,c,d,x,s,t){return L(a+(b^c^d)+x+t,s)+b}function H(a,b,c,d,x,s,t){return L(a+(c^(b|(~d)))+x+t,s)+b}var n=unescape(encodeURIComponent(s)),b=[],i;for(i=0;i<n.length;i++)b.push(n.charCodeAt(i)&0xff);var len=b.length;b.push(0x80);while(b.length%64!==0)b.push(0);var bits=len*8;for(i=0;i<8;i++)b.push((bits>>>(i*8))&0xff);var a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;for(var j=0;j<b.length;j+=64){var M=[];for(i=0;i<16;i++)M.push(b[j+i*4]|(b[j+i*4+1]<<8)|(b[j+i*4+2]<<16)|(b[j+i*4+3]<<24));var A=a0,B=b0,C=c0,D=d0;A=G(A,B,C,D,M[0],7,0xd76aa478);D=G(D,A,B,C,M[1],12,0xe8c7b756);C=G(C,D,A,B,M[2],17,0x242070db);B=G(B,C,D,A,M[3],22,0xc1bdceee);A=G(A,B,C,D,M[4],7,0xf57c0faf);D=G(D,A,B,C,M[5],12,0x4787c62a);C=G(C,D,A,B,M[6],17,0xa8304613);B=G(B,C,D,A,M[7],22,0xfd469501);A=G(A,B,C,D,M[8],7,0x698098d8);D=G(D,A,B,C,M[9],12,0x8b44f7af);C=G(C,D,A,B,M[10],17,0xffff5bb1);B=G(B,C,D,A,M[11],22,0x895cd7be);A=G(A,B,C,D,M[12],7,0x6b901122);D=G(D,A,B,C,M[13],12,0xfd987193);C=G(C,D,A,B,M[14],17,0xa679438e);B=G(B,C,D,A,M[15],22,0x49b40821);A=K(A,B,C,D,M[1],5,0xf61e2562);D=K(D,A,B,C,M[6],9,0xc040b340);C=K(C,D,A,B,M[11],14,0x265e5a51);B=K(B,C,D,A,M[0],20,0xe9b6c7aa);A=K(A,B,C,D,M[5],5,0xd62f105d);D=K(D,A,B,C,M[10],9,0x02441453);C=K(C,D,A,B,M[15],14,0xd8a1e681);B=K(B,C,D,A,M[4],20,0xe7d3fbc8);A=K(A,B,C,D,M[9],5,0x21e1cde6);D=K(D,A,B,C,M[14],9,0xc33707d6);C=K(C,D,A,B,M[3],14,0xf4d50d87);B=K(B,C,D,A,M[8],20,0x455a14ed);A=K(A,B,C,D,M[13],5,0xa9e3e905);D=K(D,A,B,C,M[2],9,0xfcefa3f8);C=K(C,D,A,B,M[7],14,0x676f02d9);B=K(B,C,D,A,M[12],20,0x8d2a4c8a);A=J(A,B,C,D,M[5],4,0xfffa3942);D=J(D,A,B,C,M[8],11,0x8771f681);C=J(C,D,A,B,M[11],16,0x6d9d6122);B=J(B,C,D,A,M[14],23,0xfde5380c);A=J(A,B,C,D,M[1],4,0xa4beea44);D=J(D,A,B,C,M[4],11,0x4bdecfa9);C=J(C,D,A,B,M[7],16,0xf6bb4b60);B=J(B,C,D,A,M[10],23,0xbebfbc70);A=J(A,B,C,D,M[13],4,0x289b7ec6);D=J(D,A,B,C,M[0],11,0xeaa127fa);C=J(C,D,A,B,M[3],16,0xd4ef3085);B=J(B,C,D,A,M[6],23,0x04881d05);A=J(A,B,C,D,M[9],4,0xd9d4d039);D=J(D,A,B,C,M[12],11,0xe6db99e5);C=J(C,D,A,B,M[15],16,0x1fa27cf8);B=J(B,C,D,A,M[2],23,0xc4ac5665);A=H(A,B,C,D,M[0],6,0xf4292244);D=H(D,A,B,C,M[7],10,0x432aff97);C=H(C,D,A,B,M[14],15,0xab9423a7);B=H(B,C,D,A,M[5],21,0xfc93a039);A=H(A,B,C,D,M[12],6,0x655b59c3);D=H(D,A,B,C,M[3],10,0x8f0ccc92);C=H(C,D,A,B,M[10],15,0xffeff47d);B=H(B,C,D,A,M[1],21,0x85845dd1);A=H(A,B,C,D,M[8],6,0x6fa87e4f);D=H(D,A,B,C,M[15],10,0xfe2ce6e0);C=H(C,D,A,B,M[6],15,0xa3014314);B=H(B,C,D,A,M[13],21,0x4e0811a1);A=H(A,B,C,D,M[4],6,0xf7537e82);D=H(D,A,B,C,M[11],10,0xbd3af235);C=H(C,D,A,B,M[2],15,0x2ad7d2bb);B=H(B,C,D,A,M[9],21,0xeb86d391);a0=(a0+A)>>>0;b0=(b0+B)>>>0;c0=(c0+C)>>>0;d0=(d0+D)>>>0}function Hx(n){var s='',v;for(i=0;i<4;i++){v=(n>>>(i*8))&0xff;s+=v.toString(16).padStart(2,'0')}return s}return Hx(a0)+Hx(b0)+Hx(c0)+Hx(d0)}
+
+// ===== JWT Decoder =====
+function decodeJwt() {
+  const v = document.getElementById('jwtInput').value.trim();
+  if (!v) return;
+  try {
+    const parts = v.split('.');
+    if (parts.length < 2) throw new Error('Invalid JWT');
+    const hdr = JSON.parse(atob(parts[0].replace(/-/g,'+').replace(/_/g,'/')));
+    const pay = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+    document.getElementById('jwtHeader').textContent = JSON.stringify(hdr, null, 2);
+    document.getElementById('jwtHeader').style.color = '';
+    document.getElementById('jwtPayload').textContent = JSON.stringify(pay, null, 2);
+    document.getElementById('jwtPayload').style.color = '';
+    document.getElementById('jwtSig').textContent = parts[2] ? parts[2].substring(0,40) + '...' : '(none)';
+  } catch(e) {
+    document.getElementById('jwtHeader').textContent = '❌ ' + e.message;
+    document.getElementById('jwtHeader').style.color = 'var(--rd)';
+    document.getElementById('jwtPayload').textContent = '';
+    document.getElementById('jwtSig').textContent = '';
+  }
+}
+function copyJwtOutput() { const p = document.getElementById('jwtPayload').textContent; if(!p) return; navigator.clipboard.writeText(p); showToast('Copied'); }
+
+// ===== Regex Tester =====
+function testRegex() {
+  const p = document.getElementById('regexPattern').value;
+  const f = document.getElementById('regexFlags').value;
+  const t = document.getElementById('regexInput').value;
+  const el = document.getElementById('regexMatches');
+  if (!p || !t) { el.textContent = '—'; return; }
+  try {
+    const re = new RegExp(p, f);
+    const matches = [...t.matchAll(re)];
+    if (!matches.length) { el.textContent = 'No matches'; return; }
+    el.innerHTML = matches.map((m,i) => `<div style="padding:.2rem 0"><span style="color:var(--bl);font-weight:600">#${i+1}</span> <span style="color:var(--gn)">${escHtml(m[0])}</span> <span style="color:var(--mt)">@ index ${m.index}</span>${m.length>1?m.slice(1).map((g,j)=>`<div style="padding-left:1rem;color:var(--yl)">$${j+1}: ${escHtml(g||'undefined')}</div>`).join(''):''}</div>`).join('');
+  } catch(e) { el.textContent = '❌ ' + e.message; }
+}
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ===== Diff Checker =====
+function runDiff() {
+  const a = document.getElementById('diffA').value.split('\n');
+  const b = document.getElementById('diffB').value.split('\n');
+  const el = document.getElementById('diffOutput');
+  // Simple line-by-line diff
+  let out = [];
+  const max = Math.max(a.length, b.length);
+  for (let i = 0; i < max; i++) {
+    const la = a[i], lb = b[i];
+    if (la === undefined) out.push(`<div class="diff-add">+ ${escHtml(lb)}</div>`);
+    else if (lb === undefined) out.push(`<div class="diff-del">- ${escHtml(la)}</div>`);
+    else if (la !== lb) {
+      out.push(`<div class="diff-del">- ${escHtml(la)}</div><div class="diff-add">+ ${escHtml(lb)}</div>`);
+    } else {
+      out.push(`<div>  ${escHtml(la)}</div>`);
+    }
+  }
+  el.innerHTML = out.join('');
+}
+
+// ===== Lorem Ipsum =====
+const _lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+function genLorem(type, count) {
+  const words = _lorem.split(' ');
+  let r = '';
+  if (type === 'p') {
+    for (let i = 0; i < count; i++) {
+      const start = (i * 30) % words.length;
+      const slice = words.slice(start, start + 50 + Math.floor(Math.random()*30));
+      r += slice.join(' ').replace(/[^a-zA-Z]*$/, '') + '.\n\n';
+    }
+  } else if (type === 's') {
+    const sentences = _lorem.match(/[^.!?]+[.!?]+/g) || [];
+    for (let i = 0; i < count; i++) r += sentences[i % sentences.length].trim() + ' ';
+  } else {
+    for (let i = 0; i < count; i++) r += words[i % words.length] + ' ';
+  }
+  document.getElementById('loremOutput').value = r.trim();
+}
+function copyLorem() { const v = document.getElementById('loremOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// ===== UUID Generator =====
+function genUuids(n) {
+  const upper = document.getElementById('uuidUpper').checked;
+  let uuids = [];
+  for (let i = 0; i < n; i++) {
+    let u = crypto.randomUUID();
+    uuids.push(upper ? u.toUpperCase() : u);
+  }
+  document.getElementById('uuidOutput').value = uuids.join('\n');
+}
+function copyUuids() { const v = document.getElementById('uuidOutput').value; if(!v) return; navigator.clipboard.writeText(v); showToast('Copied'); }
+
+// ===== Timestamp =====
+function tsToDate() {
+  const v = document.getElementById('tsInput').value.trim();
+  const el = document.getElementById('tsDateResult');
+  const n = parseInt(v);
+  if (!n) { el.textContent = 'Invalid'; return; }
+  const ms = v.length > 10 ? n : n * 1000;
+  const d = new Date(ms);
+  el.innerHTML = `<div>ISO: ${d.toISOString()}</div><div>Local: ${d.toLocaleString()}</div><div>UTC: ${d.toUTCString()}</div>`;
+}
+function dateToTs() {
+  const v = document.getElementById('dateInput').value;
+  const el = document.getElementById('tsResult');
+  if (!v) return;
+  const d = new Date(v);
+  el.innerHTML = `<div>Seconds: ${Math.floor(d.getTime()/1000)}</div><div>Milliseconds: ${d.getTime()}</div>`;
+}
+function setNow() {
+  const now = new Date();
+  document.getElementById('tsNow').innerHTML = `<div>ISO: ${now.toISOString()}</div><div>Local: ${now.toLocaleString()}</div><div>Unix: ${Math.floor(now.getTime()/1000)}</div>`;
+}
+
+// ===== Color Tools =====
+function updateColor(hex) {
+  hex = hex.replace(/[^#0-9a-fA-F]/g,'');
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (hex.length === 4) hex = '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
+  if (hex.length !== 7) return;
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const rnorm=r/255,gmax=Math.max(rnorm,g/255),gmin=Math.min(rnorm,g/255),bmax=Math.max(gmax,b/255),bmin=Math.min(gmin,b/255);
+  const l=(bmax+bmin)/2;let h=0,s=0;if(bmax!==bmin){const d=bmax-bmin;s=l>.5?d/(2-bmax-bmin):d/(bmax+bmin);if(bmax===rnorm)h=((g/255-b/255)/d+(g/255<b/255?6:0))*60;else if(bmax===g/255)h=((b/255-rnorm)/d+2)*60;else h=((rnorm-g/255)/d+4)*60}
+  document.getElementById('cvHex').textContent = hex;
+  document.getElementById('cvRgb').textContent = `rgb(${r},${g},${b})`;
+  document.getElementById('cvHsl').textContent = `hsl(${Math.round(h)},${Math.round(s*100)}%,${Math.round(l*100)}%)`;
+  document.getElementById('colorPreview').style.background = hex;
+  document.getElementById('colorPick').value = hex;
+}
+
+// ===== Tool switching =====
+const tools = ['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
+function switchTool(tool) {
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll(`.tool-tab[data-tool="${tool}"]`).forEach(t => t.classList.add('on'));
+  tools.forEach(t => {
+    const panels = {css:'main',html:'htmlPanel',json:'jsonPanel',sql:'sqlPanel',encode:'encodePanel',hash:'hashPanel',jwt:'jwtPanel',md:'mdPanel',regex:'regexPanel',diff:'diffPanel',lorem:'loremPanel',uuid:'uuidPanel',timestamp:'timestampPanel',color:'colorPanel'};
+    const el = document.getElementById(panels[t]) || document.querySelector('.main');
+    if (panels[t] === 'main') { el.style.display = t === tool ? (t==='css'?'grid':'flex') : 'none'; }
+    else { el.style.display = t === tool ? 'flex' : 'none'; }
+  });
+}
+
+
+// Input listeners for new tools
+htmlInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(compressHtml, 500); });
+sqlInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatSql, 500); });
+hashInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(runHash, 400); });
+jwtInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(decodeJwt, 400); });
+regexPattern.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+regexFlags.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+regexInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+colorPick.addEventListener('input', (e) => { colorHex.value = e.target.value; updateColor(e.target.value); });
+colorHex.addEventListener('input', (e) => { updateColor(e.target.value); });
+// Initialize color
+updateColor('#3b82f6');
+setNow();
 </script>
 </body>
 </html>
