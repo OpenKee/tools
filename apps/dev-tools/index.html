@@ -507,28 +507,7 @@ input.parentElement.addEventListener('drop', e => {
   }
 });
 
-// Tool switching
-document.getElementById('toolTabs').addEventListener('click', e => {
-  const tab = e.target.closest('.tool-tab');
-  if (!tab) return;
-  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('on'));
-  tab.classList.add('on');
-  const tool = tab.dataset.tool;
-  document.querySelector('.main').style.display = tool === 'css' ? 'grid' : 'none';
-  document.getElementById('jsonPanel').style.display = tool === 'json' ? 'grid' : 'none';
-  // Update stats labels
-  if (tool === 'json') {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Formatted';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Lines';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  } else {
-    document.querySelectorAll('.stat .l')[0].textContent = 'Original';
-    document.querySelectorAll('.stat .l')[1].textContent = 'Minified';
-    document.querySelectorAll('.stat .l')[2].textContent = 'Saved';
-    document.querySelectorAll('.stat .l')[3].textContent = 'Time';
-  }
-});
+
 
 // JSON Formatter
 const jsonInput = document.getElementById('jsonInput');
@@ -577,7 +556,7 @@ function clearJsonInput() { jsonInput.value = ''; jsonOutput.value = '';
 function copyJsonOutput() { if (!jsonOutput.value) return; navigator.clipboard.writeText(jsonOutput.value); showToast('Copied'); }
 function downloadJsonOutput() { if (!jsonOutput.value) return; const b = new Blob([jsonOutput.value],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'formatted.json'; a.click(); showToast('Downloaded'); }
 
-jsonInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatJson, 500); });
+document.getElementById('jsonInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatJson, 500); });
 
 // Encode/Decode functions
 function encBase64() { document.getElementById('encOutput').value = btoa(unescape(encodeURIComponent(document.getElementById('encInput').value))); }
@@ -982,15 +961,15 @@ function switchTool(tool) {
 
 
 // Input listeners for new tools
-htmlInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(compressHtml, 500); });
-sqlInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatSql, 500); });
-hashInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(runHash, 400); });
-jwtInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(decodeJwt, 400); });
-regexPattern.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-regexFlags.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-regexInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
-colorPick.addEventListener('input', (e) => { colorHex.value = e.target.value; updateColor(e.target.value); });
-colorHex.addEventListener('input', (e) => { updateColor(e.target.value); });
+document.getElementById('htmlInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(compressHtml, 500); });
+document.getElementById('sqlInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(formatSql, 500); });
+document.getElementById('hashInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(runHash, 400); });
+document.getElementById('jwtInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(decodeJwt, 400); });
+document.getElementById('regexPattern').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+document.getElementById('regexFlags').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+document.getElementById('regexInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(testRegex, 300); });
+document.getElementById('colorPick').addEventListener('input', (e) => { colorHex.value = e.target.value; updateColor(e.target.value); });
+document.getElementById('colorHex').addEventListener('input', (e) => { updateColor(e.target.value); });
 // Initialize color
 updateColor('#3b82f6');
 setNow();
