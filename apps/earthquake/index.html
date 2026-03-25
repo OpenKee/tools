@@ -122,7 +122,7 @@ function loadPopHeat(){
       var p=f.properties.pop_max||f.properties.pop_min||1000;
       pts.push([c[1],c[0],Math.sqrt(p)/500]);
     });
-    popHeat=L.heatLayer(pts,{radius:20,blur:15,maxZoom:12,max:1.5,gradient:{0.2:'#1e40af',0.4:'#3b82f6',0.6:'#facc15',0.8:'#fb923c',1:'#ef4444'}});
+    popHeat=L.heatLayer(pts,{radius:20,blur:15,maxZoom:12,max:1.5,gradient:{0.2:'#fef3c7',0.4:'#fbbf24',0.6:'#f97316',0.8:'#ef4444',1:'#dc2626'}});
   });
 };
 var platesL=null;
