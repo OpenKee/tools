@@ -69,8 +69,8 @@ L.control.zoom({position:"topright"}).addTo(m);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:""}).addTo(m);
 
 /* base radius at zoom 2 — scales with zoom */
-var BASE_ZOOM=2;
-function magRadius(v,z){return Math.max(3,v*2.5*Math.pow(1.4,z-BASE_ZOOM))}
+var BASE_ZOOM=3;
+function magRadius(v,z){return Math.max(3,v*1.2*Math.pow(1.15,z-BASE_ZOOM))}
 
 function sp(p){P=p;document.querySelectorAll(".fb:not([data-m])").forEach(function(b){b.classList.toggle("on",b.textContent.indexOf(p==="day"?"24":p==="week"?"7":"30")>=0)});ld_()}
 function sm(v){M=v;document.querySelectorAll(".fb[data-m]").forEach(function(b){b.classList.toggle("on",parseFloat(b.dataset.m)===v)});ld_()}
