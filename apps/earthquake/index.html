@@ -115,7 +115,7 @@ document.querySelectorAll('.overlay-btn').forEach(function(btn){
 btn.addEventListener('click',async function(e){
 var b=e.currentTarget;b.classList.toggle('on');var t=b.dataset.overlay;
 if(t==='pop'){if(b.classList.contains('on')){map.removeLayer(darkBL);lightBL.addTo(map);popDL.addTo(map)}else{map.removeLayer(popDL);map.removeLayer(lightBL);darkBL.addTo(map)}}
-else if(t==='plates'){if(b.classList.contains('on')){if(!platesL){try{var r=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');var d=await r.json();platesL=L.geoJSON(d,{style:{color:'#ef4444',weight:1.5,opacity:0.7}});platesL.addTo(map)}catch(e){}}else{platesL.addTo(map)}}else{if(platesL)map.removeLayer(platesL)}}
+else if(t==='plates'){if(b.classList.contains('on')){if(!platesL){try{var r2=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');var d2=await r2.json();platesL=L.layerGroup();L.geoJSON(d2,{style:{color:'#ef4444',weight:1.5,opacity:0.7}}).eachLayer(function(l){platesL.addLayer(l)})}catch(e){}}if(platesL&&!map.hasLayer(platesL))platesL.addTo(map)}else{if(platesL&&map.hasLayer(platesL))map.removeLayer(platesL)}}
 })});
 function mc(m){return m==null?"g":m<3?"g":m<5?"y":m<6?"o":"r"}
 function mcol(m){return m==null?"#4ade80":m<3?"#4ade80":m<5?"#facc15":m<6?"#fb923c":"#ef4444"}
