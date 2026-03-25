@@ -1,194 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Earthquake Monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="referrer" content="no-referrer" />
+<title>Global Earthquake Monitor</title>
 <meta name="theme-color" content="#0f172a"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌋</text></svg>"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400 ;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
+:root{--bg:#0f172a;--sf:#1e293b;--sf-hover:#334155;--bd:rgba(255,255,255,0.08);--tx:#e2e8f0;--mt:#94a3b8;--gn:#4ade80;--yl:#facc15;--or:#fb923c;--rd:#ef4444;--bl:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0f172a;--sf:#1e293b;--bd:rgba(255,255,255,.08);--tx:#e2e8f0;--mt:#94a3b8;--gn:#4ade80;--yl:#facc15;--or:#fb923c;--rd:#ef4444;--bl:#60a5fa}
-body{font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.5}
-.nav{padding:.8rem 1.25rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;background:var(--sf);border-bottom:1px solid var(--bd)}
-.nav .live{width:8px;height:8px;border-radius:50%;background:var(--gn);animation:blink 2s infinite}
-@keyframes blink{50%{opacity:.3}}
-.nav b{font-weight:600}.nav .sep{color:var(--mt)}.nav .r{margin-left:auto;font-size:.7rem;color:var(--mt)}
-.filters{display:flex;gap:.3rem;padding:.6rem 1.25rem;background:var(--sf);border-bottom:1px solid var(--bd);flex-wrap:wrap}
-.fb{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.7rem;padding:.25rem .6rem;border-radius:4px;cursor:pointer;transition:all .15s}
-.fb:hover,.fb.on{border-color:var(--bl);color:var(--bl)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd)}
-.st{background:var(--sf);padding:.5rem .8rem;text-align:center}
-.st .v{font-size:1.1rem;font-weight:800}.st .l{font-size:.55rem;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
-#map{height:50vh;min-height:300px;position:relative}
-.list{max-height:40vh;overflow-y:auto}
-.list::-webkit-scrollbar{width:4px}.list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-.it{display:flex;align-items:center;gap:.7rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s}
-.it:hover{background:var(--sf)}
-.it .mg{width:2.5rem;height:2.5rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0}
-.it .mg.g{background:rgba(74,222,128,.12);color:var(--gn)}
-.it .mg.y{background:rgba(250,204,21,.12);color:var(--yl)}
-.it .mg.o{background:rgba(251,146,60,.12);color:var(--or)}
-.it .mg.r{background:rgba(239,68,68,.12);color:var(--rd)}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.nav{padding:0.8rem 1.25rem;display:flex;align-items:center;gap:0.75rem;background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;z-index:10}
+.nav .live{width:10px;height:10px;border-radius:50%;background:var(--gn);box-shadow:0 0 10px var(--gn);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3;box-shadow:none}}
+.nav b{font-weight:700;font-size:1.1rem;letter-spacing:-0.02em}
+.nav .sep{color:var(--mt)}
+.nav .r{margin-left:auto;font-size:0.8rem;color:var(--mt);display:flex;align-items:center;gap:0.5rem}
+.app-body{display:flex;flex:1;overflow:hidden}
+#map{flex:1;background:var(--bg);z-index:1}
+.sidebar{width:380px;background:var(--bg);border-left:1px solid var(--bd);display:flex;flex-direction:column;z-index:5}
+.filters-container{padding:1rem;background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;overflow-y:auto}
+.filter-group{display:flex;gap:0.4rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.filter-group:last-child{margin-bottom:0}
+.filter-label{font-size:0.65rem;color:var(--mt);width:100%;display:block;margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:600}
+.fb{background:rgba(255,255,255,0.03);border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:0.75rem;font-weight:500;padding:0.3rem 0.75rem;border-radius:6px;cursor:pointer;transition:all 0.2s}
+.fb:hover{background:rgba(255,255,255,0.08);color:var(--tx)}
+.fb.on{background:var(--bl);border-color:var(--bl);color:#fff}
+.fb.overlay-btn.on{background:#64748b;border-color:#64748b}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bd);gap:1px;flex-shrink:0}
+.st{background:var(--sf);padding:0.75rem 0.5rem;text-align:center}
+.st .v{font-size:1.1rem;font-weight:800;color:var(--tx)}
+.st .l{font-size:0.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:0.05em;margin-top:0.2rem}
+.list-wrapper{position:relative;flex:1;overflow:hidden;display:flex;flex-direction:column}
+.list{flex:1;overflow-y:auto;padding-bottom:1rem}
+.list::-webkit-scrollbar{width:6px}
+.list::-webkit-scrollbar-track{background:transparent}
+.list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px}
+.it{display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:background 0.15s}
+.it:hover{background:var(--sf-hover)}
+.it .mg{width:2.8rem;height:2.8rem;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:800;flex-shrink:0}
+.it .mg.g{background:rgba(74,222,128,0.15);color:var(--gn)}
+.it .mg.y{background:rgba(250,204,21,0.15);color:var(--yl)}
+.it .mg.o{background:rgba(251,146,60,0.15);color:var(--or)}
+.it .mg.r{background:rgba(239,68,68,0.15);color:var(--rd);box-shadow:0 0 10px rgba(239,68,68,0.3)}
 .it .inf{flex:1;min-width:0}
-.it .pl{font-size:.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.it .mt{font-size:.65rem;color:var(--mt)}
-.it .ag{font-size:.65rem;color:var(--mt);flex-shrink:0}
-.ld{text-align:center;padding:1.5rem;color:var(--mt);font-size:.82rem;display:none}.ld.on{display:block}
-footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd);font-size:.62rem;color:var(--mt);display:flex;justify-content:space-between}
-.ol-zoom{right:.5em;top:.5em;left:auto !important}
-.ol-zoom button{background:var(--sf) !important;color:var(--tx) !important;border:1px solid var(--bd) !important;width:28px;height:28px;border-radius:4px !important;font-size:14px}
-.ol-zoom button:hover{border-color:var(--bl) !important}
-.ol-attribution{display:none}
-.ol-popup{background:var(--sf);color:var(--tx);border-radius:8px;padding:.6rem 1rem;font-size:.78rem;box-shadow:0 4px 20px rgba(0,0,0,.5);border:1px solid var(--bd)}
-.ol-popup::after{border-top-color:var(--sf)}
-@media(max-width:600px){#map{height:40vh;min-height:250px}.stats{grid-template-columns:repeat(2,1fr)}.it .ag{display:none}}
+.it .pl{font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.2rem}
+.it .mt{font-size:0.75rem;color:var(--mt);display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center}
+.it .ag{font-size:0.75rem;color:var(--mt);flex-shrink:0;text-align:right}
+.loader-overlay{position:absolute;inset:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.loader-overlay.active{opacity:1;pointer-events:all}
+.spinner{width:30px;height:30px;border:3px solid var(--bd);border-top-color:var(--bl);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{padding:0.6rem 1rem;background:var(--sf);border-top:1px solid var(--bd);font-size:0.7rem;color:var(--mt);display:flex;justify-content:space-between;flex-shrink:0}
+.leaflet-popup-content-wrapper{background:var(--sf)!important;color:var(--tx)!important;border-radius:8px!important;box-shadow:0 10px 15px -3px rgba(0,0,0,0.5)!important}
+.leaflet-popup-tip{background:var(--sf)!important}
+.leaflet-popup-content{margin:12px!important;font-family:'Inter',sans-serif}
+.popup-title{font-weight:800;font-size:1.1rem;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.popup-sub{font-size:0.8rem;color:var(--mt)}
+@media(max-width:768px){.app-body{flex-direction:column}.sidebar{width:100%;height:50vh;border-left:none;border-top:1px solid var(--bd)}#map{height:50vh;flex:none}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<div class="nav"><span class="live"></span><b>openkee</b><span class="sep">/</span>earthquake<span class="r" id="up"></span></div>
-<div class="filters">
-<button class="fb on" onclick="sp('day')">24h</button>
-<button class="fb" onclick="sp('week')">7d</button>
-<button class="fb" onclick="sp('month')">30d</button>
-<button class="fb on" onclick="sm(0)" data-m="0">All</button>
-<button class="fb" onclick="sm(2.5)" data-m="2.5">M2.5+</button>
-<button class="fb" onclick="sm(4.5)" data-m="4.5">M4.5+</button>
-<button class="fb" onclick="sm(5.5)" data-m="5.5">M5.5+</button>
-</div>
-<div class="stats" id="st"></div>
-<div class="ld" id="ld">Loading...</div>
+<div class="nav"><span class="live"></span><b>openkee</b><span class="sep">/</span>Earthquake<div class="r"><span id="update-time">Updating...</span></div></div>
+<div class="app-body">
 <div id="map"></div>
-<div class="list" id="ls"></div>
-<footer><span>USGS Earthquake Hazards Program</span><span id="ft"></span></footer>
-
-<script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+<div class="sidebar">
+<div class="filters-container">
+<div class="filter-group" id="time-filters"><span class="filter-label">Search Parameters</span>
+<button class="fb on" data-period="day">Past 24 Hours</button>
+<button class="fb" data-period="week">Past 7 Days</button>
+<button class="fb" data-period="month">Past 30 Days</button>
+</div>
+<div class="filter-group" id="mag-filters">
+<button class="fb on" data-mag="0">All</button>
+<button class="fb" data-mag="2.5">M2.5+</button>
+<button class="fb" data-mag="4.5">M4.5+</button>
+<button class="fb" data-mag="5.5">M5.5+</button>
+</div>
+<div class="filter-group" id="impact-filters"><span class="filter-label">Data Filters</span>
+<button class="fb on" data-impact="all">All Events</button>
+<button class="fb" data-impact="alert">PAGER Alert</button>
+<button class="fb" data-impact="tsunami">🌊 Tsunami</button>
+</div>
+<div class="filter-group" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bd)">
+<span class="filter-label">Map Overlays</span>
+<button class="fb overlay-btn" data-overlay="plates">🗺️ Plate Boundaries</button>
+<button class="fb overlay-btn" data-overlay="pop">👥 Population Density</button>
+</div>
+</div>
+<div class="stats" id="stats-container"></div>
+<div class="list-wrapper">
+<div class="loader-overlay" id="loader"><div class="spinner"></div></div>
+<div class="list" id="earthquake-list"></div>
+</div>
+<footer><span>USGS Data API</span><span id="event-count">0 events</span></footer>
+</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-var API="https://earthquake.usgs.gov/fdsnws/event/1/query";
-var P="day",M=0,eqData=[],quakeLayer=null,overlay=null;
-
-// OpenLayers map
-var map = new ol.Map({
-  target: 'map',
-  layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM({url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png'})
-    })
-  ],
-  view: new ol.View({
-    center: ol.proj.fromLonLat([0, 20]),
-    zoom: 2.5,
-    minZoom: 1
-  }),
-  controls: ol.control.defaults.defaults({attribution:false, zoom:true})
-});
-
-// Popup overlay
-var popupEl = document.createElement('div');
-popupEl.className = 'ol-popup';
-popupEl.style.cssText = 'position:absolute;pointer-events:none;display:none;z-index:100';
-document.getElementById('map').appendChild(popupEl);
-
-overlay = new ol.Overlay({element: popupEl, positioning:'bottom-center', offset:[0,-12]});
-map.addOverlay(overlay);
-
-// Earthquake vector layer
-var vectorSource = new ol.source.Vector({});
-var vectorLayer = new ol.layer.Vector({
-  source: vectorSource,
-  style: function(feature){
-    var mag = feature.get('mag')||1;
-    var r = Math.max(5, Math.sqrt(Math.pow(10, 1.02*mag-4)/Math.PI)*0.08);
-    var color = mag<3?'#4ade80':mag<5?'#facc15':mag<6?'#fb923c':'#ef4444';
-    return new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: r,
-        fill: new ol.style.Fill({color: color}),
-        stroke: new ol.style.Stroke({color: color, width: 1})
-      }),
-      fill: new ol.style.Fill({color: color.replace(')',',0.15)').replace('rgb','rgba')}),
-      stroke: new ol.style.Stroke({color: color, width: 1.5})
-    });
-  }
-});
-map.addLayer(vectorLayer);
-
-// Click handler
-map.on('singleclick', function(evt){
-  var found = map.forEachFeatureAtPixel(evt.pixel, function(f){return f});
-  if(found){
-    var mag = found.get('mag')||'?';
-    var place = found.get('place')||'';
-    var depth = found.get('depth')||0;
-    popupEl.innerHTML = '<b>M'+parseFloat(mag).toFixed(1)+'</b> '+place+'<br><span style="color:#94a3b8">Depth: '+Math.round(depth)+'km</span>';
-    popupEl.style.display = 'block';
-    overlay.setPosition(evt.coordinate);
-  } else {
-    popupEl.style.display = 'none';
-  }
-});
-
-// Hover cursor
-map.on('pointermove', function(evt){
-  var hit = map.hasFeatureAtPixel(evt.pixel);
-  map.getTargetElement().style.cursor = hit?'pointer':'';
-});
-
-function sp(p){P=p;document.querySelectorAll(".fb:not([data-m])").forEach(function(b){b.classList.toggle("on",b.textContent.indexOf(p==="day"?"24":p==="week"?"7":"30")>=0)});ld_()}
-function sm(v){M=v;document.querySelectorAll(".fb[data-m]").forEach(function(b){b.classList.toggle("on",parseFloat(b.dataset.m)===v)});ld_()}
-function c_(v){return v<3?"g":v<5?"y":v<6?"o":"r"}
-function ag_(t){var d=Math.round((Date.now()-t)/60000);if(d<60)return d+"m";if(d<1440)return Math.round(d/60)+"h";return Math.round(d/1440)+"d"}
-
-function ld_(){
-  document.getElementById("ld").classList.add("on");
-  var e=new Date(),s=new Date();
-  if(P==="day")s.setDate(s.getDate()-1);
-  else if(P==="week")s.setDate(s.getDate()-7);
-  else s.setMonth(s.getMonth()-1);
-  var u=API+"?format=geojson&starttime="+s.toISOString().slice(0,10)+"&endtime="+e.toISOString().slice(0,10)+"&minmagnitude="+M+"&orderby=time";
-  fetch(u).then(function(r){return r.json()}).then(function(d){
-    document.getElementById("ld").classList.remove("on");
-    eqData=d.features||[];
-    rS(eqData);rM(eqData);rL(eqData);
-    document.getElementById("up").textContent=new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"});
-    document.getElementById("ft").textContent=eqData.length+" events";
-  }).catch(function(e){document.getElementById("ld").textContent="Error: "+e.message})
-}
-
-function rS(q){
-  var x=0,p=0,g=0;
-  q.forEach(function(e){var v=e.properties.mag;if(v>x)x=v;p+=e.geometry.coordinates[2];if(v>=5)g++});
-  var a=q.length?Math.round(p/q.length):0;
-  document.getElementById("st").innerHTML='<div class="st"><div class="v">'+q.length+'</div><div class="l">Events</div></div><div class="st"><div class="v">'+(x?x.toFixed(1):'-')+'</div><div class="l">Max</div></div><div class="st"><div class="v">'+a+'km</div><div class="l">Avg Depth</div></div><div class="st"><div class="v">'+g+'</div><div class="l">M5+</div></div>';
-}
-
-function rM(q){
-  vectorSource.clear();
-  q.forEach(function(e){
-    var p=e.properties,c=e.geometry.coordinates;
-    var coord = ol.proj.fromLonLat([c[0],c[1]]);
-    var geom = new ol.geom.Point(coord);
-    var feat = new ol.Feature({geometry: geom, mag: p.mag||1, place: p.place||'', depth: c[2]});
-    vectorSource.addFeature(feat);
-  });
-}
-
-function rL(q){
-  var s=q.slice().sort(function(a,b){return b.properties.time-a.properties.time});
-  var h="";
-  s.slice(0,50).forEach(function(e){
-    var p=e.properties,v=p.mag||0,c=e.geometry.coordinates;
-    h+='<div class="it" onclick="fl('+c[0]+','+c[1]+')"><div class="mg '+c_(v)+'">'+(v?v.toFixed(1):'?')+'</div><div class="inf"><div class="pl">'+(p.place||'Unknown')+'</div><div class="mt">'+Math.round(c[2])+'km deep</div></div><div class="ag">'+ag_(p.time)+'</div></div>';
-  });
-  document.getElementById("ls").innerHTML=h;
-}
-
-function fl(lon,lat){
-  map.getView().animate({center: ol.proj.fromLonLat([lon,lat]), zoom:6, duration:800});
-}
-
-ld_();
+var API_URL="https://earthquake.usgs.gov/fdsnws/event/1/query";
+var state={period:'day',minMag:0,impact:'all',data:[]};
+var darkBL=L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:""});
+var lightBL=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:""});
+var map=L.map("map",{zoomControl:false,worldCopyJump:true,preferCanvas:true}).setView([20,0],2);
+L.control.zoom({position:"topleft"}).addTo(map);
+darkBL.addTo(map);
+var lg=L.layerGroup().addTo(map);
+var popDL=L.tileLayer("https://earthquake.usgs.gov/arcgis/rest/services/ls/MapServer/tile/{z}/{y}/{x}",{opacity:0.65,errorTileUrl:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="});
+var platesL=null;
+document.querySelectorAll('.overlay-btn').forEach(function(btn){
+btn.addEventListener('click',async function(e){
+var b=e.currentTarget;b.classList.toggle('on');var t=b.dataset.overlay;
+if(t==='pop'){if(b.classList.contains('on')){map.removeLayer(darkBL);lightBL.addTo(map);popDL.addTo(map)}else{map.removeLayer(popDL);map.removeLayer(lightBL);darkBL.addTo(map)}}
+else if(t==='plates'){if(b.classList.contains('on')){if(!platesL){try{var r=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');var d=await r.json();platesL=L.geoJSON(d,{style:{color:'#ef4444',weight:1.5,opacity:0.7}});platesL.addTo(map)}catch(e){}}else{platesL.addTo(map)}}else{if(platesL)map.removeLayer(platesL)}}
+})});
+function mc(m){return m==null?"g":m<3?"g":m<5?"y":m<6?"o":"r"}
+function mcol(m){return m==null?"#4ade80":m<3?"#4ade80":m<5?"#facc15":m<6?"#fb923c":"#ef4444"}
+function ta(t){var d=Math.max(0,Math.round((Date.now()-t)/60000));if(d<60)return d+"m ago";if(d<1440)return Math.round(d/60)+"h ago";return Math.round(d/1440)+"d ago"}
+function esc(s){if(!s)return"Unknown";return s.replace(/[&<>'"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]})}
+function eqR(m){return Math.sqrt(Math.pow(10,1.02*m-4)/Math.PI)*1000}
+function gfd(){return state.data.filter(function(e){if(state.impact==='alert')return!!e.properties.alert;if(state.impact==='tsunami')return e.properties.tsunami===1;return true})}
+document.querySelectorAll('#time-filters .fb').forEach(function(b){b.addEventListener('click',function(e){document.querySelectorAll('#time-filters .fb').forEach(function(x){x.classList.remove('on')});e.currentTarget.classList.add('on');state.period=e.currentTarget.dataset.period;ld()})});
+document.querySelectorAll('#mag-filters .fb').forEach(function(b){b.addEventListener('click',function(e){document.querySelectorAll('#mag-filters .fb').forEach(function(x){x.classList.remove('on')});e.currentTarget.classList.add('on');state.minMag=parseFloat(e.currentTarget.dataset.mag);ld()})});
+document.querySelectorAll('#impact-filters .fb').forEach(function(b){b.addEventListener('click',function(e){document.querySelectorAll('#impact-filters .fb').forEach(function(x){x.classList.remove('on')});e.currentTarget.classList.add('on');state.impact=e.currentTarget.dataset.impact;us();rm();rl()})});
+function ld(){document.getElementById("loader").classList.add("active");var e=new Date(),s=new Date();if(state.period==="day")s.setDate(s.getDate()-1);else if(state.period==="week")s.setDate(s.getDate()-7);else s.setMonth(s.getMonth()-1);fetch(API_URL+"?format=geojson&starttime="+s.toISOString()+"&endtime="+e.toISOString()+"&minmagnitude="+state.minMag+"&limit=20000&orderby=time").then(function(r){return r.json()}).then(function(d){document.getElementById("loader").classList.remove("active");state.data=d.features||[];us();rm();rl();document.getElementById("update-time").textContent=new Date().toLocaleTimeString("en",{hour12:false,hour:"2-digit",minute:"2-digit"})}).catch(function(e){document.getElementById("loader").classList.remove("active");document.getElementById("earthquake-list").innerHTML="<div style='padding:2rem;text-align:center;color:var(--rd)'>Error</div>"})}
+function us(){var cd=gfd(),mx=-Infinity,dp=0,sg=0,vd=0;cd.forEach(function(e){var m=e.properties.mag,d=e.geometry.coordinates[2];if(m!=null&&m>mx)mx=m;if(m>=5)sg++;if(d!=null){dp+=d;vd++}});var av=vd?Math.round(dp/vd):0;document.getElementById("stats-container").innerHTML='<div class="st"><div class="v">'+cd.length+'</div><div class="l">Total</div></div><div class="st"><div class="v">'+(mx>-Infinity?mx.toFixed(1):'-')+'</div><div class="l">Max Mag</div></div><div class="st"><div class="v">'+av+' km</div><div class="l">Avg Depth</div></div><div class="st"><div class="v">'+sg+'</div><div class="l">M5+</div></div>';document.getElementById("event-count").textContent=cd.length+" events"}
+function rm(){map.removeLayer(lg);lg.clearLayers();var cd=gfd();cd.forEach(function(eq){var p=eq.properties,c=eq.geometry.coordinates,m=p.mag||0,d=c[2]!=null?Math.round(c[2]):'?';var col=mcol(m),r=eqR(m),pl=esc(p.place);var ac={green:'#4ade80',yellow:'#facc15',orange:'#fb923c',red:'#ef4444'};var ah=p.alert?'<br><strong>Pop. Impact:</strong> <span style="text-transform:uppercase;font-weight:bold;color:'+ac[p.alert]+'">'+p.alert+'</span>':'';var fh=p.felt?'<br><strong>Felt:</strong> '+p.felt+' people':'';var th=p.tsunami?'<br><strong style="color:#3b82f6">🌊 Tsunami</strong>':'';var pop='<div class="popup-title" style="color:'+col+'">M '+m.toFixed(1)+'</div><div class="popup-sub"><strong>Location:</strong> '+pl+'<br><strong>Depth:</strong> '+d+' km<br><strong>Radius:</strong> '+(r/1000).toFixed(0)+' km<br><strong>Time:</strong> '+new Date(p.time).toLocaleString()+ah+fh+th+'</div>';[-360,0,360].forEach(function(off){var k=L.circle([c[1],c[0]+off],{radius:r,fillColor:col,color:col,weight:1,opacity:0.5,fillOpacity:0.2}).addTo(lg);k.bindPopup(pop)})});map.addLayer(lg)}
+function rl(){var cd=gfd().slice(0,100),h="";cd.forEach(function(eq){var p=eq.properties,c=eq.geometry.coordinates,m=p.mag||0;var ac={green:'#4ade80',yellow:'#facc15',orange:'#fb923c',red:'#ef4444'};var ab=p.alert?'<span style="font-size:0.65rem;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid '+ac[p.alert]+';color:'+ac[p.alert]+'">'+p.alert.toUpperCase()+'</span>':'';var tb=p.tsunami?'<span style="font-size:0.85rem">🌊</span>':'';h+='<div class="it" onclick="fl('+c[1]+','+c[0]+','+m+')"><div class="mg '+mc(m)+'">'+(m?m.toFixed(1):'?')+'</div><div class="inf"><div class="pl">'+esc(p.place)+'</div><div class="mt"><span>Depth: '+Math.round(c[2])+' km</span>'+ab+tb+'</div></div><div class="ag">'+ta(p.time)+'</div></div>'});document.getElementById("earthquake-list").innerHTML=h}
+window.fl=function(lat,lng,mag){map.flyTo([lat,lng],mag>=6?5:mag>=4?6:8,{duration:1.5})};
+ld();
 </script>
 </body>
 </html>
