@@ -7,28 +7,22 @@
 <meta name="theme-color" content="#1a1a2e"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌋</text></svg>"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#1a1a2e;--sf:#16213e;--bd:rgba(255,255,255,.08);--tx:#e8e8e8;--mt:#7878a0;--gn:#4ade80;--yl:#facc15;--or:#fb923c;--rd:#ef4444;--bl:#60a5fa}
-body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.5}
-
+body{font-family:"Inter",system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.5}
 .nav{padding:.8rem 1.25rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;background:var(--sf);border-bottom:1px solid var(--bd)}
 .nav .live{width:8px;height:8px;border-radius:50%;background:var(--gn);animation:blink 2s infinite}
 @keyframes blink{50%{opacity:.3}}
 .nav b{font-weight:600}.nav .sep{color:var(--mt)}.nav .r{margin-left:auto;font-size:.7rem;color:var(--mt)}
-
 .filters{display:flex;gap:.3rem;padding:.6rem 1.25rem;background:var(--sf);border-bottom:1px solid var(--bd);flex-wrap:wrap}
 .fbtn{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.7rem;padding:.25rem .6rem;border-radius:4px;cursor:pointer;transition:all .15s}
 .fbtn:hover,.fbtn.on{border-color:var(--bl);color:var(--bl)}
-
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd)}
 .stat{background:var(--sf);padding:.5rem .8rem;text-align:center}
-.stat .v{font-size:1.1rem;font-weight:800}
-.stat .l{font-size:.55rem;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
-
+.stat .v{font-size:1.1rem;font-weight:800}.stat .l{font-size:.55rem;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
 #map{height:50vh;min-height:300px;background:var(--sf)}
-
 .list{max-height:40vh;overflow-y:auto}
 .list::-webkit-scrollbar{width:4px}.list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 .item{display:flex;align-items:center;gap:.7rem;padding:.5rem 1.25rem;border-bottom:1px solid var(--bd);transition:background .15s}
@@ -42,27 +36,16 @@ body{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;color:var(--tx);bac
 .item .place{font-size:.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item .meta{font-size:.65rem;color:var(--mt)}
 .item .ago{font-size:.65rem;color:var(--mt);flex-shrink:0}
-
-.ld{text-align:center;padding:1.5rem;color:var(--mt);font-size:.82rem;display:none}
-.ld.on{display:block}
-
+.ld{text-align:center;padding:1.5rem;color:var(--mt);font-size:.82rem;display:none}.ld.on{display:block}
 footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd);font-size:.62rem;color:var(--mt);display:flex;justify-content:space-between}
-
-/* Leaflet dark override */
 .leaflet-container{background:#1a1a2e}
-.leaflet-popup-content-wrapper{background:var(--sf);color:var(--tx);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.leaflet-popup-content-wrapper{background:var(--sf);color:var(--tx);border-radius:8px}
 .leaflet-popup-tip{background:var(--sf)}
-.leaflet-popup-content{font-family:"Inter",sans-serif;font-size:.78rem}
-.leaflet-popup-content b{color:var(--bl)}
-.leaflet-popup-content .pw{margin-top:.3rem;font-size:.68rem;color:var(--mt)}
-
 @media(max-width:600px){#map{height:40vh;min-height:250px}.stats{grid-template-columns:repeat(2,1fr)}.item .ago{display:none}}
 </style>
 </head>
 <body>
-
 <div class="nav"><span class="live"></span><b>openkee</b><span class="sep">/</span>earthquake<span class="r" id="upd"></span></div>
-
 <div class="filters">
 <button class="fbtn on" onclick="sp('day')">24h</button>
 <button class="fbtn" onclick="sp('week')">7d</button>
@@ -72,29 +55,23 @@ footer{padding:.5rem 1.25rem;background:var(--sf);border-top:1px solid var(--bd)
 <button class="fbtn" onclick="sm(4.5)" data-m="4.5">M4.5+</button>
 <button class="fbtn" onclick="sm(5.5)" data-m="5.5">M5.5+</button>
 </div>
-
 <div class="stats" id="stats"></div>
-<div class="ld" id="ld">Loading…</div>
+<div class="ld" id="ld">Loading...</div>
 <div id="map"></div>
 <div class="list" id="list"></div>
 <footer><span>USGS Earthquake Hazards Program</span><span id="ft"></span></footer>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var API='https://earthquake.usgs.gov/fdsnws/event/1/query';
-var P='day',M=0,markers=[],map;
-
-// Init map
-map=L.map('map',{zoomControl:false,attributionControl:false}).setView([20,0],2);
+var P='day',M=0,mk=[];
+var tileUrl='https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}';
+var map=L.map('map',{zoomControl:false}).setView([20,0],2);
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cnL.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);size=1L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);scale=1L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);style=7L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);x={x}L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);y={y}L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);z={z}',{subdomains:['1','2','3','4'],maxZoom:18}).addTo(map);
-
+L.tileLayer(tileUrl,{maxZoom:18}).addTo(map);
 function sp(p){P=p;document.querySelectorAll('.fbtn:not([data-m])').forEach(function(b){b.classList.toggle('on',b.textContent.indexOf(p==='day'?'24':p==='week'?'7':'30')>=0)});ld_()}
 function sm(m){M=m;document.querySelectorAll('.fbtn[data-m]').forEach(function(b){b.classList.toggle('on',parseFloat(b.dataset.m)===m)});ld_()}
-
 function mc(m){return m<3?'g':m<5?'y':m<6?'o':'r'}
 function ago(t){var d=Math.round((Date.now()-t)/60000);if(d<60)return d+'m';if(d<1440)return Math.round(d/60)+'h';return Math.round(d/1440)+'d'}
-
 function ld_(){
   document.getElementById('ld').classList.add('on');
   var end=new Date(),start=new Date();
@@ -108,46 +85,34 @@ function ld_(){
     renderStats(q);renderMap(q);renderList(q);
     document.getElementById('upd').textContent=new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('ft').textContent=q.length+' events';
-  }).catch(function(e){document.getElementById('ld').textContent='Error: '+e.message;document.getElementById('ld').classList.add('on')});
+  }).catch(function(e){document.getElementById('ld').textContent='Error: '+e.message})
 }
-
 function renderStats(q){
   var mx=0,dp=0,sg=0;
   q.forEach(function(e){var m=e.properties.mag;if(m>mx)mx=m;dp+=e.geometry.coordinates[2];if(m>=5)sg++});
   var av=q.length?Math.round(dp/q.length):0;
-  document.getElementById('stats').innerHTML=
-    '<div class="stat"><div class="v">'+q.length+'</div><div class="l">Events</div></div>'+
-    '<div class="stat"><div class="v">'+(mx?mx.toFixed(1):'—')+'</div><div class="l">Max</div></div>'+
-    '<div class="stat"><div class="v">'+av+'km</div><div class="l">Avg Depth</div></div>'+
-    '<div class="stat"><div class="v">'+sg+'</div><div class="l">M5+</div></div>';
+  document.getElementById('stats').innerHTML='<div class="stat"><div class="v">'+q.length+'</div><div class="l">Events</div></div><div class="stat"><div class="v">'+(mx?mx.toFixed(1):'-')+'</div><div class="l">Max</div></div><div class="stat"><div class="v">'+av+'km</div><div class="l">Avg Depth</div></div><div class="stat"><div class="v">'+sg+'</div><div class="l">M5+</div></div>';
 }
-
 function renderMap(q){
-  // Clear old markers
-  markers.forEach(function(m){map.removeLayer(m)});markers=[];
+  mk.forEach(function(m){map.removeLayer(m)});mk=[];
   q.forEach(function(e){
-    var p=e.properties;var c=e.geometry.coordinates;
-    var m=p.mag||1;var r=Math.max(4,m*3);
+    var p=e.properties,c=e.geometry.coordinates,m=p.mag||1;
+    var r=Math.max(4,m*3);
     var color=m<3?'#4ade80':m<5?'#facc15':m<6?'#fb923c':'#ef4444';
-    var marker=L.circleMarker([c[1],c[0]],{
-      radius:r,fillColor:color,color:color,weight:1,opacity:.8,fillOpacity:.5
-    }).addTo(map);
-    var tt='<b>M'+(m?m.toFixed(1):'?')+'</b> '+(p.place||'')+'<br><span class="pw">Depth: '+Math.round(c[2])+'km · '+ago(p.time)+' ago</span>';
-    marker.bindPopup(tt);
-    markers.push(marker);
+    var marker=L.circleMarker([c[1],c[0]],{radius:r,fillColor:color,color:color,weight:1,opacity:.8,fillOpacity:.5}).addTo(map);
+    marker.bindPopup('<b>M'+(m?m.toFixed(1):'?')+'</b> '+(p.place||'')+'<br>Depth: '+Math.round(c[2])+'km · '+ago(p.time)+' ago');
+    mk.push(marker);
   });
 }
-
 function renderList(q){
   var s=q.slice().sort(function(a,b){return b.properties.time-a.properties.time});
   var html='';
   s.slice(0,50).forEach(function(e){
-    var p=e.properties;var m=p.mag||0;
+    var p=e.properties,m=p.mag||0;
     html+='<div class="item"><div class="mag '+mc(m)+'">'+(m?m.toFixed(1):'?')+'</div><div class="info"><div class="place">'+(p.place||'Unknown')+'</div><div class="meta">'+Math.round(e.geometry.coordinates[2])+'km deep</div></div><div class="ago">'+ago(p.time)+'</div></div>';
   });
   document.getElementById('list').innerHTML=html;
 }
-
 ld_();
 </script>
 </body>
