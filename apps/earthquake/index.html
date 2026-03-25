@@ -100,6 +100,7 @@ footer{padding:0.6rem 1rem;background:var(--sf);border-top:1px solid var(--bd);f
 </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script>
 var API_URL="https://earthquake.usgs.gov/fdsnws/event/1/query";
 var state={period:'day',minMag:0,impact:'all',data:[]};
@@ -109,12 +110,26 @@ var map=L.map("map",{zoomControl:false,worldCopyJump:true,preferCanvas:true,minZ
 L.control.zoom({position:"topleft"}).addTo(map);
 darkBL.addTo(map);
 var lg=L.layerGroup().addTo(map);
-var popDL=L.tileLayer("https://earthquake.usgs.gov/arcgis/rest/services/ls/MapServer/tile/{z}/{y}/{x}",{opacity:0.65,errorTileUrl:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="});
+var popHeat=null;
+function loadPopHeat(){
+  if(popHeat)return Promise.resolve();
+  return fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_populated_places_simple.geojson')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    var pts=[];
+    d.features.forEach(function(f){
+      var c=f.geometry.coordinates;
+      var p=f.properties.pop_max||f.properties.pop_min||1000;
+      pts.push([c[1],c[0],Math.sqrt(p)/500]);
+    });
+    popHeat=L.heatLayer(pts,{radius:20,blur:15,maxZoom:12,max:1.5,gradient:{0.2:'#1e40af',0.4:'#3b82f6',0.6:'#facc15',0.8:'#fb923c',1:'#ef4444'}});
+  });
+};
 var platesL=null;
 document.querySelectorAll('.overlay-btn').forEach(function(btn){
 btn.addEventListener('click',async function(e){
 var b=e.currentTarget;b.classList.toggle('on');var t=b.dataset.overlay;
-if(t==='pop'){if(b.classList.contains('on')){map.removeLayer(darkBL);lightBL.addTo(map);popDL.addTo(map)}else{map.removeLayer(popDL);map.removeLayer(lightBL);darkBL.addTo(map)}}
+if(t==='pop'){if(b.classList.contains('on')){map.removeLayer(darkBL);lightBL.addTo(map);loadPopHeat().then(function(){if(popHeat)popHeat.addTo(map)})}else{if(popHeat&&map.hasLayer(popHeat))map.removeLayer(popHeat);map.removeLayer(lightBL);darkBL.addTo(map)}}
 else if(t==='plates'){if(b.classList.contains('on')){if(!platesL){try{var r2=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');var d2=await r2.json();platesL=L.layerGroup();L.geoJSON(d2,{style:{color:'#ef4444',weight:1.5,opacity:0.7}}).eachLayer(function(l){platesL.addLayer(l)})}catch(e){}}if(platesL&&!map.hasLayer(platesL))platesL.addTo(map)}else{if(platesL&&map.hasLayer(platesL))map.removeLayer(platesL)}}
 })});
 function mc(m){return m==null?"g":m<3?"g":m<5?"y":m<6?"o":"r"}
