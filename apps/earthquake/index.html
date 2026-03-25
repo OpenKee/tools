@@ -111,18 +111,29 @@ L.control.zoom({position:"topleft"}).addTo(map);
 darkBL.addTo(map);
 var lg=L.layerGroup().addTo(map);
 var popHeat=null;
+var popPts=[];
 function loadPopHeat(){
   if(popHeat)return Promise.resolve();
   return fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_populated_places_simple.geojson')
   .then(function(r){return r.json()})
   .then(function(d){
-    var pts=[];
+    popPts=[];
     d.features.forEach(function(f){
       var c=f.geometry.coordinates;
       var p=f.properties.pop_max||f.properties.pop_min||1000;
-      pts.push([c[1],c[0],Math.sqrt(p)/500]);
+      popPts.push([c[1],c[0],Math.sqrt(p)/300]);
     });
-    popHeat=L.heatLayer(pts,{radius:25,blur:20,maxZoom:12,max:1,gradient:{0.1:'rgba(255,255,255,0.05)',0.3:'rgba(255,255,255,0.15)',0.5:'rgba(255,255,255,0.3)',0.7:'rgba(255,255,255,0.5)',1:'rgba(255,255,255,0.8)'}});
+    var z=map.getZoom();
+    var r=Math.max(15, z*8);
+    popHeat=L.heatLayer(popPts,{radius:r,blur:Math.round(r*0.8),maxZoom:15,max:1,gradient:{0.1:'rgba(255,255,255,0.05)',0.3:'rgba(255,255,255,0.15)',0.5:'rgba(255,255,255,0.3)',0.7:'rgba(255,255,255,0.5)',1:'rgba(255,255,255,0.8)'}});
+    map.on('zoomend',function(){
+      if(!popHeat||!map.hasLayer(popHeat))return;
+      var z2=map.getZoom();
+      var r2=Math.max(15,z2*8);
+      map.removeLayer(popHeat);
+      popHeat=L.heatLayer(popPts,{radius:r2,blur:Math.round(r2*0.8),maxZoom:15,max:1,gradient:{0.1:'rgba(255,255,255,0.05)',0.3:'rgba(255,255,255,0.15)',0.5:'rgba(255,255,255,0.3)',0.7:'rgba(255,255,255,0.5)',1:'rgba(255,255,255,0.8)'}});
+      popHeat.addTo(map);
+    });
   });
 };
 var platesL=null;
