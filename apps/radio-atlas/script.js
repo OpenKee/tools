@@ -85,6 +85,35 @@ async function getJson(url) {
   return r.json();
 }
 
+const _favCache = {};
+async function fetchFavicon(url) {
+  if (!url) return '';
+  const key = url.replace('http://','https://');
+  if (_favCache[key] !== undefined) return _favCache[key];
+  try {
+    const r = await fetch(key, { mode: 'cors' });
+    if (!r.ok) { _favCache[key] = ''; return ''; }
+    const blob = await r.blob();
+    if (blob.size < 100) { _favCache[key] = ''; return ''; }
+    const objUrl = URL.createObjectURL(blob);
+    _favCache[key] = objUrl;
+    return objUrl;
+  } catch { _favCache[key] = ''; return ''; }
+}
+
+function renderFavicon(url) {
+  const key = (url||'').replace('http://','https://');
+  if (_favCache[key]) return _favCache[key];
+  fetchFavicon(url).then(objUrl => {
+    if (!objUrl) return;
+    document.querySelectorAll(`.card-favicon[data-src="${key}"]`).forEach(img => {
+      img.src = objUrl;
+      img.style.display = '';
+    });
+  });
+  return '';
+}
+
 async function loadMeta() {
   [countries, tags] = await Promise.all([
     getJson(`${API}/countries`),
@@ -100,7 +129,7 @@ function renderCard(s) {
   const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${tag.trim()}</span>`).join('');
   return `<div class="station-card${playingCls}" data-id="${s.stationuuid}">
     <div class="card-top">
-      <img class="card-favicon" src="${(s.favicon||'').replace('http://','https://')}" alt="" onerror="this.style.display='none'" loading="lazy" />
+      <img class="card-favicon" data-src="${(s.favicon||'').replace('http://','https://')}" src="${renderFavicon(s.favicon)}" alt="" onerror="this.style.display='none'" loading="lazy" />
       <div class="card-info">
         <div class="card-name">${s.name}</div>
         <div class="card-sub">${s.country||''}${s.language ? ' · '+s.language : ''}</div>
@@ -149,7 +178,7 @@ function playStation(s) {
   audio.src = s.url_resolved || s.url;
   audio.play().catch(() => {});
   playerBar.style.display = '';
-  playerFavicon.src = (s.favicon||'').replace('http://','https://');
+  fetchFavicon(s.favicon).then(u => { playerFavicon.src = u || ''; playerFavicon.style.display = u ? '' : 'none'; });
   playerFavicon.style.display = s.favicon ? '' : 'none';
   playerName.textContent = s.name;
   playerMeta.textContent = `${s.country||''} · ${s.language||''} · ${(s.tags||'').split(',')[0]||''}`;
