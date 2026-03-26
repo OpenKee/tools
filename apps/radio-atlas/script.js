@@ -261,4 +261,4 @@ observer.observe(loadMore);
 // Init
 applyLanguage();
 audio.volume = 0.8;
-loadMeta().then(() => { countryInput.value = 'China'; search(true); }).catch(() => { loadingIndicator.style.display = 'none'; stationGrid.innerHTML = `<div style=\"padding:2rem;text-align:center;color:var(--muted)\">API unreachable. Try again later.</div>`; });
+loadMeta().then(() => { countryInput.value = 'China'; search(true); }).catch(() => { loadingIndicator.style.display = 'none'; stationGrid.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted)\">API unreachable. Try again later.</div>`; });
