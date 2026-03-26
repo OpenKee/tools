@@ -363,3 +363,122 @@ h1 {
   .rate-row { grid-template-columns: 70px 1fr 1fr; }
   .rate-name { display: none; }
 }
+
+/* Crypto Section */
+.crypto-section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d9e0ea;
+}
+.crypto-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 1rem 0;
+  border-bottom: 1px solid #d9e0ea;
+}
+.crypto-stats .stat {
+  padding: 0 1rem;
+  border-right: 1px solid #e8ecf2;
+}
+.crypto-stats .stat:last-child {
+  border-right: none;
+}
+.crypto-stats .s-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5a6778;
+}
+.crypto-stats .s-val {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 0.1rem;
+}
+.crypto-thead {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 70px 70px 100px;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5a6778;
+  border-bottom: 1px solid #d9e0ea;
+}
+.crypto-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 70px 70px 100px;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  align-items: center;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.crypto-row:hover {
+  background: #f0f3f8;
+}
+.crypto-rank {
+  color: #8892a4;
+  font-size: 0.78rem;
+  text-align: center;
+}
+.crypto-coin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.crypto-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.crypto-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.crypto-symbol {
+  font-size: 0.72rem;
+  color: #8892a4;
+  text-transform: uppercase;
+}
+.crypto-price {
+  font-family: "JetBrains Mono", "Inter", monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.crypto-change {
+  font-family: "JetBrains Mono", "Inter", monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.crypto-change.up {
+  color: #22c55e;
+}
+.crypto-change.down {
+  color: #ef4444;
+}
+.crypto-mcap {
+  font-size: 0.78rem;
+  color: #5a6778;
+}
+@media (max-width: 768px) {
+  .crypto-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .crypto-stats .stat {
+    border-right: none;
+    border-bottom: 1px solid #e8ecf2;
+  }
+  .crypto-thead,
+  .crypto-row {
+    grid-template-columns: 30px 1fr 90px 60px;
+  }
+  .crypto-thead > span:nth-child(5),
+  .crypto-thead > span:nth-child(6),
+  .crypto-row > span:nth-child(5),
+  .crypto-row > span:last-child {
+    display: none;
+  }
+}
