@@ -245,6 +245,12 @@ volumeInput.addEventListener('input', () => { audio.volume = Number(volumeInput.
 
 audio.addEventListener('play', () => { playBtn.textContent = '⏸'; });
 audio.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+audio.addEventListener('error', () => {
+  if (playing) {
+    playerMeta.textContent = '⚠ Stream unavailable';
+    playBtn.textContent = '▶';
+  }
+});
 
 langToggle.addEventListener('click', () => {
   lang = lang === 'en' ? 'zh' : 'en';
