@@ -100,7 +100,7 @@ function renderCard(s) {
   const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${tag.trim()}</span>`).join('');
   return `<div class="station-card${playingCls}" data-id="${s.stationuuid}">
     <div class="card-top">
-      <img class="card-favicon" src="${s.favicon || ''}" alt="" onerror="this.style.display='none'" loading="lazy" />
+      <img class="card-favicon" src="${(s.favicon||'').replace('http://','https://')}" alt="" onerror="this.onerror=null;this.style.display='none'" loading="lazy" />
       <div class="card-info">
         <div class="card-name">${s.name}</div>
         <div class="card-sub">${s.country||''}${s.language ? ' · '+s.language : ''}</div>
@@ -149,7 +149,7 @@ function playStation(s) {
   audio.src = s.url_resolved || s.url;
   audio.play().catch(() => {});
   playerBar.style.display = '';
-  playerFavicon.src = s.favicon || '';
+  playerFavicon.src = (s.favicon||'').replace('http://','https://');
   playerFavicon.style.display = s.favicon ? '' : 'none';
   playerName.textContent = s.name;
   playerMeta.textContent = `${s.country||''} · ${s.language||''} · ${(s.tags||'').split(',')[0]||''}`;
