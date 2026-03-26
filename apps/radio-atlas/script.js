@@ -247,10 +247,23 @@ audio.addEventListener('play', () => { playBtn.textContent = '⏸'; });
 audio.addEventListener('pause', () => { playBtn.textContent = '▶'; });
 audio.addEventListener('error', () => {
   if (playing) {
-    playerMeta.textContent = '⚠ Stream unavailable';
     playBtn.textContent = '▶';
+    showToast('⚠ ' + playing.name + ' — stream unavailable');
   }
 });
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'toast'; }, 3000);
+}
 
 langToggle.addEventListener('click', () => {
   lang = lang === 'en' ? 'zh' : 'en';
