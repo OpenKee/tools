@@ -244,3 +244,50 @@ unitToggle.addEventListener('click', () => {
 applyLanguage();
 renderSaved();
 search('Shanghai');
+
+
+// ===== City Compare =====
+const compareToggle = document.getElementById('compareToggle');
+const compareSection = document.getElementById('compareSection');
+const compareForm = document.getElementById('compareForm');
+const compareInput = document.getElementById('compareInput');
+const compareResult = document.getElementById('compareResult');
+
+let compareVisible = false;
+let currentCityData = null;
+
+compareToggle.addEventListener('click', () => {
+  compareVisible = !compareVisible;
+  compareSection.style.display = compareVisible ? 'block' : 'none';
+  if (compareVisible) compareInput.focus();
+});
+
+// Capture current city data when weather loads
+const origFetchWeather = typeof fetchWeather === 'function' ? fetchWeather : null;
+
+function captureCityData(data) {
+  currentCityData = data;
+}
+
+async function loadCompare() {
+  const city = compareInput.value.trim();
+  if (!city || !currentCityData) return;
+  try {
+    const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=en&format=json');
+    const geoData = await geoRes.json();
+    const place = geoData.results?.[0];
+    if (!place) { compareResult.innerHTML = '<p class="error-msg">City not found</p>'; return; }
+    const wxRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + place.latitude + '&longitude=' + place.longitude + '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
+    const wxData = await wxRes.json();
+    const c = wxData.current;
+    const d = wxData.daily;
+    const wmoIcons = {'0':'☀️','1':'🌤','2':'⛅','3':'☁️','45':'🌫','48':'🌫','51':'🌦','53':'🌦','55':'🌦','56':'🌧','57':'🌧','61':'🌧','63':'🌧','65':'🌧','71':'🌨','73':'🌨','75':'🌨','80':'🌦','81':'🌧','82':'⛈','85':'🌨','86':'🌨','95':'⛈','96':'⛈','99':'⛈'};
+    const icon = wmoIcons[String(c.weather_code)] || '🌤';
+    const tempDiff = Math.round(c.temperature_2m - (currentCityData.temp || 0));
+    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + place.name + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + (lang === 'zh' ? '湿度' : 'Humidity') + ': ' + c.relative_humidity_2m + '% &middot; ' + (lang === 'zh' ? '风速' : 'Wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
+  } catch(e) {
+    compareResult.innerHTML = '<p class="error-msg">Error: ' + e.message + '</p>';
+  }
+}
+
+compareForm.addEventListener('submit', (e) => { e.preventDefault(); loadCompare(); });
