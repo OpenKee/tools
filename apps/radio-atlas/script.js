@@ -81,7 +81,7 @@ function toggleFav(station) {
 
 async function getJson(url) {
   const r = await fetch(url);
-  if (!r.ok) { loadingIndicator.style.display = 'none'; throw new Error(`${r.status}`); }
+  if (!r.ok) throw new Error(`${r.status}`);
   return r.json();
 }
 
@@ -199,7 +199,7 @@ function showFavs() {
   stations = getFavs();
   ended = true;
   renderStations();
-  resultCount.textContent = `${stations.length} favorites`;
+  resultCount.textContent = `${stations.length} ${t('favorites')}`;
   loadMore.textContent = '';
 }
 
@@ -261,4 +261,4 @@ observer.observe(loadMore);
 // Init
 applyLanguage();
 audio.volume = 0.8;
-loadMeta().then(() => { countryInput.value = 'China'; search(true); });
+loadMeta().then(() => { countryInput.value = 'China'; search(true); }).catch(() => { loadingIndicator.style.display = 'none'; stationGrid.innerHTML = `<div style=\"padding:2rem;text-align:center;color:var(--muted)\">API unreachable. Try again later.</div>`; });
