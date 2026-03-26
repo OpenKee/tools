@@ -172,21 +172,26 @@ async function search(reset = true) {
   showingFavs = false;
   if (reset) { stations = []; offset = 0; ended = false; stationGrid.innerHTML = ''; loadingIndicator.style.display = 'flex'; }
 
-  const params = new URLSearchParams({ hidebroken: 'true', limit: PAGE, offset, order: 'clickcount', reverse: 'true' });
-  const country = countryInput.value.trim();
-  const tag = tagInput.value.trim();
-  const name = nameInput.value.trim();
-  if (country) params.set('country', country);
-  if (tag) params.set('tag', tag);
-  if (name) params.set('name', name);
+  try {
+    const params = new URLSearchParams({ hidebroken: 'true', limit: PAGE, offset, order: 'clickcount', reverse: 'true' });
+    const country = countryInput.value.trim();
+    const tag = tagInput.value.trim();
+    const name = nameInput.value.trim();
+    if (country) params.set('country', country);
+    if (tag) params.set('tag', tag);
+    if (name) params.set('name', name);
 
-  const chunk = await getJson(`${API}/stations/search?${params}`);
-  stations = reset ? chunk : [...stations, ...chunk];
-  offset += chunk.length;
-  if (chunk.length < PAGE) ended = true;
-  loadingIndicator.style.display = 'none';
-  renderStations();
-  loading = false;
+    const chunk = await getJson(`${API}/stations/search?${params}`);
+    stations = reset ? chunk : [...stations, ...chunk];
+    offset += chunk.length;
+    if (chunk.length < PAGE) ended = true;
+    renderStations();
+  } catch (e) {
+    stationGrid.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted)">${t('noResults')}</div>`;
+  } finally {
+    loadingIndicator.style.display = 'none';
+    loading = false;
+  }
 }
 
 function showFavs() {
