@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rate Board — Live Exchange Rate Converter</title>
-    <meta name="description" content="Real-time exchange rate converter. Convert between 30+ currencies, compare rates, and plan your budget." />
+    <title>Rate Board — Exchange Rates & Crypto</title>
+    <meta name="description" content="Exchange rates, currency converter, and cryptocurrency prices. 30+ fiat currencies and top crypto coins." />
     <meta property="og:title" content="Rate Board" />
-    <meta property="og:description" content="Real-time exchange rate converter with bidirectional conversion and cross-rate matrix." />
+    <meta property="og:description" content="Exchange rates, crypto prices, currency converter, and cross-rate matrix." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://openkee.github.io/rate-board/" />
     <meta name="twitter:card" content="summary" />
     <meta name="theme-color" content="#f5f7fb" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -72,6 +72,17 @@
         </div>
         <div id="rateTable" class="rate-table"></div>
       </section>
+
+      <!-- Crypto section -->
+      <section class="crypto-section">
+        <div class="section-head">
+          <h2 data-i18n="cryptoTitle">Crypto</h2>
+          <p class="section-desc" data-i18n="cryptoDesc">Top cryptocurrencies by market cap. Powered by CoinGecko.</p>
+        </div>
+        <div class="crypto-stats" id="cryptoStats"></div>
+        <div id="cryptoList" class="crypto-list"></div>
+      </section>
+
     </main>
 
     <script src="script.js"></script>
