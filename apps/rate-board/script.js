@@ -66,6 +66,8 @@ const copy = {
     error: 'Failed to load rates. The free API may be temporarily unavailable.',
     rate: 'Rate',
     conv: 'Converted',
+    cryptoTitle: 'Crypto',
+    cryptoDesc: 'Top cryptocurrencies by market cap. Powered by CoinGecko.',
   },
   zh: {
     eyebrow: '汇率工具',
@@ -79,6 +81,8 @@ const copy = {
     error: '加载失败，免费 API 可能暂时不可用。',
     rate: '汇率',
     conv: '换算结果',
+    cryptoTitle: '加密货币',
+    cryptoDesc: '市值排名前列的加密货币。由 CoinGecko 提供。',
   },
 };
 
@@ -250,3 +254,51 @@ loadRates().then(data => {
 }).catch(err => {
   regionSections.innerHTML = `<p class="error-msg">${t('error')}</p>`;
 });
+
+
+// ===== Crypto Section =====
+const cryptoList = document.getElementById('cryptoList');
+const cryptoStats = document.getElementById('cryptoStats');
+
+const CRYPTO_I18N = {
+  en: { cryptoTitle: 'Crypto', cryptoDesc: 'Top cryptocurrencies by market cap. Powered by CoinGecko.', cryptoTracked: 'Coins', cryptoTotalMcap: 'Total Market Cap', cryptoGainers: '24h Gainers', cryptoLoading: 'Loading crypto…', cryptoError: 'CoinGecko API may be rate-limited.', cryptoRank: '#', cryptoName: 'Name', cryptoPrice: 'Price', crypto24h: '24h', crypto7d: '7d', cryptoMcap: 'Mkt Cap' },
+  zh: { cryptoTitle: '加密货币', cryptoDesc: '市值排名前列的加密货币。由 CoinGecko 提供。', cryptoTracked: '币种', cryptoTotalMcap: '总市值', cryptoGainers: '24h 涨幅', cryptoLoading: '加载中…', cryptoError: 'CoinGecko API 可能限流。', cryptoRank: '#', cryptoName: '名称', cryptoPrice: '价格', crypto24h: '24h', crypto7d: '7天', cryptoMcap: '市值' }
+};
+
+function cryptoFmt(n) {
+  if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+  if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return '$' + n.toPrecision(4);
+}
+
+function cryptoPct(n) {
+  if (n == null) return '—';
+  const cls = n >= 0 ? 'up' : 'down';
+  return '<span class="crypto-change ' + cls + '">' + (n >= 0 ? '+' : '') + n.toFixed(2) + '%</span>';
+}
+
+async function loadCrypto() {
+  cryptoList.innerHTML = '<div class="loading">' + (CRYPTO_I18N[lang]?.cryptoLoading || 'Loading…') + '</div>';
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=false&price_change_percentage=24h,7d');
+    if (!r.ok) throw new Error(r.status);
+    const coins = await r.json();
+    const totalMcap = coins.reduce((s, c) => s + (c.market_cap || 0), 0);
+    const gainers = coins.filter(c => (c.price_change_percentage_24h || 0) > 0).length;
+    const ct = CRYPTO_I18N[lang] || CRYPTO_I18N.en;
+    cryptoStats.innerHTML = '<div class="stat"><div class="s-label">' + ct.cryptoTracked + '</div><div class="s-val">' + coins.length + '</div></div>' +
+      '<div class="stat"><div class="s-label">' + ct.cryptoTotalMcap + '</div><div class="s-val" style="font-size:1.1rem">' + cryptoFmt(totalMcap) + '</div></div>' +
+      '<div class="stat"><div class="s-label">' + ct.cryptoGainers + '</div><div class="s-val" style="color:#22c55e">' + gainers + '</div></div>' +
+      '<div class="stat"><div class="s-label">' + (lang === 'zh' ? '24h 跌' : '24h Losers') + '</div><div class="s-val" style="color:#ef4444">' + (coins.length - gainers) + '</div></div>';
+    cryptoList.innerHTML = '<div class="crypto-thead"><span>' + ct.cryptoRank + '</span><span>' + ct.cryptoName + '</span><span>' + ct.cryptoPrice + '</span><span>' + ct.crypto24h + '</span><span>' + ct.crypto7d + '</span><span>' + ct.cryptoMcap + '</span></div>' +
+      coins.map(function(c, i) {
+        return '<div class="crypto-row"><span class="crypto-rank">' + (i + 1) + '</span><div class="crypto-coin"><img class="crypto-icon" src="' + c.image + '" alt=""><div><div class="crypto-name">' + c.name + '</div><div class="crypto-symbol">' + c.symbol.toUpperCase() + '</div></div></div><span class="crypto-price">' + cryptoFmt(c.current_price) + '</span>' + cryptoPct(c.price_change_percentage_24h) + cryptoPct(c.price_change_percentage_7d_in_currency) + '<span class="crypto-mcap">' + cryptoFmt(c.market_cap) + '</span></div>';
+      }).join('');
+  } catch(e) {
+    cryptoList.innerHTML = '<div class="loading">' + (CRYPTO_I18N[lang]?.cryptoError || 'Error') + '</div>';
+  }
+}
+
+loadCrypto();
