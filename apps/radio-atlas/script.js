@@ -20,6 +20,7 @@ const stopBtn = document.getElementById('stopBtn');
 const volumeInput = document.getElementById('volumeInput');
 const audio = document.getElementById('audio');
 const langToggle = document.getElementById('langToggle');
+const loadingIndicator = document.getElementById('loadingIndicator');
 
 const API = 'https://de1.api.radio-browser.info/json';
 const PAGE = 40;
@@ -31,7 +32,7 @@ const copy = {
     search:'Search', random:'🎲 Random', favorites:'⭐ Favorites',
     votes:'votes', clicks:'clicks', bitrate:'kbps',
     play:'Play', stop:'Stop', noResults:'No stations found.',
-    loadMore:'Scroll for more', end:'End of results',
+    loadMore:'Scroll for more', end:'End of results', loading:'Loading stations...',
     nowPlaying:'Now playing', favsTitle:'Your favorites',
     removeFav:'Remove', addFav:'Save',
   },
@@ -41,7 +42,7 @@ const copy = {
     search:'搜索', random:'🎲 随机', favorites:'⭐ 收藏',
     votes:'票', clicks:'点击', bitrate:'kbps',
     play:'播放', stop:'停止', noResults:'没有找到电台。',
-    loadMore:'向下滚动加载更多', end:'已全部加载',
+    loadMore:'向下滚动加载更多', end:'已全部加载', loading:'加载电台中...',
     nowPlaying:'正在播放', favsTitle:'你的收藏',
     removeFav:'取消', addFav:'收藏',
   },
@@ -80,7 +81,7 @@ function toggleFav(station) {
 
 async function getJson(url) {
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`${r.status}`);
+  if (!r.ok) { loadingIndicator.style.display = 'none'; throw new Error(`${r.status}`); }
   return r.json();
 }
 
@@ -169,7 +170,7 @@ async function search(reset = true) {
   if (loading) return;
   loading = true;
   showingFavs = false;
-  if (reset) { stations = []; offset = 0; ended = false; renderStations(); }
+  if (reset) { stations = []; offset = 0; ended = false; stationGrid.innerHTML = ''; loadingIndicator.style.display = 'flex'; }
 
   const params = new URLSearchParams({ hidebroken: 'true', limit: PAGE, offset, order: 'clickcount', reverse: 'true' });
   const country = countryInput.value.trim();
@@ -183,6 +184,7 @@ async function search(reset = true) {
   stations = reset ? chunk : [...stations, ...chunk];
   offset += chunk.length;
   if (chunk.length < PAGE) ended = true;
+  loadingIndicator.style.display = 'none';
   renderStations();
   loading = false;
 }
@@ -254,4 +256,5 @@ observer.observe(loadMore);
 // Init
 applyLanguage();
 audio.volume = 0.8;
-loadMeta().then(() => { countryInput.value = 'China'; search(true); });
+loadingIndicator.style.display = 'flex';
+loadMeta().then(() => { countryInput.value = 'China'; search(true); }).catch(() => { loadingIndicator.style.display = 'none'; });
