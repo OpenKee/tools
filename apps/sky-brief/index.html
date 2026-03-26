@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sky Brief — Weather & Air Quality</title>
-    <meta name="description" content="Real-time weather, air quality, and 7-day forecast. Free API, no sign-up." />
+    <title>Sky Brief — Weather & City Compare</title>
+    <meta name="description" content="Weather, air quality, 7-day forecast, and city comparison. Free API, no sign-up." />
     <meta property="og:title" content="Sky Brief" />
     <meta property="og:description" content="Weather & air quality dashboard." />
     <meta property="og:type" content="website" />
@@ -27,6 +27,7 @@
         <div class="header-right">
           <button id="unitToggle" class="btn-ghost" type="button">°C</button>
           <button id="locateBtn" class="btn-ghost" type="button" data-i18n="locate">📍 My location</button>
+          <button id="compareToggle" class="btn-ghost" type="button" data-i18n="compare">⇄ Compare</button>
         </div>
       </header>
 
@@ -79,6 +80,18 @@
         <h3 data-i18n="daily">7-day forecast</h3>
         <div id="dailyList" class="daily-list"></div>
       </section>
+
+      <!-- Compare mode -->
+      <section id="compareSection" class="compare-section" style="display:none;">
+        <div class="compare-bar">
+          <form id="compareForm">
+            <input id="compareInput" type="text" placeholder="Compare city..." autocomplete="off" />
+            <button type="submit" data-i18n="search">Search</button>
+          </form>
+        </div>
+        <div id="compareResult" class="compare-result"></div>
+      </section>
+
     </main>
 
     <script src="script.js"></script>
