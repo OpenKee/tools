@@ -256,5 +256,4 @@ observer.observe(loadMore);
 // Init
 applyLanguage();
 audio.volume = 0.8;
-loadingIndicator.style.display = 'flex';
-loadMeta().then(() => { countryInput.value = 'China'; search(true); }).catch(() => { loadingIndicator.style.display = 'none'; });
+loadMeta().then(() => { countryInput.value = 'China'; search(true); });
