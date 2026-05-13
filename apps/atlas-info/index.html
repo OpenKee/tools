@@ -56,7 +56,7 @@ h1{margin-top:0.3rem;font-size:clamp(2rem,5vw,3rem);line-height:0.95;letter-spac
 <div id="resultCount" class="result-count"></div>
 <div id="countryGrid" class="country-grid"></div>
 <div id="detailCard" style="display:none"></div>
-<footer class="openke-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(100,160,255,0.1);text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#6888b0;letter-spacing:0.03em;">
+<footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(100,160,255,0.1);text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#6888b0;letter-spacing:0.03em;">
     Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#4090ff;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#4090ff;text-decoration:none;">All projects</a>
   </footer>
 </div><script>
@@ -118,7 +118,7 @@ function renderGrid(countries){
 
 async function showDetail(code){
   let c=allCountries.find(x=>x.cca3===code);if(!c)return;
-  try{const r=await fetch('https://restcountries.com/v3.1/alpha/'+code+'?fields=name,flags,population,region,subregion,capital,languages,currencies,borders,cca3,latlng,maps');if(r.ok)c=await r.json()}catch{}
+  try{const r=await fetch('https://restcountries.com/v3.1/alpha/'+code+'?fields=name,flags,population,region,subregion,capital,languages,currencies,borders,cca3,latlng,maps');if(r.ok)c=await r.json()}catch(e){console.warn('Detail fetch failed:',e)}
   const langs=c.languages?Object.values(c.languages).join(', '):'—';
   const currs=c.currencies?Object.values(c.currencies).map(x=>x.name+' ('+(x.symbol||'')+')').join(', '):'—';
   const borders=c.borders?.map(b=>{const bc=allCountries.find(x=>x.cca3===b);return bc?'<button class="border-chip" data-code="'+b+'">'+(bc.flags?.emoji||'')+' '+(bc.name?.common||b)+'</button>':'<button class="border-chip" data-code="'+b+'">'+b+'</button>'}).join('')||t('none');

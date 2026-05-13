@@ -187,7 +187,7 @@ async function loadLanguages() {
       langSelect.appendChild(opt);
     });
     langSelect.value = current;
-  } catch {}
+  } catch(e) { console.warn('Language list fetch failed:', e); }
 }
 
 async function loadRepos() {

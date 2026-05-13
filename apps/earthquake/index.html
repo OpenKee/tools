@@ -110,7 +110,7 @@ let platesL=null;
 document.querySelector('[data-overlay="plates"]').addEventListener('click',async function(e){
   const b=e.currentTarget;b.classList.toggle('on');
   if(b.classList.contains('on')){
-    if(!platesL){try{const r=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');const d=await r.json();platesL=L.layerGroup();L.geoJSON(d,{style:{color:'#ef4444',weight:1.5,opacity:0.7}}).eachLayer(function(l){platesL.addLayer(l)})}catch(e){}}
+    if(!platesL){try{const r=await fetch('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json');const d=await r.json();platesL=L.layerGroup();L.geoJSON(d,{style:{color:'#ef4444',weight:1.5,opacity:0.7}}).eachLayer(function(l){platesL.addLayer(l)})}catch(e){console.warn('Plate boundaries load failed:',e)}}
     if(platesL&&!map.hasLayer(platesL))platesL.addTo(map);
   }else{if(platesL&&map.hasLayer(platesL))map.removeLayer(platesL)}
 });
