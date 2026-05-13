@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Art Gallery</title>
+<title>Art Gallery — The Met Collection Explorer</title>
+<meta name="description" content="Explore 400,000+ artworks from The Metropolitan Museum of Art. Search by artist, title, or browse random masterpieces." />
+<meta property="og:title" content="Art Gallery" />
+<meta property="og:description" content="Explore 400,000+ artworks from The Metropolitan Museum of Art." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://openkee.github.io/art-gallery/" />
+<meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#f5f2eb"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet"/>
@@ -57,7 +63,7 @@ a{color:var(--ink);text-decoration:none}
 </style>
 </head>
 <body>
-<div class="nav"><b>openkee</b><span class="sep">/</span>tools<span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span></div>
+<div class="nav"><a href="../../index.html" style="color:var(--ink);text-decoration:none;opacity:0.5;font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span></div>
 <div class="header"><h1>🏛 Art Gallery</h1><div class="sub">Explore 400,000+ artworks from The Met</div></div>
 <div class="search">
 <form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn">Search</button></form>
@@ -69,14 +75,14 @@ a{color:var(--ink);text-decoration:none}
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()"><div class="modal" id="modal"></div></div>
 
 <script>
-var API='https://collectionapi.metmuseum.org/public/collection/v1';
-var allIds=[];
-var shown=0;
-var batch=24;
+const API='https://collectionapi.metmuseum.org/public/collection/v1';
+let allIds=[];
+let shown=0;
+const batch=24;
 
 function search(){
-  var q=document.getElementById('inp').value.trim();if(!q)return;
-  var btn=document.getElementById('btn');btn.disabled=true;
+  const q=document.getElementById('inp').value.trim();if(!q)return;
+  let btn=document.getElementById('btn');btn.disabled=true;
   document.getElementById('out').innerHTML='';
   document.getElementById('moreBtn').style.display='none';
   document.getElementById('ld').classList.add('on');
@@ -101,21 +107,21 @@ function randomArt(){
   document.getElementById('ld').classList.add('on');
   shown=0;
   // Random search term
-  var terms=['painting','sculpture','portrait','landscape','vase','jewelry','armor','photograph','drawing','ceramic','tapestry','furniture','mosaic','statue','bust'];
-  var term=terms[Math.floor(Math.random()*terms.length)];
+  const terms=['painting','sculpture','portrait','landscape','vase','jewelry','armor','photograph','drawing','ceramic','tapestry','furniture','mosaic','statue','bust'];
+  const term=terms[Math.floor(Math.random()*terms.length)];
   fetch(API+'/search?q='+term+'&hasImages=true')
     .then(function(r){return r.json()})
     .then(function(d){
       allIds=d.objectIDs||[];
       // Shuffle
-      for(var i=allIds.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=allIds[i];allIds[i]=allIds[j];allIds[j]=t;}
+      for(let i=allIds.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=allIds[i];allIds[i]=allIds[j];allIds[j]=t;}
       return loadBatch();
     })
     .catch(function(){document.getElementById('ld').classList.remove('on')});
 }
 
 function loadBatch(){
-  var ids=allIds.slice(shown,shown+batch);
+  const ids=allIds.slice(shown,shown+batch);
   shown+=ids.length;
   return Promise.all(ids.map(function(id){
     return fetch(API+'/objects/'+id).then(function(r){return r.json()}).catch(function(){return null});
@@ -127,7 +133,7 @@ function loadBatch(){
 }
 
 function loadMore(){
-  var btn=document.getElementById('moreBtn');
+  let btn=document.getElementById('moreBtn');
   btn.textContent='Loading...';btn.disabled=true;
   loadBatch().then(function(){
     btn.textContent='Load more';btn.disabled=false;
@@ -135,12 +141,12 @@ function loadMore(){
 }
 
 function appendGrid(arts){
-  var grid=document.getElementById('out').querySelector('.grid');
+  let grid=document.getElementById('out').querySelector('.grid');
   if(!grid){document.getElementById('out').innerHTML='<div class="grid"></div>';grid=document.getElementById('out').querySelector('.grid')}
   arts.forEach(function(a){
-    var img=a.primaryImageSmall||'';
-    var imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
-    var div=document.createElement('div');
+    const img=a.primaryImageSmall||'';
+    const imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
+    const div=document.createElement('div');
     div.className='art';
     div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+(a.title||'Untitled')+'</div><div class="meta">'+(a.artistDisplayName||'Unknown')+'</div><div class="date">'+(a.objectDate||'')+'</div></div>';
     div.onclick=function(){showDetail(a.objectID)};
@@ -152,9 +158,9 @@ function showDetail(id){
   fetch(API+'/objects/'+id)
     .then(function(r){return r.json()})
     .then(function(a){
-      var img=a.primaryImage||a.primaryImageSmall||'';
-      var t1=a.title||'Untitled';var imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
-      var rows=[];
+      const img=a.primaryImage||a.primaryImageSmall||'';
+      const t1=a.title||'Untitled';const imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
+      const rows=[];
       if(a.objectDate)rows.push(['Date',a.objectDate]);
       if(a.medium)rows.push(['Medium',a.medium]);
       if(a.dimensions)rows.push(['Dimensions',a.dimensions]);
@@ -163,7 +169,7 @@ function showDetail(id){
       if(a.culture)rows.push(['Culture',a.culture]);
       if(a.classification)rows.push(['Type',a.classification]);
       if(a.creditLine)rows.push(['Credit',a.creditLine]);
-      var table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
+      const table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
       document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+(a.title||'Untitled')+'</h2><div class="artist">'+(a.artistDisplayName||'Unknown artist')+'</div><table>'+table+'</table></div></div>';
       document.getElementById('overlay').classList.add('on');
     });

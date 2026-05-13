@@ -150,7 +150,8 @@ async function addCity(name) {
     renderChips();
     if (cities.length >= 2) renderTimeline();
   } catch {
-    // silently ignore bad city names
+    const msg = lang === 'zh' ? '未找到该城市' : 'City not found';
+    alert(msg);
   }
 }
 
