@@ -45,6 +45,7 @@ const copy = {
 
 let lang = localStorage.getItem('openkee-lang') || 'en';
 let history = JSON.parse(localStorage.getItem('node-atlas-history') || '[]');
+let lastResult = null;
 
 function t(k) { return copy[lang][k] || k; }
 
@@ -52,6 +53,15 @@ function applyLanguage() {
   document.documentElement.lang = lang;
   langToggle.textContent = lang==='en'?'中文':'EN';
   document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  if (lastResult) {
+    const r = lastResult;
+    renderGeo(r.geo);
+    renderDNS(r.dnsResult);
+    renderLatency(r.dnsMs, r.httpMs, r.sslMs, r.totalMs);
+    renderHeaders(r.httpInfo);
+    renderSSL(r.sslCerts);
+    statusBar.textContent = `${t('done')} — ${r.totalMs}ms`;
+  }
 }
 
 function isIp(v) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()); }
@@ -240,6 +250,7 @@ async function lookup(target) {
 
     statusBar.className = 'status-bar done';
     statusBar.textContent = `${t('done')} — ${totalMs}ms`;
+    lastResult = { geo, dnsResult, dnsMs, httpMs, sslMs: Math.max(0, totalMs - dnsMs - httpMs), totalMs, httpInfo, sslCerts };
   } catch(e) {
     statusBar.className = 'status-bar error';
     statusBar.textContent = `${t('error')}: ${e.message}`;

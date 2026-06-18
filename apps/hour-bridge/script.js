@@ -86,7 +86,7 @@ function applyLanguage() {
   langToggle.textContent = lang === 'en' ? '中文' : 'EN';
   document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
   cityInput.placeholder = t('enterCity');
-  if (cities.length) renderTimeline();
+  if (cities.length) { renderTimeline(); renderResult(); renderBestSlots(); }
 }
 
 function updateClock() {
@@ -203,7 +203,6 @@ function renderResult() {
     return;
   }
   resultCard.style.display = '';
-  const slotsNeeded = Math.ceil(duration / 60);
   resultBody.innerHTML = cities.map(c => {
     const lt = localTime(c.tz, selectedSlot);
     const lh = localHour(c.tz, selectedSlot);

@@ -59,6 +59,7 @@ const copy = {
     sunrise:'Sunrise', sunset:'Sunset', rain:'Rain',
     uv:'UV index', pressure:'Pressure',
     aqiGood:'Good', aqiFair:'Fair', aqiModerate:'Moderate', aqiPoor:'Poor', aqiVpoor:'Very poor',
+    compare:'Compare',
   },
   zh: {
     eyebrow:'天气 & 空气质量', title:'Sky Brief',
@@ -68,6 +69,7 @@ const copy = {
     sunrise:'日出', sunset:'日落', rain:'降雨',
     uv:'紫外线', pressure:'气压',
     aqiGood:'优', aqiFair:'良', aqiModerate:'中', aqiPoor:'差', aqiVpoor:'极差',
+    compare:'对比',
   },
 };
 
@@ -277,10 +279,9 @@ async function loadCompare() {
     const wxData = await wxRes.json();
     const c = wxData.current;
     const d = wxData.daily;
-    const wmoIcons = {'0':'☀️','1':'🌤','2':'⛅','3':'☁️','45':'🌫','48':'🌫','51':'🌦','53':'🌦','55':'🌦','56':'🌧','57':'🌧','61':'🌧','63':'🌧','65':'🌧','71':'🌨','73':'🌨','75':'🌨','80':'🌦','81':'🌧','82':'⛈','85':'🌨','86':'🌨','95':'⛈','96':'⛈','99':'⛈'};
-    const icon = wmoIcons[String(c.weather_code)] || '🌤';
+    const icon = weatherIcon(c.weather_code);
     const tempDiff = Math.round(c.temperature_2m - (currentCityData.temp || 0));
-    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + place.name + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + (lang === 'zh' ? '湿度' : 'Humidity') + ': ' + c.relative_humidity_2m + '% &middot; ' + (lang === 'zh' ? '风速' : 'Wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
+    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + place.name + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + t('humidity') + ': ' + c.relative_humidity_2m + '% · ' + t('wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
   } catch(e) {
     compareResult.innerHTML = '<p class="error-msg">Error: ' + e.message + '</p>';
   }

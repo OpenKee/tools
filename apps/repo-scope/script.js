@@ -267,6 +267,7 @@ async function analyzeUser(username) {
       getJson(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`),
     ]);
     allRepos = repos.filter(r=>!r.fork).sort((a,b)=>b.stargazers_count-a.stargazers_count);
+    window._lastProfile = profile;
     renderProfile(profile);
     renderStats(profile, allRepos);
     renderScore(profile, allRepos);
@@ -294,7 +295,18 @@ userForm.addEventListener('submit', e=>{ e.preventDefault(); analyzeUser(usernam
 sortSelect.addEventListener('change', sortAndRender);
 repoSearch.addEventListener('input', sortAndRender);
 detailClose.addEventListener('click', ()=>{ detailSection.style.display='none'; });
-langToggle.addEventListener('click', ()=>{ lang=lang==='en'?'zh':'en'; localStorage.setItem('openkee-lang',lang); applyLanguage(); });
+langToggle.addEventListener('click', ()=>{
+  lang=lang==='en'?'zh':'en';
+  localStorage.setItem('openkee-lang',lang);
+  applyLanguage();
+  if (allRepos.length) {
+    renderProfile(window._lastProfile);
+    renderStats(window._lastProfile, allRepos);
+    renderScore(window._lastProfile, allRepos);
+    renderLanguages(allRepos);
+    sortAndRender();
+  }
+});
 tokenSave.addEventListener('click', ()=>{
   const v=tokenInput.value.trim(); if(!v) return;
   ghToken=v; localStorage.setItem('repo-scope-token',v);
