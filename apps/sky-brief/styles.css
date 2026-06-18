@@ -352,7 +352,7 @@ h1 {
 }
 
 .day-temps {
-  font-family: "Inter", monospace;
+  font-family: "Inter", sans-serif;
   font-size: 0.78rem;
   text-align: right;
   white-space: nowrap;

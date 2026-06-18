@@ -7,6 +7,7 @@
   --accent-soft: rgba(255,107,44,.08);
   --bg: #f6f2ea;
   --green: #16a34a;
+  --mono: "IBM Plex Mono", monospace;
 }
 
 * { box-sizing: border-box; }

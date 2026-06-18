@@ -382,9 +382,9 @@ h1 {
 @media (max-width: 720px) {
   .masthead { flex-direction: column; align-items: start; gap: 0.6rem; }
   .header-right { align-self: start; }
-  .year-grid { grid-template-columns: 1fr 1fr; }
-  .holiday-row { grid-template-columns: 80px 1fr; }
-  .holiday-badge { display: none; }
+  .year-grid { grid-template-columns: 1fr; }
+  .holiday-row { grid-template-columns: 1fr; gap: 0.3rem; }
+  .holiday-badge { align-self: start; }
 }
 
 

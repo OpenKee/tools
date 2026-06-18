@@ -2,6 +2,7 @@ const searchForm = document.getElementById('searchForm');
 const queryInput = document.getElementById('queryInput');
 const locateBtn = document.getElementById('locateBtn');
 const unitToggle = document.getElementById('unitToggle');
+const speedToggle = document.getElementById('speedToggle');
 const savedStrip = document.getElementById('savedStrip');
 const heroSection = document.getElementById('heroSection');
 const heroIcon = document.getElementById('heroIcon');
@@ -75,6 +76,7 @@ const copy = {
 
 let lang = localStorage.getItem('openkee-lang') || 'en';
 let unit = 'C';
+let speedUnit = 'kmh';
 let lastData = null;
 
 function t(k) { return copy[lang][k] || k; }
@@ -88,7 +90,7 @@ function weatherIcon(code) { return WMO_ICONS[code] || '🌡'; }
 function weatherText(code) { return (WMO_TEXT[lang]||WMO_TEXT.en)[code] || `WMO ${code}`; }
 function toF(c) { return c * 9/5 + 32; }
 function tempV(v) { return unit==='C' ? `${Math.round(v)}°` : `${Math.round(toF(v))}°`; }
-function speedV(kmh) { return unit==='C' ? `${Math.round(kmh)} km/h` : `${Math.round(kmh*0.621)} mph`; }
+function speedV(kmh) { return speedUnit === 'kmh' ? `${Math.round(kmh)} km/h` : `${Math.round(kmh*0.621)} mph`; }
 
 function aqiLabel(v) {
   if (v<=50) return t('aqiGood');
@@ -242,6 +244,12 @@ locateBtn.addEventListener('click', () => {
 unitToggle.addEventListener('click', () => {
   unit = unit==='C'?'F':'C';
   unitToggle.textContent = unit==='C'?'°C':'°F';
+  if (lastData) render(lastData.label, lastData.forecast, lastData.air);
+});
+
+speedToggle.addEventListener('click', () => {
+  speedUnit = speedUnit==='kmh'?'mph':'kmh';
+  speedToggle.textContent = speedUnit==='kmh'?'km/h':'mph';
   if (lastData) render(lastData.label, lastData.forecast, lastData.air);
 });
 

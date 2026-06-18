@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#0f172a"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌋</text></svg>"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400 ;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0f172a;--sf:#1e293b;--sf-hover:#334155;--bd:rgba(255,255,255,0.08);--tx:#e2e8f0;--mt:#94a3b8;--gn:#4ade80;--yl:#facc15;--or:#fb923c;--rd:#ef4444;--bl:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -74,12 +74,13 @@ footer{padding:0.6rem 1rem;background:var(--sf);border-top:1px solid var(--bd);f
 <div id="map"></div>
 <div class="sidebar">
 <div class="filters-container">
-<div class="filter-group" id="time-filters"><span class="filter-label">Search Parameters</span>
+<div class="filter-group" id="time-filters"><span class="filter-label">Time Range</span>
 <button class="fb on" data-period="day">Past 24 Hours</button>
 <button class="fb" data-period="week">Past 7 Days</button>
 <button class="fb" data-period="month">Past 30 Days</button>
 </div>
 <div class="filter-group" id="mag-filters">
+<span class="filter-label">Magnitude</span>
 <button class="fb on" data-mag="0">All</button>
 <button class="fb" data-mag="2.5">M2.5+</button>
 <button class="fb" data-mag="4.5">M4.5+</button>
@@ -88,6 +89,7 @@ footer{padding:0.6rem 1rem;background:var(--sf);border-top:1px solid var(--bd);f
 <div class="filter-group" style="margin-top:0.5rem">
 <button class="fb overlay-btn" data-overlay="plates">🗺️ Plate Boundaries</button>
 </div>
+</div>
 <div class="stats" id="stats-container"></div>
 <div class="list-wrapper">
 <div class="loader-overlay" id="loader"><div class="spinner"></div></div>
@@ -95,13 +97,11 @@ footer{padding:0.6rem 1rem;background:var(--sf);border-top:1px solid var(--bd);f
 </div>
 <footer><span>USGS Data API</span><span id="event-count">0 events</span></footer>
 </div>
-</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="var f=document.createElement('script');f.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';document.head.appendChild(f)"></script>
 <script>
 const API_URL="https://earthquake.usgs.gov/fdsnws/event/1/query";
 const state={period:'day',minMag:0,impact:'all',data:[]};
 const darkBL=L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:""});
-const lightBL=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:""});
 const map=L.map("map",{zoomControl:false,worldCopyJump:true,preferCanvas:true,minZoom:2,maxZoom:15}).setView([20,0],2);
 L.control.zoom({position:"topleft"}).addTo(map);
 darkBL.addTo(map);

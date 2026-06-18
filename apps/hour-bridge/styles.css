@@ -443,26 +443,6 @@ h1 {
 .best-score.mid { border-color: #ca8a04; color: #ca8a04; }
 .best-score.low { border-color: #dc2626; color: #dc2626; }
 
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--muted);
-  padding: 1.5rem;
-  font-size: 0.88rem;
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
 @media (max-width: 720px) {
   .masthead { flex-direction: column; gap: 0.6rem; }
   .header-right { align-self: start; }

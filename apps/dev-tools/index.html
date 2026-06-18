@@ -218,7 +218,7 @@ let timer;
 // Tool switching
 const panels=['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
 function switchTool(t){document.querySelectorAll('.tool-tab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('[data-tool="'+t+'"]').forEach(b=>b.classList.add('on'));panels.forEach(p=>{const el=$('panel-'+p);if(el){if(p===t){
-  if(el.classList.contains('css-main')||el.classList.contains('encode-grid')){
+  if(el.classList.contains('css-main')||el.classList.contains('encode-grid')||el.classList.contains('md-grid')){
     el.style.display='';
   }else{
     el.style.display='flex';el.style.flexDirection='column';

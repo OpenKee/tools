@@ -141,7 +141,8 @@ function isWeekend(year, month, day) {
 }
 
 function dateStr(year, month, day) {
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const d = new Date(year, month - 1, day);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function daysInMonth(year, month) {
@@ -241,7 +242,8 @@ function renderYearCalendar(holidays) {
   const year = Number(yearSelect.value);
   const holiMap = {};
   holidays.forEach(h => { holiMap[h.date] = h.localName; });
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
   yearGrid.innerHTML = Array.from({ length: 12 }, (_, mi) => {
     const m = mi + 1;

@@ -197,8 +197,7 @@ h1 {
   margin-left: 0.4rem;
 }
 
-.currency-rate {
-  font-family: "Inter", monospace;
+.currency-rate { font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   text-align: right;
@@ -250,7 +249,8 @@ h1 {
 .table-controls input { width: 80px; }
 
 .matrix-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 70vh;
   background: var(--panel);
   border: 1px solid var(--line);
 }
@@ -310,12 +310,12 @@ h1 {
 }
 
 .rate-val {
-  font-family: "Inter", monospace;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
 }
 
 .rate-converted {
-  font-family: "Inter", monospace;
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   color: var(--accent);
 }
@@ -444,12 +444,12 @@ h1 {
   text-transform: uppercase;
 }
 .crypto-price {
-  font-family: "JetBrains Mono", "Inter", monospace;
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
 }
 .crypto-change {
-  font-family: "JetBrains Mono", "Inter", monospace;
+  font-family: "Inter", sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
 }
