@@ -28,15 +28,15 @@
         <div class="header-right">
           <button id="unitToggle" class="btn-ghost" type="button">°C</button>
           <button id="speedToggle" class="btn-ghost" type="button">km/h</button>
-          <button id="locateBtn" class="btn-ghost" type="button" data-i18n="locate">📍 My location</button>
-          <button id="compareToggle" class="btn-ghost" type="button" data-i18n="compare">⇄ Compare</button>
+          <button id="locateBtn" class="btn-ghost" type="button" data-i18n="locate" aria-label="My location">📍 My location</button>
+          <button id="compareToggle" class="btn-ghost" type="button" data-i18n="compare" aria-label="Compare">⇄ Compare</button>
         </div>
       </header>
 
       <!-- Search -->
       <section class="search-bar">
         <form id="searchForm">
-          <input id="queryInput" type="text" placeholder="Search city\u2026" value="Shanghai" autocomplete="off" />
+          <input id="queryInput" type="text" placeholder="Search city\u2026" aria-label="Search city" value="Shanghai" autocomplete="off" />
           <button type="submit" data-i18n="search">Search</button>
         </form>
         <div class="saved-strip" id="savedStrip"></div>
@@ -87,7 +87,7 @@
       <section id="compareSection" class="compare-section" style="display:none;">
         <div class="compare-bar">
           <form id="compareForm">
-            <input id="compareInput" type="text" placeholder="Compare city..." autocomplete="off" />
+            <input id="compareInput" type="text" placeholder="Compare city..." aria-label="City to compare" autocomplete="off" />
             <button type="submit" data-i18n="search">Search</button>
           </form>
         </div>
@@ -98,8 +98,8 @@
 
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #d8e0ec;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#5c6b80;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">All projects</a>
+  <footer class="openkee-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

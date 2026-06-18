@@ -16,6 +16,32 @@
 
 * { box-sizing: border-box; }
 
+*:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(1rem);
+  background: var(--ink);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+  z-index: 1000;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 body {
   margin: 0;
   font-family: "Manrope", system-ui, sans-serif;
@@ -451,4 +477,21 @@ h1 {
   .tl-city { width: 75px; }
   .tl-slot { min-width: 22px; font-size: 0; }
   .hour-axis { padding-left: 75px; }
+}
+
+.openkee-footer {
+  margin-top: 2rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--line, rgba(16,18,23,.1));
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted, #697487);
+  letter-spacing: 0.03em;
+}
+.openkee-footer a {
+  color: var(--accent, var(--link, #4090ff));
+  text-decoration: none;
+}
+.openkee-footer a:hover {
+  text-decoration: underline;
 }

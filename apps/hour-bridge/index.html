@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div id="toast" class="toast"></div>
     <nav class="top-bar" style="padding:0.35rem 1.2rem;font-size:0.75rem;display:flex;align-items:center;border-bottom:1px solid rgba(128,128,128,0.1)"><a href="../../index.html" style="color:inherit;text-decoration:none;opacity:0.45;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">← OpenKee Tools</a></nav>
     <main class="shell">
       <header class="masthead">
@@ -39,13 +40,13 @@
       <section class="setup-bar">
         <div class="city-chips" id="cityChips"></div>
         <div class="add-row">
-          <select id="presetSelect">
+          <select id="presetSelect" aria-label="Preset city combinations">
             <option value="" data-i18n="custom">Custom</option>
             <option value="apac">APAC Team</option>
             <option value="us-eu">US + Europe</option>
             <option value="global">Global (3 cities)</option>
           </select>
-          <input id="cityInput" type="text" placeholder="Add city…" list="cityList" />
+          <input id="cityInput" type="text" placeholder="Add city…" aria-label="Add city" list="cityList" />
           <datalist id="cityList"></datalist>
           <button id="addBtn" type="button" data-i18n="add">Add</button>
         </div>
@@ -91,8 +92,8 @@
 
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(23,20,17,0.12);text-align:center;font-family:Manrope,system-ui,sans-serif;font-size:0.72rem;color:#6b625a;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#c56b1a;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#c56b1a;text-decoration:none;">All projects</a>
+  <footer class="openkee-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

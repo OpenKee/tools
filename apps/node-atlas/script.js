@@ -1,3 +1,5 @@
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 const lookupForm = document.getElementById('lookupForm');
 const targetInput = document.getElementById('targetInput');
 const langToggle = document.getElementById('langToggle');
@@ -26,6 +28,7 @@ const copy = {
     dnsLookup:'DNS lookup', httpFetch:'HTTP fetch', sslFetch:'SSL check',
     total:'Total', waiting:'Waiting\u2026',
     issued:'Issued', expires:'Expires', issuer:'Issuer',
+    headersUnavailable:'Headers unavailable (CORS restricted)',
   },
   zh: {
     eyebrow:'网络情报', title:'Node Atlas',
@@ -40,11 +43,17 @@ const copy = {
     dnsLookup:'DNS 查询', httpFetch:'HTTP 请求', sslFetch:'SSL 检查',
     total:'总计', waiting:'等待中\u2026',
     issued:'签发于', expires:'过期于', issuer:'签发者',
+    headersUnavailable:'响应头不可用（受 CORS 限制）',
   },
 };
 
 let lang = localStorage.getItem('openkee-lang') || 'en';
-let history = JSON.parse(localStorage.getItem('node-atlas-history') || '[]');
+let history = [];
+try {
+  history = JSON.parse(localStorage.getItem('node-atlas-history') || '[]');
+} catch {
+  history = [];
+}
 let lastResult = null;
 
 function t(k) { return copy[lang][k] || k; }
@@ -118,13 +127,13 @@ async function dnsLookup(domain) {
 }
 
 async function fetchHeaders(domain) {
+  const start = performance.now();
   try {
-    const start = performance.now();
-    const r = await fetch(`https://${domain}`, { mode: 'no-cors', cache: 'no-store' });
+    const r = await fetch(`https://${domain}`, { mode: 'cors', cache: 'no-store' });
     const ms = Math.round(performance.now() - start);
-    return { status: r.status || 'opaque', type: r.type, ms };
+    return { status: r.status, type: r.type, ms };
   } catch(e) {
-    return { error: e.message };
+    return { error: true };
   }
 }
 
@@ -149,13 +158,13 @@ function renderGeo(geo) {
     return;
   }
   geoGrid.innerHTML = `
-    <div class="geo-item"><div class="g-label">${t('ip')}</div><div class="g-value">${geo.ip}</div></div>
-    <div class="geo-item"><div class="g-label">${t('country')}</div><div class="g-value">${geo.country||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('region')}</div><div class="g-value">${geo.region||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('city')}</div><div class="g-value">${geo.city||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('isp')}</div><div class="g-value">${geo.isp||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('org')}</div><div class="g-value">${geo.org||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('timezone')}</div><div class="g-value">${geo.tz||'—'}</div></div>
+    <div class="geo-item"><div class="g-label">${t('ip')}</div><div class="g-value">${esc(geo.ip)}</div></div>
+    <div class="geo-item"><div class="g-label">${t('country')}</div><div class="g-value">${esc(geo.country||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('region')}</div><div class="g-value">${esc(geo.region||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('city')}</div><div class="g-value">${esc(geo.city||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('isp')}</div><div class="g-value">${esc(geo.isp||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('org')}</div><div class="g-value">${esc(geo.org||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('timezone')}</div><div class="g-value">${esc(geo.tz||'—')}</div></div>
     <div class="geo-item"><div class="g-label">${t('coords')}</div><div class="g-value">${geo.lat!=null?`${geo.lat}, ${geo.lon}`:'—'} ${geo.lat!=null?`<a href="https://www.openstreetmap.org/?mlat=${geo.lat}&mlon=${geo.lon}#map=10/${geo.lat}/${geo.lon}" target="_blank">${t('mapLink')}</a>`:''}</div></div>
   `;
 }
@@ -164,7 +173,7 @@ function renderDNS(records) {
   dnsGrid.innerHTML = records.map(r => `
     <div class="dns-row">
       <span class="dns-type">${r.type}</span>
-      <div class="dns-values">${r.values.map(v => `<span class="dns-val">${v}</span>`).join('')}</div>
+      <div class="dns-values">${r.values.map(v => `<span class="dns-val">${esc(v)}</span>`).join('')}</div>
     </div>
   `).join('') || `<p style="color:var(--muted)">${t('noData')}</p>`;
 }
@@ -179,8 +188,11 @@ function renderLatency(dnsMs, httpMs, sslMs, totalMs) {
 }
 
 function renderHeaders(info) {
-  if (!info || info.error) { headersCard.style.display = 'none'; return; }
   headersCard.style.display = '';
+  if (!info || info.error) {
+    headersBody.innerHTML = `<p style="color:var(--muted)">${t('headersUnavailable')}</p>`;
+    return;
+  }
   headersBody.innerHTML = `
     <div class="kv-row"><span class="kv-key">status</span><span class="kv-val">${info.status}</span></div>
     <div class="kv-row"><span class="kv-key">type</span><span class="kv-val">${info.type}</span></div>
@@ -193,10 +205,10 @@ function renderSSL(certs) {
   sslCard.style.display = '';
   sslBody.innerHTML = certs.map(c => `
     <div class="ssl-item">
-      <div class="ssl-name">${c.name}</div>
+      <div class="ssl-name">${esc(c.name)}</div>
       <div class="ssl-meta">
-        ${t('issuer')}: ${c.issuer?.split('CN=')[1] || c.issuer || '—'}<br>
-        ${t('issued')}: ${c.issued?.slice(0,10) || '—'} · ${t('expires')}: ${c.expires?.slice(0,10) || '—'}
+        ${t('issuer')}: ${esc(c.issuer?.split('CN=')[1] || c.issuer || '—')}<br>
+        ${t('issued')}: ${esc(c.issued?.slice(0,10) || '—')} · ${t('expires')}: ${esc(c.expires?.slice(0,10) || '—')}
       </div>
     </div>
   `).join('');
@@ -219,7 +231,10 @@ async function lookup(target) {
     const dnsStart = performance.now();
     const dnsPromise = domain ? dnsLookup(domain) : Promise.resolve([]);
     const httpPromise = domain ? fetchHeaders(domain) : Promise.resolve(null);
-    const sslPromise = domain ? fetchSSL(domain) : Promise.resolve([]);
+    let sslEnd = dnsStart;
+    const sslPromise = domain
+      ? fetchSSL(domain).then(certs => { sslEnd = performance.now(); return certs; })
+      : Promise.resolve([]);
 
     // Resolve IP first for geo
     let ip = target;
@@ -239,18 +254,18 @@ async function lookup(target) {
     const dnsMs = Math.round(performance.now() - dnsStart);
     const totalMs = Math.round(performance.now() - totalStart);
     const httpMs = httpInfo?.ms || 0;
-    const sslMs = sslCerts.length ? Math.round(performance.now() - dnsStart - 200) : 0;
+    const sslMs = sslCerts.length ? Math.round(sslEnd - dnsStart) : 0;
 
     results.style.display = '';
     renderGeo(geo);
     renderDNS(dnsResult);
-    renderLatency(dnsMs, httpMs, Math.max(0, totalMs - dnsMs - httpMs), totalMs);
+    renderLatency(dnsMs, httpMs, sslMs, totalMs);
     renderHeaders(httpInfo);
     renderSSL(sslCerts);
 
     statusBar.className = 'status-bar done';
     statusBar.textContent = `${t('done')} — ${totalMs}ms`;
-    lastResult = { geo, dnsResult, dnsMs, httpMs, sslMs: Math.max(0, totalMs - dnsMs - httpMs), totalMs, httpInfo, sslCerts };
+    lastResult = { geo, dnsResult, dnsMs, httpMs, sslMs, totalMs, httpInfo, sslCerts };
   } catch(e) {
     statusBar.className = 'status-bar error';
     statusBar.textContent = `${t('error')}: ${e.message}`;

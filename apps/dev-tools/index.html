@@ -114,6 +114,7 @@ textarea::placeholder{color:var(--mt)}
 .diff-add{background:rgba(34,197,94,.12);color:var(--gn)}
 .diff-del{background:rgba(239,68,68,.12);color:var(--rd)}
 @media(max-width:768px){.sidebar{width:140px;min-width:140px}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
+*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -153,25 +154,25 @@ textarea::placeholder{color:var(--mt)}
 <!-- CSS Tool -->
 <div class="css-main" id="panel-css">
 <div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="cssSample()">Sample</button><button onclick="clearEl('cssIn')">Clear</button></div></div><textarea id="cssIn" placeholder="Paste CSS..." spellcheck="false"></textarea><div class="drop-zone" id="dropZone">Drop .css file</div></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="divider"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></div>
 <div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('cssOut')">Copy</button></div></div><textarea id="cssOut" readonly></textarea></div>
 </div>
 <!-- HTML Tool -->
 <div id="panel-html" style="display:none" class="css-main">
 <div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="htmlSample()">Sample</button></div></div><textarea id="htmlIn" placeholder="Paste HTML..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="divider"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></div>
 <div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('htmlOut')">Copy</button></div></div><textarea id="htmlOut" readonly></textarea></div>
 </div>
 <!-- JSON Tool -->
 <div id="panel-json" style="display:none" class="css-main">
 <div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="jsonSample()">Sample</button></div></div><textarea id="jsonIn" placeholder="Paste JSON..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="divider"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></div>
 <div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('jsonOut')">Copy</button></div></div><textarea id="jsonOut" readonly></textarea></div>
 </div>
 <!-- SQL Tool -->
 <div id="panel-sql" style="display:none" class="css-main">
 <div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="sqlSample()">Sample</button></div></div><textarea id="sqlIn" placeholder="Paste SQL..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="divider"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></div>
 <div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('sqlOut')">Copy</button></div></div><textarea id="sqlOut" readonly></textarea></div>
 </div>
 <!-- Encode Tool -->
@@ -194,11 +195,11 @@ textarea::placeholder{color:var(--mt)}
 <!-- MD Tool -->
 <div id="panel-md" style="display:none" class="md-grid">
 <div class="panel" style="position:relative"><div class="panel-header"><span>Markdown</span><div class="actions"><button onclick="mdSample()">Sample</button></div></div><textarea id="mdIn" placeholder="Write Markdown..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+<div class="divider"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></div>
 <div class="panel"><div class="panel-header"><span>Preview</span></div><div id="mdPrev" class="md-preview"></div></div>
 </div>
 <!-- Regex Tool -->
-<div id="panel-regex" style="display:none"><div class="regex-wrap"><div class="regex-row"><input id="rxPat" placeholder="Pattern (e.g. \\d+)" class="regex-input"/><input id="rxFlg" placeholder="Flags" class="regex-flags" value="g"/></div><div class="panel-header"><span>Test String</span></div><textarea id="rxIn" placeholder="Test string..." spellcheck="false"></textarea><div class="regex-results"><div class="panel-header"><span>Matches</span></div><div id="rxMatch" style="padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
+<div id="panel-regex" style="display:none"><div class="regex-wrap"><div class="regex-row"><input id="rxPat" placeholder="Pattern (e.g. \\d+)" aria-label="Regex pattern" class="regex-input"/><input id="rxFlg" placeholder="Flags" aria-label="Regex flags" class="regex-flags" value="g"/></div><div class="panel-header"><span>Test String</span></div><textarea id="rxIn" placeholder="Test string..." spellcheck="false"></textarea><div class="regex-results"><div class="panel-header"><span>Matches</span></div><div id="rxMatch" style="padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
 <!-- Diff Tool -->
 <div id="panel-diff" style="display:none"><div class="diff-grid"><div class="panel" style="position:relative"><div class="panel-header"><span>Text A</span></div><textarea id="diffA" placeholder="Original..." style="flex:1;min-height:0"></textarea></div><div class="panel" style="position:relative"><div class="panel-header"><span>Text B</span></div><textarea id="diffB" placeholder="Modified..." style="flex:1;min-height:0"></textarea></div></div><div class="diff-result"><div class="panel-header"><span>Diff</span><div class="actions"><button onclick="runDiff()">Compare</button></div></div><div id="diffOut" style="padding:.8rem;font-family:var(--mono);font-size:.8rem;line-height:1.8;overflow-y:auto;flex:1">—</div></div></div>
 <!-- Lorem Tool -->
@@ -206,25 +207,27 @@ textarea::placeholder{color:var(--mt)}
 <!-- UUID Tool -->
 <div id="panel-uuid" style="display:none"><div class="uuid-wrap"><div class="uuid-opts"><button class="btn p" onclick="genUuid(5)">5</button><button class="btn p" onclick="genUuid(10)">10</button><button class="btn p" onclick="genUuid(20)">20</button><label style="font-size:.75rem;color:var(--mt);display:flex;align-items:center;gap:.25rem"><input type="checkbox" id="uuidUp"> Upper</label></div><div class="panel-header"><span>UUIDs</span><div class="actions"><button onclick="copyEl('uuidOut')">Copy</button></div></div><textarea id="uuidOut" readonly placeholder="Click generate..." style="flex:1;min-height:0"></textarea></div></div>
 <!-- Timestamp Tool -->
-<div id="panel-timestamp" style="display:none"><div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div><div class="ts-row"><input id="tsIn" placeholder="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="ts2date()">→</button></div><div id="tsDateOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Date → Timestamp</span></div><div class="ts-row"><input id="dateIn" type="datetime-local" class="regex-input"/><button class="enc-btn" onclick="date2ts()">→</button></div><div id="tsOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set</button></div></div><div id="tsNow" style="padding:.6rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
+<div id="panel-timestamp" style="display:none"><div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div><div class="ts-row"><input id="tsIn" placeholder="Unix timestamp" aria-label="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="ts2date()" aria-label="Convert timestamp to date">→</button></div><div id="tsDateOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Date → Timestamp</span></div><div class="ts-row"><input id="dateIn" type="datetime-local" aria-label="Date and time" class="regex-input"/><button class="enc-btn" onclick="date2ts()" aria-label="Convert date to timestamp">→</button></div><div id="tsOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set</button></div></div><div id="tsNow" style="padding:.6rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
 <!-- Color Tool -->
-<div id="panel-color" style="display:none"><div class="color-wrap"><div class="color-picker-row"><input type="color" id="colPick" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/><input id="colHex" placeholder="#3b82f6" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div><div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">—</div><button class="enc-btn" onclick="copyText(cvHex.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">—</div><button class="enc-btn" onclick="copyText(cvRgb.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">—</div><button class="enc-btn" onclick="copyText(cvHsl.textContent)">Copy</button></div></div><div class="color-preview" id="colPrev"></div></div></div>
+<div id="panel-color" style="display:none"><div class="color-wrap"><div class="color-picker-row"><input type="color" id="colPick" aria-label="Color picker" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/><input id="colHex" placeholder="#3b82f6" aria-label="Hex color value" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div><div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">—</div><button class="enc-btn" onclick="copyText(cvHex.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">—</div><button class="enc-btn" onclick="copyText(cvRgb.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">—</div><button class="enc-btn" onclick="copyText(cvHsl.textContent)">Copy</button></div></div><div class="color-preview" id="colPrev"></div></div></div>
 </div></div>
-<div class="actions-bar"><button class="btn p" onclick="doCompress()">🔧 Compress</button><button class="btn d" onclick="clearAll()">Clear All</button><div class="options"><label><input type="checkbox" id="optCom" checked> Comments</label><label><input type="checkbox" id="optWs" checked> Whitespace</label><label><input type="checkbox" id="optCol" checked> Colors</label><label><input type="checkbox" id="optZer" checked> Zeros</label></div></div>
+<div class="actions-bar" id="actionsBar"><button class="btn p" id="compressBtn" onclick="doCompressCurrent()" aria-label="Compress">🔧 Compress</button><button class="btn d" onclick="clearAll()">Clear All</button><div class="options"><label><input type="checkbox" id="optCom" checked> Comments</label><label><input type="checkbox" id="optWs" checked> Whitespace</label><label><input type="checkbox" id="optCol" checked> Colors</label><label><input type="checkbox" id="optZer" checked> Zeros</label></div></div>
 <div class="toast" id="toast"></div>
 <script>
 const $=id=>document.getElementById(id);
 let timer;
 // Tool switching
 const panels=['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
-function switchTool(t){document.querySelectorAll('.tool-tab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('[data-tool="'+t+'"]').forEach(b=>b.classList.add('on'));panels.forEach(p=>{const el=$('panel-'+p);if(el){if(p===t){
+let currentTool='css';
+function doCompressCurrent(){if(currentTool==='html')compressHtml();else doCompress()}
+function switchTool(t){currentTool=t;document.querySelectorAll('.tool-tab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('[data-tool="'+t+'"]').forEach(b=>b.classList.add('on'));panels.forEach(p=>{const el=$('panel-'+p);if(el){if(p===t){
   if(el.classList.contains('css-main')||el.classList.contains('encode-grid')||el.classList.contains('md-grid')){
     el.style.display='';
   }else{
     el.style.display='flex';el.style.flexDirection='column';
   }
   el.style.flex='1';el.style.overflow='hidden';
-}else{el.style.display='none'}}});const types={css:{o:'Original',m:'Minified',s:'Saved'},html:{o:'Original',m:'Minified',s:'Saved'},json:{o:'Original',m:'Formatted',s:'Lines'},sql:{o:'Original',m:'Formatted',s:'Lines'},encode:{o:'Input',m:'Output',s:'Length'},hash:{o:'Input',m:'—',s:'—'},jwt:{o:'Input',m:'Decoded',s:'—'},md:{o:'Chars',m:'Words',s:'Lines'},regex:{o:'Pattern',m:'Matches',s:'—'},diff:{o:'Text A',m:'Text B',s:'Lines'},lorem:{o:'—',m:'—',s:'—'},uuid:{o:'Count',m:'—',s:'—'},timestamp:{o:'—',m:'—',s:'—'},color:{o:'HEX',m:'RGB',s:'HSL'}};const cfg=types[t]||types.css;const labels=document.querySelectorAll('.stat .l');if(labels[0])labels[0].textContent=cfg.o;if(labels[1])labels[1].textContent=cfg.m;if(labels[2])labels[2].textContent=cfg.s}
+}else{el.style.display='none'}}});const types={css:{o:'Original',m:'Minified',s:'Saved'},html:{o:'Original',m:'Minified',s:'Saved'},json:{o:'Original',m:'Formatted',s:'Lines'},sql:{o:'Original',m:'Formatted',s:'Lines'},encode:{o:'Input',m:'Output',s:'Length'},hash:{o:'Input',m:'—',s:'—'},jwt:{o:'Input',m:'Decoded',s:'—'},md:{o:'Chars',m:'Words',s:'Lines'},regex:{o:'Pattern',m:'Matches',s:'—'},diff:{o:'Text A',m:'Text B',s:'Lines'},lorem:{o:'—',m:'—',s:'—'},uuid:{o:'Count',m:'—',s:'—'},timestamp:{o:'—',m:'—',s:'—'},color:{o:'HEX',m:'RGB',s:'HSL'}};const cfg=types[t]||types.css;const labels=document.querySelectorAll('.stat .l');if(labels[0])labels[0].textContent=cfg.o;if(labels[1])labels[1].textContent=cfg.m;if(labels[2])labels[2].textContent=cfg.s;const ab=$('actionsBar');if(ab)ab.style.display=(t==='css'||t==='html')?'':'none'}
 $('sidebar').addEventListener('click',e=>{const b=e.target.closest('.tool-tab');if(b)switchTool(b.dataset.tool)});
 // Helpers
 function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
@@ -256,10 +259,11 @@ $('mdIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(ren
 function runHash(){const v=$('hashIn').value;if(!v)return;const enc=new TextEncoder().encode(v);['SHA-1','SHA-256','SHA-512'].forEach(async a=>{try{const buf=await crypto.subtle.digest(a,enc);const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');const el=$('h-'+a.toLowerCase().replace('-',''));if(el)el.textContent=hex}catch(e){}})}
 $('hashIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(runHash,400)});
 // JWT
-function decodeJwt(){const v=$('jwtIn').value.trim();if(!v)return;try{const p=v.split('.');if(p.length<2)throw new Error('Invalid');const h=JSON.parse(atob(p[0].replace(/-/g,'+').replace(/_/g,'/')));const pay=JSON.parse(atob(p[1].replace(/-/g,'+').replace(/_/g,'/')));$('jwtHeader').textContent=JSON.stringify(h,null,2);$('jwtHeader').style.color='';$('jwtPayload').textContent=JSON.stringify(pay,null,2);$('jwtPayload').style.color='';$('jwtSig').textContent=p[2]?p[2].substring(0,40)+'...':'(none)'}catch(e){$('jwtHeader').textContent='Error: '+e.message;$('jwtHeader').style.color='var(--rd)';$('jwtPayload').textContent='';$('jwtSig').textContent=''}}
+function b64DecodeUnicode(str){return decodeURIComponent(atob(str.replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''))}
+function decodeJwt(){const v=$('jwtIn').value.trim();if(!v)return;try{const p=v.split('.');if(p.length<2)throw new Error('Invalid');const h=JSON.parse(b64DecodeUnicode(p[0]));const pay=JSON.parse(b64DecodeUnicode(p[1]));$('jwtHeader').textContent=JSON.stringify(h,null,2);$('jwtHeader').style.color='';$('jwtPayload').textContent=JSON.stringify(pay,null,2);$('jwtPayload').style.color='';$('jwtSig').textContent=p[2]?p[2].substring(0,40)+'...':'(none)'}catch(e){$('jwtHeader').textContent='Error: '+e.message;$('jwtHeader').style.color='var(--rd)';$('jwtPayload').textContent='';$('jwtSig').textContent=''}}
 $('jwtIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(decodeJwt,400)});
 // Regex
-function testRegex(){const p=$('rxPat').value,f=$('rxFlg').value,t=$('rxIn').value,el=$('rxMatch');if(!p||!t){el.textContent='—';return}try{const re=new RegExp(p,f);const m=[...t.matchAll(re)];if(!m.length){el.textContent='No matches';return}el.innerHTML=m.map((x,i)=>'<div><span style="color:var(--bl);font-weight:600">#'+(i+1)+'</span> <span style="color:var(--gn)">'+escHtml(x[0])+'</span> <span style="color:var(--mt)">@'+x.index+'</span></div>').join('')}catch(e){el.textContent='Error: '+e.message}}
+function testRegex(){const p=$('rxPat').value,f=$('rxFlg').value,t=$('rxIn').value,el=$('rxMatch');if(!p||!t){el.textContent='—';return}try{const re=new RegExp(p,f);let m;if(f.includes('g')){m=[...t.matchAll(re)]}else{const single=t.match(re);m=single?[single]:[]}if(!m.length){el.textContent='No matches';return}el.innerHTML=m.map((x,i)=>'<div><span style="color:var(--bl);font-weight:600">#'+(i+1)+'</span> <span style="color:var(--gn)">'+escHtml(x[0])+'</span> <span style="color:var(--mt)">@'+x.index+'</span></div>').join('')}catch(e){el.textContent='Error: '+e.message}}
 ['rxPat','rxFlg','rxIn'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(testRegex,300)}));
 // Diff
 function runDiff(){const a=$('diffA').value.split('\n'),b=$('diffB').value.split('\n'),out=[];const mx=Math.max(a.length,b.length);for(let i=0;i<mx;i++){if(a[i]===undefined)out.push('<div class="diff-add">+ '+escHtml(b[i])+'</div>');else if(b[i]===undefined)out.push('<div class="diff-del">- '+escHtml(a[i])+'</div>');else if(a[i]!==b[i])out.push('<div class="diff-del">- '+escHtml(a[i])+'</div><div class="diff-add">+ '+escHtml(b[i])+'</div>');else out.push('<div>  '+escHtml(a[i])+'</div>')}$('diffOut').innerHTML=out.join('')}

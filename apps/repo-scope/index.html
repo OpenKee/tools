@@ -34,13 +34,13 @@
       <!-- Search -->
       <section class="search-bar">
         <form id="userForm">
-          <input id="usernameInput" type="text" placeholder="torvalds" autocomplete="off" />
+          <input id="usernameInput" type="text" placeholder="torvalds" aria-label="GitHub username" autocomplete="off" />
           <button type="submit" data-i18n="analyze">Analyze</button>
         </form>
         <details class="token-toggle">
           <summary data-i18n="tokenToggle">Optional: GitHub token</summary>
           <div class="token-row">
-            <input id="tokenInput" type="password" placeholder="ghp_xxxx" autocomplete="off" />
+            <input id="tokenInput" type="password" placeholder="ghp_xxxx" aria-label="GitHub token" autocomplete="off" />
             <button id="tokenSave" type="button" data-i18n="tokenSave">Save</button>
             <button id="tokenClear" type="button" class="btn-ghost" data-i18n="tokenClear">Clear</button>
           </div>
@@ -84,13 +84,13 @@
           <div class="repo-header">
             <h2 data-i18n="repositories">Repositories</h2>
             <div class="repo-controls">
-              <select id="sortSelect">
+              <select id="sortSelect" aria-label="Sort repositories">
                 <option value="stars" data-i18n="byStars">By stars</option>
                 <option value="updated" data-i18n="byUpdated">By updated</option>
                 <option value="forks" data-i18n="byForks">By forks</option>
                 <option value="name" data-i18n="byName">By name</option>
               </select>
-              <input id="repoSearch" type="text" placeholder="Filter\u2026" />
+              <input id="repoSearch" type="text" placeholder="Filter\u2026" aria-label="Filter repositories" />
             </div>
           </div>
           <div id="repoGrid" class="repo-grid"></div>
@@ -100,7 +100,7 @@
         <aside id="detailSection" class="detail-section" style="display:none;">
           <div class="detail-head">
             <h2 id="detailName"></h2>
-            <button id="detailClose" type="button">&times;</button>
+            <button id="detailClose" type="button" aria-label="Close">&times;</button>
           </div>
           <div id="detailBody" class="detail-body"></div>
         </aside>
@@ -109,8 +109,8 @@
 
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #cdc2b3;text-align:center;font-family:IBM Plex Sans,system-ui,sans-serif;font-size:0.72rem;color:#6a6258;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">All projects</a>
+  <footer class="openkee-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

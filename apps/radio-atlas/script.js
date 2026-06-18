@@ -1,3 +1,5 @@
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 const countryInput = document.getElementById('countryInput');
 const countryList = document.getElementById('countryList');
 const tagInput = document.getElementById('tagInput');
@@ -119,20 +121,20 @@ async function loadMeta() {
     getJson(`${API}/countries`),
     getJson(`${API}/tags`),
   ]);
-  countryList.innerHTML = countries.slice(0, 200).map(c => `<option value="${c.name}">`).join('');
-  tagList.innerHTML = tags.slice(0, 200).map(t => `<option value="${t.name}">`).join('');
+  countryList.innerHTML = countries.slice(0, 200).map(c => `<option value="${esc(c.name)}">`).join('');
+  tagList.innerHTML = tags.slice(0, 200).map(t => `<option value="${esc(t.name)}">`).join('');
 }
 
 function renderCard(s) {
   const playingCls = playing?.stationuuid === s.stationuuid ? ' playing' : '';
   const favCls = isFav(s.stationuuid) ? ' active' : '';
-  const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${tag.trim()}</span>`).join('');
-  return `<div class="station-card${playingCls}" data-id="${s.stationuuid}">
+  const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${esc(tag.trim())}</span>`).join('');
+  return `<div class="station-card${playingCls}" data-id="${esc(s.stationuuid)}">
     <div class="card-top">
-      <img class="card-favicon" data-src="${(s.favicon||'').replace('http://','https://')}" src="${renderFavicon(s.favicon)}" alt="" onerror="this.style.display='none'" loading="lazy" />
+      <img class="card-favicon" data-src="${esc((s.favicon||'').replace('http://','https://'))}" src="${renderFavicon(s.favicon)}" alt="" onerror="this.style.display='none'" loading="lazy" />
       <div class="card-info">
-        <div class="card-name">${s.name}</div>
-        <div class="card-sub">${s.country||''}${s.language ? ' · '+s.language : ''}</div>
+        <div class="card-name">${esc(s.name)}</div>
+        <div class="card-sub">${esc(s.country||'')}${s.language ? ' · '+esc(s.language) : ''}</div>
       </div>
     </div>
     ${tags ? `<div class="card-tags">${tags}</div>` : ''}
@@ -142,8 +144,8 @@ function renderCard(s) {
       ${s.bitrate ? `<span>${s.bitrate} ${t('bitrate')}</span>` : ''}
     </div>
     <div class="card-actions">
-      <button class="play-action" data-play="${s.stationuuid}">\u25b6 ${t('play')}</button>
-      <button class="fav-action${favCls}" data-fav="${s.stationuuid}">\u2605</button>
+      <button class="play-action" data-play="${esc(s.stationuuid)}">\u25b6 ${t('play')}</button>
+      <button class="fav-action${favCls}" data-fav="${esc(s.stationuuid)}" aria-label="Toggle favorite">\u2605</button>
     </div>
   </div>`;
 }

@@ -60,14 +60,15 @@ a{color:var(--ink);text-decoration:none}
 .modal td{padding:.4rem 0;vertical-align:top}
 .modal td:first-child{color:var(--dm);width:5.5rem;font-size:.75rem;font-weight:500}
 @media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);gap:1rem}.modal .top{flex-direction:column}.modal .img-wrap{max-width:100%}}
+*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 </style>
 </head>
 <body>
 <div class="nav"><a href="../../index.html" style="color:var(--ink);text-decoration:none;opacity:0.5;font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span></div>
 <div class="header"><h1>🏛 Art Gallery</h1><div class="sub">Explore 400,000+ artworks from The Met</div></div>
 <div class="search">
-<form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn">Search</button></form>
-<button class="random" onclick="randomArt()">✦ Random artwork</button>
+<form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" aria-label="Search artworks" autocomplete="off"/><button type="submit" id="btn">Search</button></form>
+<button class="random" onclick="randomArt()" aria-label="Random artwork">✦ Random artwork</button>
 </div>
 <div class="loading" id="ld">Loading…</div>
 <div class="gallery" id="out"></div>
@@ -75,6 +76,7 @@ a{color:var(--ink);text-decoration:none}
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()"><div class="modal" id="modal"></div></div>
 
 <script>
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 const API='https://collectionapi.metmuseum.org/public/collection/v1';
 let allIds=[];
 let shown=0;
@@ -145,10 +147,10 @@ function appendGrid(arts){
   if(!grid){document.getElementById('out').innerHTML='<div class="grid"></div>';grid=document.getElementById('out').querySelector('.grid')}
   arts.forEach(function(a){
     const img=a.primaryImageSmall||'';
-    const imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
+    const imgH=img?'<img src="'+esc(img)+'" alt="'+esc(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
     const div=document.createElement('div');
     div.className='art';
-    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+(a.title||'Untitled')+'</div><div class="meta">'+(a.artistDisplayName||'Unknown')+'</div><div class="date">'+(a.objectDate||'')+'</div></div>';
+    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+esc(a.title||'Untitled')+'</div><div class="meta">'+esc(a.artistDisplayName||'Unknown')+'</div><div class="date">'+esc(a.objectDate||'')+'</div></div>';
     div.onclick=function(){showDetail(a.objectID)};
     grid.appendChild(div);
   });
@@ -159,7 +161,7 @@ function showDetail(id){
     .then(function(r){return r.json()})
     .then(function(a){
       const img=a.primaryImage||a.primaryImageSmall||'';
-      const t1=a.title||'Untitled';const imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
+      const t1=a.title||'Untitled';const imgH=img?'<img src="'+esc(img)+'" alt="'+esc(t1)+'">':'<div class="no-img">🖼</div>';
       const rows=[];
       if(a.objectDate)rows.push(['Date',a.objectDate]);
       if(a.medium)rows.push(['Medium',a.medium]);
@@ -169,8 +171,8 @@ function showDetail(id){
       if(a.culture)rows.push(['Culture',a.culture]);
       if(a.classification)rows.push(['Type',a.classification]);
       if(a.creditLine)rows.push(['Credit',a.creditLine]);
-      const table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
-      document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+(a.title||'Untitled')+'</h2><div class="artist">'+(a.artistDisplayName||'Unknown artist')+'</div><table>'+table+'</table></div></div>';
+      const table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+esc(r[1])+'</td></tr>'}).join('');
+      document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()" aria-label="Close">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+esc(a.title||'Untitled')+'</h2><div class="artist">'+esc(a.artistDisplayName||'Unknown artist')+'</div><table>'+table+'</table></div></div>';
       document.getElementById('overlay').classList.add('on');
     });
 }

@@ -1,3 +1,5 @@
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 const searchForm = document.getElementById('searchForm');
 const queryInput = document.getElementById('queryInput');
 const locateBtn = document.getElementById('locateBtn');
@@ -61,6 +63,7 @@ const copy = {
     uv:'UV index', pressure:'Pressure',
     aqiGood:'Good', aqiFair:'Fair', aqiModerate:'Moderate', aqiPoor:'Poor', aqiVpoor:'Very poor',
     compare:'Compare',
+    locationUnavailable:'Location unavailable',
   },
   zh: {
     eyebrow:'天气 & 空气质量', title:'Sky Brief',
@@ -71,6 +74,7 @@ const copy = {
     uv:'紫外线', pressure:'气压',
     aqiGood:'优', aqiFair:'良', aqiModerate:'中', aqiPoor:'差', aqiVpoor:'极差',
     compare:'对比',
+    locationUnavailable:'无法获取定位',
   },
 };
 
@@ -114,7 +118,7 @@ function setSaved(items) { localStorage.setItem('sky-brief-saved', JSON.stringif
 
 function renderSaved() {
   const items = getSaved();
-  savedStrip.innerHTML = items.map(i => `<button class="saved-chip" data-q="${i.query}">${i.label}</button>`).join('');
+  savedStrip.innerHTML = items.map(i => `<button class="saved-chip" data-q="${esc(i.query)}">${esc(i.label)}</button>`).join('');
   savedStrip.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => search(b.dataset.q)));
 }
 
@@ -237,7 +241,13 @@ locateBtn.addEventListener('click', () => {
   if (!navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
     pos => loadForecast(pos.coords.latitude, pos.coords.longitude, lang==='zh'?'当前位置':'Your location'),
-    () => {}
+    () => {
+      heroSection.style.display = '';
+      heroIcon.textContent = '❌';
+      heroTemp.textContent = '—';
+      heroCondition.textContent = t('locationUnavailable');
+      heroPlace.textContent = lang==='zh'?'当前位置':'Your location';
+    }
   );
 });
 
@@ -289,7 +299,7 @@ async function loadCompare() {
     const d = wxData.daily;
     const icon = weatherIcon(c.weather_code);
     const tempDiff = Math.round(c.temperature_2m - (currentCityData.temp || 0));
-    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + place.name + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + t('humidity') + ': ' + c.relative_humidity_2m + '% · ' + t('wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
+    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + esc(place.name) + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + t('humidity') + ': ' + c.relative_humidity_2m + '% · ' + t('wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
   } catch(e) {
     compareResult.innerHTML = '<p class="error-msg">Error: ' + e.message + '</p>';
   }

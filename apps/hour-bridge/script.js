@@ -81,6 +81,14 @@ let selectedSlot = null;
 
 function t(key) { return copy[lang][key] || key; }
 
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
 function applyLanguage() {
   document.documentElement.lang = lang;
   langToggle.textContent = lang === 'en' ? '中文' : 'EN';
@@ -99,7 +107,9 @@ function localHour(tz, utcHour) {
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const target = new Date(today.getTime() + utcHour * 3600000);
-  return Number(new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', hour12: false }).format(target));
+  let h = Number(new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', hour12: false }).format(target));
+  if (h === 24) h = 0;
+  return h;
 }
 
 function localTime(tz, utcHour) {
@@ -127,7 +137,12 @@ function renderChips() {
     el.addEventListener('click', () => {
       cities.splice(Number(el.dataset.rm), 1);
       renderChips();
-      if (cities.length >= 2) renderTimeline();
+      if (cities.length >= 1) {
+        renderTimeline();
+      } else {
+        timeline.innerHTML = '';
+        hourAxis.innerHTML = '';
+      }
     });
   });
 }
@@ -143,7 +158,10 @@ async function resolveCity(name) {
 
 async function addCity(name) {
   if (!name || cities.find(c => c.name.toLowerCase() === name.toLowerCase())) return;
-  if (cities.length >= 8) return;
+  if (cities.length >= 8) {
+    showToast(lang === 'zh' ? '最多 8 个城市' : 'Maximum 8 cities');
+    return;
+  }
   try {
     const resolved = await resolveCity(name);
     cities.push(resolved);
@@ -151,7 +169,7 @@ async function addCity(name) {
     if (cities.length >= 2) renderTimeline();
   } catch {
     const msg = lang === 'zh' ? '未找到该城市' : 'City not found';
-    alert(msg);
+    showToast(msg);
   }
 }
 

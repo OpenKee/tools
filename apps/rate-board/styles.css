@@ -14,6 +14,11 @@
 
 * { box-sizing: border-box; }
 
+*:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 body {
   margin: 0;
   font-family: "Inter", system-ui, sans-serif;
@@ -481,4 +486,21 @@ h1 {
   .crypto-row > span:last-child {
     display: none;
   }
+}
+
+.openkee-footer {
+  margin-top: 2rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--line, rgba(16,18,23,.1));
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted, #697487);
+  letter-spacing: 0.03em;
+}
+.openkee-footer a {
+  color: var(--accent, var(--link, #4090ff));
+  text-decoration: none;
+}
+.openkee-footer a:hover {
+  text-decoration: underline;
 }

@@ -32,16 +32,16 @@
       <!-- Controls -->
       <section class="controls">
         <div class="control-row">
-          <input id="countryInput" list="countryList" placeholder="Country…" />
+          <input id="countryInput" list="countryList" placeholder="Country…" aria-label="Country" />
           <datalist id="countryList"></datalist>
-          <input id="tagInput" list="tagList" placeholder="Genre…" />
+          <input id="tagInput" list="tagList" placeholder="Genre…" aria-label="Genre" />
           <datalist id="tagList"></datalist>
-          <input id="nameInput" type="text" placeholder="Station name…" />
+          <input id="nameInput" type="text" placeholder="Station name…" aria-label="Station name" />
           <button id="searchBtn" data-i18n="search">Search</button>
         </div>
         <div class="control-extras">
-          <button id="randomBtn" class="btn-ghost" data-i18n="random">🎲 Random</button>
-          <button id="favBtn" class="btn-ghost" data-i18n="favorites">⭐ Favorites</button>
+          <button id="randomBtn" class="btn-ghost" data-i18n="random" aria-label="Random">🎲 Random</button>
+          <button id="favBtn" class="btn-ghost" data-i18n="favorites" aria-label="Favorites">⭐ Favorites</button>
           <span id="resultCount" class="result-count"></span>
         </div>
       </section>
@@ -68,13 +68,13 @@
           </div>
         </div>
         <div class="player-controls">
-          <button id="prevBtn" class="ctrl-btn" title="Previous">⏮</button>
-          <button id="playBtn" class="ctrl-btn ctrl-main" title="Play">▶</button>
-          <button id="nextBtn" class="ctrl-btn" title="Next">⏭</button>
+          <button id="prevBtn" class="ctrl-btn" title="Previous" aria-label="Previous">⏮</button>
+          <button id="playBtn" class="ctrl-btn ctrl-main" title="Play" aria-label="Play">▶</button>
+          <button id="nextBtn" class="ctrl-btn" title="Next" aria-label="Next">⏭</button>
         </div>
         <div class="player-right">
-          <input id="volumeInput" type="range" min="0" max="1" step="0.05" value="0.8" />
-          <button id="stopBtn" class="ctrl-btn" title="Stop">⏹</button>
+          <input id="volumeInput" type="range" min="0" max="1" step="0.05" value="0.8" aria-label="Volume" />
+          <button id="stopBtn" class="ctrl-btn" title="Stop" aria-label="Stop">⏹</button>
         </div>
       </div>
     </footer>
@@ -83,8 +83,8 @@
 
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(16,18,23,.1);text-align:center;font-family:Manrope,system-ui,sans-serif;font-size:0.72rem;color:#697487;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#ff6b2c;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#ff6b2c;text-decoration:none;">All projects</a>
+  <footer class="openkee-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

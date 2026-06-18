@@ -1,3 +1,5 @@
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
 const langToggle = document.getElementById('langToggle');
 const langSelect = document.getElementById('langSelect');
 const statusBar = document.getElementById('statusBar');
@@ -121,21 +123,21 @@ function renderCard(repo, rank, range) {
   return `
     <article class="repo-card">
       <div class="card-head">
-        <a class="card-name" href="${repo.html_url}" target="_blank" rel="noreferrer">${repo.full_name}</a>
+        <a class="card-name" href="${esc(repo.html_url)}" target="_blank" rel="noreferrer">${esc(repo.full_name)}</a>
         <span class="card-rank">#${rank}</span>
       </div>
-      <p class="card-desc">${repo.description || ''}</p>
+      <p class="card-desc">${esc(repo.description || '')}</p>
       <div class="card-meta">
         <span class="meta-item">\u2605 ${number(repo.stargazers_count)}</span>
         <span class="meta-item">\u0192 ${number(repo.forks_count)}</span>
-        ${repo.language ? `<span class="meta-item"><span class="lang-dot" style="background:${langColor(repo.language)}"></span>${repo.language}</span>` : ''}
+        ${repo.language ? `<span class="meta-item"><span class="lang-dot" style="background:${langColor(repo.language)}"></span>${esc(repo.language)}</span>` : ''}
       </div>
       <div class="card-tags">
         ${hot ? `<span class="tag hot">${t('hot')}</span>` : ''}
         ${repo.open_issues_count > 0 ? `<span class="tag">${number(repo.open_issues_count)} issues</span>` : ''}
       </div>
       <div class="card-footer">
-        <a class="card-link" href="${repo.html_url}" target="_blank" rel="noreferrer">${t('openRepo')} \u2192</a>
+        <a class="card-link" href="${esc(repo.html_url)}" target="_blank" rel="noreferrer">${t('openRepo')} \u2192</a>
         <span class="card-created">${t('created')} ${formatDate(repo.created_at)}</span>
       </div>
     </article>
@@ -153,11 +155,11 @@ function renderPagination() {
   let end = Math.min(totalPages, start + maxShow - 1);
   if (end - start < maxShow - 1) start = Math.max(1, end - maxShow + 1);
 
-  pages.push(`<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} data-page="${currentPage - 1}">\u2190</button>`);
+  pages.push(`<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} data-page="${currentPage - 1}" aria-label="Previous page">\u2190</button>`);
   for (let i = start; i <= end; i++) {
     pages.push(`<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`);
   }
-  pages.push(`<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">\u2192</button>`);
+  pages.push(`<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} data-page="${currentPage + 1}" aria-label="Next page">\u2192</button>`);
 
   paginationEl.innerHTML = pages.join('');
   paginationEl.querySelectorAll('.page-btn').forEach(btn => {
