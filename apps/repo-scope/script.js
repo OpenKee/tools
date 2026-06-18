@@ -25,6 +25,7 @@ const detailSection = document.getElementById('detailSection');
 const detailName = document.getElementById('detailName');
 const detailBody = document.getElementById('detailBody');
 const detailClose = document.getElementById('detailClose');
+const repoLayout = document.getElementById('repoLayout');
 
 const LANG_COLORS = {
   JavaScript:'#f1e05a', TypeScript:'#3178c6', Python:'#3572A5', Java:'#b07219',

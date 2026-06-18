@@ -172,22 +172,24 @@ function renderPagination() {
   });
 }
 
+const POPULAR_LANGUAGES = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C++', 'C',
+  'C#', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'Dart', 'Shell', 'HTML', 'CSS',
+  'Vue', 'Lua', 'Zig', 'Elixir', 'Scala', 'R', 'Jupyter Notebook',
+];
+
 async function loadLanguages() {
   try {
-    const res = await fetch('https://api.github.com/languages');
-    if (!res.ok) return;
-    const langs = await res.json();
-    const top = langs.slice(0, 30).map(l => l.name).sort();
     const current = langSelect.value;
     langSelect.innerHTML = `<option value="" data-i18n="allLanguages">${t('allLanguages')}</option>`;
-    top.forEach(name => {
+    POPULAR_LANGUAGES.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
       langSelect.appendChild(opt);
     });
     langSelect.value = current;
-  } catch(e) { console.warn('Language list fetch failed:', e); }
+  } catch(e) { console.warn('Language list load failed:', e); }
 }
 
 async function loadRepos() {

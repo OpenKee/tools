@@ -240,10 +240,6 @@ fromCurrency.value = 'USD';
 toCurrency.value = 'CNY';
 applyLanguage();
 
-document.querySelectorAll('.region-card, .matrix-section, .table-section').forEach(el => {
-  el.insertAdjacentHTML('beforebegin', el.outerHTML.includes('matrix') ? '' : '');
-});
-
 regionSections.innerHTML = `<div class="loading"><span class="spinner"></span><span>${t('loading')}</span></div>`;
 
 loadRates().then(data => {

@@ -198,6 +198,9 @@ function render(label, f, air) {
       <span class="day-temps"><span class="t-low">${tempV(lo)}</span> / ${tempV(hi)}</span>
     </div>`;
   }).join('');
+
+  // Capture for compare feature
+  currentCityData = { temp: c.temperature_2m, label };
 }
 
 async function search(query) {
@@ -261,13 +264,6 @@ compareToggle.addEventListener('click', () => {
   compareSection.style.display = compareVisible ? 'block' : 'none';
   if (compareVisible) compareInput.focus();
 });
-
-// Capture current city data when weather loads
-const origFetchWeather = typeof fetchWeather === 'function' ? fetchWeather : null;
-
-function captureCityData(data) {
-  currentCityData = data;
-}
 
 async function loadCompare() {
   const city = compareInput.value.trim();
