@@ -48,7 +48,7 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let stations = [];
 let countries = [];
 let tags = [];
@@ -61,9 +61,8 @@ let showingFavs = false;
 function t(k) { return copy[lang][k] || k; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang==='en'?'中文':'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
 }
 
 function getFavs() {
@@ -294,11 +293,7 @@ function showToast(msg) {
   t._timer = setTimeout(() => { t.className = 'toast'; }, 3000);
 }
 
-langToggle.addEventListener('click', () => {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('openkee-lang', lang);
-  applyLanguage();
-});
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 // Infinite scroll
 const observer = new IntersectionObserver(entries => {

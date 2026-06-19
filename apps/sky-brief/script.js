@@ -53,7 +53,7 @@ const WMO_TEXT = {
 const copy = {
   en: {
     eyebrow:'Weather & air quality', title:'Sky Brief',
-    search:'Search', locate:'📍 My location', airQuality:'Air quality',
+    search:'Search', locate:'📍 My location', compare:'⇄ Compare', airQuality:'Air quality',
     hourly:'Next 12 hours', daily:'7-day forecast',
     feelsLike:'Feels like', wind:'Wind', humidity:'Humidity',
     sunrise:'Sunrise', sunset:'Sunset', rain:'Rain',
@@ -62,7 +62,7 @@ const copy = {
   },
   zh: {
     eyebrow:'天气 & 空气质量', title:'Sky Brief',
-    search:'搜索', locate:'📍 我的位置', airQuality:'空气质量',
+    search:'搜索', locate:'📍 我的位置', compare:'⇄ 对比', airQuality:'空气质量',
     hourly:'未来 12 小时', daily:'7 天预报',
     feelsLike:'体感', wind:'风速', humidity:'湿度',
     sunrise:'日出', sunset:'日落', rain:'降雨',
@@ -71,14 +71,14 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let unit = 'C';
 let lastData = null;
 
 function t(k) { return copy[lang][k] || k; }
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
   if (lastData) render(lastData.label, lastData.forecast, lastData.air);
 }
 

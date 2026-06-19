@@ -12,6 +12,19 @@
   --leave: #2e7d32;
   --leave-bg: #e8f5e9;
   --today-ring: #8b5a2b;
+
+  /* 共享组件主题映射 */
+  --ok-bg: var(--bg);
+  --ok-panel: var(--panel);
+  --ok-line: var(--line);
+  --ok-text: var(--text);
+  --ok-muted: var(--muted);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: var(--accent-soft);
+  --ok-footer-line: var(--line);
+  --ok-footer-text: var(--muted);
+  --ok-footer-link: var(--accent);
+  --ok-topbar-line: rgba(128, 128, 128, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -79,16 +92,6 @@ h1 {
   background: var(--panel);
   font-size: 0.82rem;
   cursor: pointer;
-}
-
-.lang-toggle {
-  font: inherit;
-  height: 2.2rem;
-  padding: 0 0.7rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.78rem;
 }
 
 /* Summary */

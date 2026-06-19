@@ -58,7 +58,7 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let currentRange = 'daily';
 let currentPage = 1;
 let totalPages = 1;
@@ -67,11 +67,11 @@ let totalCount = 0;
 function t(key) { return copy[lang][key] || key; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-  document.querySelectorAll('[data-i18n]').forEach(node => {
-    node.textContent = t(node.dataset.i18n);
-  });
+  // 先与共享脚本的语言状态同步，再应用 i18n，最后重渲染动态内容
+  lang = OK.lang;
+  OK.applyI18n(copy);
+  loadLanguages();
+  loadRepos();
 }
 
 function getDateRange(range) {
@@ -179,7 +179,7 @@ async function loadLanguages() {
     const langs = await res.json();
     const top = langs.slice(0, 30).map(l => l.name).sort();
     const current = langSelect.value;
-    langSelect.innerHTML = `<option value="" data-i18n="allLanguages">${t('allLanguages')}</option>`;
+    langSelect.innerHTML = `<option value="" data-ok-i18n="allLanguages">${t('allLanguages')}</option>`;
     top.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
@@ -248,14 +248,6 @@ langSelect.addEventListener('change', () => {
   loadRepos();
 });
 
-langToggle.addEventListener('click', () => {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('openkee-lang', lang);
-  applyLanguage();
-  loadLanguages();
-  loadRepos();
-});
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 applyLanguage();
-loadLanguages();
-loadRepos();

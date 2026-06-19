@@ -9,6 +9,17 @@
   --accent-soft: #dde5f1;
   --hot: #c0392b;
   --hot-soft: #fdecea;
+
+  /* 共享组件主题映射 */
+  --ok-bg: var(--bg);
+  --ok-line: var(--line);
+  --ok-muted: var(--muted);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: var(--accent-soft);
+  --ok-footer-line: var(--line);
+  --ok-footer-text: var(--muted);
+  --ok-footer-link: var(--accent);
+  --ok-topbar-line: rgba(128, 128, 128, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -60,20 +71,9 @@ h1 {
   max-width: 48rem;
 }
 
-.lang-toggle,
 button,
 select {
   font: inherit;
-}
-
-.lang-toggle {
-  font-family: "IBM Plex Mono", monospace;
-  min-height: 2.5rem;
-  padding: 0 0.95rem;
-  border: 1px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
 }
 
 .controls {

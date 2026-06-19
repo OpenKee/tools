@@ -111,15 +111,14 @@ function expandHolidays(holidays, country) {
   return [...expanded.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let holidaysCache = [];
 
 function t(key) { return copy[lang][key] || key; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
   if (holidaysCache.length) renderAll(holidaysCache);
 }
 
@@ -376,13 +375,7 @@ async function loadHolidays() {
 
 // Events
 controlForm.addEventListener('change', loadHolidays);
-langToggle.addEventListener('click', () => {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('openkee-lang', lang);
-  applyLanguage();
-  populateControls();
-  loadHolidays();
-});
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 // Init
 populateControls();

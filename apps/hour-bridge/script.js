@@ -74,7 +74,7 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let cities = [];
 let duration = 60;
 let selectedSlot = null;
@@ -82,9 +82,8 @@ let selectedSlot = null;
 function t(key) { return copy[lang][key] || key; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
   cityInput.placeholder = t('enterCity');
   if (cities.length) renderTimeline();
 }
@@ -285,11 +284,7 @@ clearBtn.addEventListener('click', () => {
   renderResult();
 });
 
-langToggle.addEventListener('click', () => {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('openkee-lang', lang);
-  applyLanguage();
-});
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 // Populate datalist
 cityList.innerHTML = KNOWN_CITIES.map(c => `<option value="${c}">`).join('');

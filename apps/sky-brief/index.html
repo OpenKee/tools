@@ -15,20 +15,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="top-bar" style="padding:0.35rem 1.2rem;font-size:0.75rem;display:flex;align-items:center;border-bottom:1px solid rgba(128,128,128,0.1)"><a href="../../index.html" style="color:inherit;text-decoration:none;opacity:0.45;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">← OpenKee Tools</a></nav>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow" data-i18n="eyebrow">Weather & air quality</p>
-          <h1 data-i18n="title">Sky Brief</h1>
+          <p class="eyebrow" data-ok-i18n="eyebrow">Weather & air quality</p>
+          <h1 data-ok-i18n="title">Sky Brief</h1>
         </div>
         <div class="header-right">
-          <button id="unitToggle" class="btn-ghost" type="button">°C</button>
-          <button id="locateBtn" class="btn-ghost" type="button" data-i18n="locate">📍 My location</button>
-          <button id="compareToggle" class="btn-ghost" type="button" data-i18n="compare">⇄ Compare</button>
+          <button id="unitToggle" class="btn-ghost" type="button" aria-label="Toggle temperature unit">°C</button>
+          <button id="locateBtn" class="btn-ghost" type="button" data-ok-i18n="locate" aria-label="Use my location">📍 My location</button>
+          <button id="compareToggle" class="btn-ghost" type="button" data-ok-i18n="compare" aria-label="Compare cities">⇄ Compare</button>
         </div>
       </header>
 
@@ -36,7 +37,7 @@
       <section class="search-bar">
         <form id="searchForm">
           <input id="queryInput" type="text" placeholder="Search city\u2026" value="Shanghai" autocomplete="off" />
-          <button type="submit" data-i18n="search">Search</button>
+          <button type="submit" data-ok-i18n="search">Search</button>
         </form>
         <div class="saved-strip" id="savedStrip"></div>
       </section>
@@ -60,7 +61,7 @@
       <!-- AQI -->
       <section id="aqiSection" class="aqi-section" style="display:none;">
         <div class="aqi-header">
-          <span class="aqi-label" data-i18n="airQuality">Air quality</span>
+          <span class="aqi-label" data-ok-i18n="airQuality">Air quality</span>
           <span id="aqiValue" class="aqi-value"></span>
           <span id="aqiText" class="aqi-text"></span>
         </div>
@@ -72,13 +73,13 @@
 
       <!-- Hourly -->
       <section id="hourlySection" class="hourly-section" style="display:none;">
-        <h3 data-i18n="hourly">Next 12 hours</h3>
+        <h3 data-ok-i18n="hourly">Next 12 hours</h3>
         <div id="hourlyStrip" class="hourly-strip"></div>
       </section>
 
       <!-- Daily -->
       <section id="dailySection" class="daily-section" style="display:none;">
-        <h3 data-i18n="daily">7-day forecast</h3>
+        <h3 data-ok-i18n="daily">7-day forecast</h3>
         <div id="dailyList" class="daily-list"></div>
       </section>
 
@@ -87,7 +88,7 @@
         <div class="compare-bar">
           <form id="compareForm">
             <input id="compareInput" type="text" placeholder="Compare city..." autocomplete="off" />
-            <button type="submit" data-i18n="search">Search</button>
+            <button type="submit" data-ok-i18n="search">Search</button>
           </form>
         </div>
         <div id="compareResult" class="compare-result"></div>
@@ -95,10 +96,11 @@
 
     </main>
 
+    <script src="../../shared.js"></script>
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #d8e0ec;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:0.72rem;color:#5c6b80;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1b74e4;text-decoration:none;">All projects</a>
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

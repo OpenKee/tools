@@ -86,16 +86,15 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let ratesCache = null;
 
 function t(key) { return copy[lang][key] || key; }
 function cname(code) { return CURRENCIES[code]?.[lang] || code; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
   if (ratesCache) renderAll();
 }
 
@@ -225,11 +224,7 @@ swapBtn.addEventListener('click', () => {
 tableBase.addEventListener('change', renderTable);
 tableAmount.addEventListener('input', renderTable);
 
-langToggle.addEventListener('click', () => {
-  lang = lang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('openkee-lang', lang);
-  applyLanguage();
-});
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 // Init
 const allCodes = Object.keys(CURRENCIES);
