@@ -15,23 +15,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="top-bar" style="padding:0.35rem 1.2rem;font-size:0.75rem;display:flex;align-items:center;border-bottom:1px solid rgba(128,128,128,0.1)"><a href="../../index.html" style="color:inherit;text-decoration:none;opacity:0.45;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">← OpenKee Tools</a></nav>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow" data-i18n="eyebrow">Cross-timezone meeting planner</p>
-          <h1 data-i18n="title">Hour Bridge</h1>
-          <p class="lead" data-i18n="lead">Pick cities, see who's awake, find the fairest meeting slot.</p>
+          <p class="eyebrow" data-ok-i18n="eyebrow">Cross-timezone meeting planner</p>
+          <h1 data-ok-i18n="title">Hour Bridge</h1>
+          <p class="lead" data-ok-i18n="lead">Pick cities, see who's awake, find the fairest meeting slot.</p>
         </div>
         <div class="header-right">
           <div class="live-clock">
             <span id="liveTime" class="live-time"></span>
             <span id="liveDate" class="live-date"></span>
           </div>
-          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
         </div>
       </header>
 
@@ -40,20 +41,20 @@
         <div class="city-chips" id="cityChips"></div>
         <div class="add-row">
           <select id="presetSelect">
-            <option value="" data-i18n="custom">Custom</option>
+            <option value="" data-ok-i18n="custom">Custom</option>
             <option value="apac">APAC Team</option>
             <option value="us-eu">US + Europe</option>
             <option value="global">Global (3 cities)</option>
           </select>
           <input id="cityInput" type="text" placeholder="Add city\u2026" list="cityList" />
           <datalist id="cityList"></datalist>
-          <button id="addBtn" type="button" data-i18n="add">Add</button>
+          <button id="addBtn" type="button" data-ok-i18n="add">Add</button>
         </div>
       </section>
 
       <!-- Duration selector -->
       <section class="duration-bar">
-        <span class="dur-label" data-i18n="duration">Meeting duration</span>
+        <span class="dur-label" data-ok-i18n="duration">Meeting duration</span>
         <div class="dur-options">
           <button class="dur-btn" data-dur="30">30m</button>
           <button class="dur-btn active" data-dur="60">1h</button>
@@ -66,8 +67,8 @@
       <!-- Timeline -->
       <section class="timeline-section" id="timelineSection">
         <div class="timeline-header">
-          <h2 data-i18n="timeline">Timeline</h2>
-          <p class="timeline-desc" data-i18n="timelineDesc">Click a slot to select meeting time. Green = business hours, yellow = early/late, red = night.</p>
+          <h2 data-ok-i18n="timeline">Timeline</h2>
+          <p class="timeline-desc" data-ok-i18n="timelineDesc">Click a slot to select meeting time. Green = business hours, yellow = early/late, red = night.</p>
         </div>
         <div id="timeline" class="timeline"></div>
         <div class="hour-axis" id="hourAxis"></div>
@@ -76,23 +77,24 @@
       <!-- Result -->
       <section class="result-card" id="resultCard" style="display:none;">
         <div class="result-head">
-          <h2 data-i18n="selectedSlot">Selected slot</h2>
-          <button id="clearBtn" type="button" data-i18n="clear">Clear</button>
+          <h2 data-ok-i18n="selectedSlot">Selected slot</h2>
+          <button id="clearBtn" type="button" data-ok-i18n="clear">Clear</button>
         </div>
         <div id="resultBody" class="result-body"></div>
       </section>
 
       <!-- Best slots -->
       <section class="best-section">
-        <h2 data-i18n="bestSlots">Best meeting slots</h2>
+        <h2 data-ok-i18n="bestSlots">Best meeting slots</h2>
         <div id="bestSlots" class="best-grid"></div>
       </section>
     </main>
 
+    <script src="../../shared.js"></script>
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid rgba(23,20,17,0.12);text-align:center;font-family:Manrope,system-ui,sans-serif;font-size:0.72rem;color:#6b625a;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#c56b1a;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#c56b1a;text-decoration:none;">All projects</a>
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

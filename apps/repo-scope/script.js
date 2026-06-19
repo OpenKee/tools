@@ -79,7 +79,7 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let ghToken = localStorage.getItem('repo-scope-token') || '';
 let allRepos = [];
 let filteredRepos = [];
@@ -93,9 +93,8 @@ function num(v) { return new Intl.NumberFormat(lang==='en'?'en-US':'zh-CN').form
 function langColor(n) { return LANG_COLORS[n]||'#8b8b8b'; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang==='en'?'中文':'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n=>{n.textContent=t(n.dataset.i18n);});
+  lang = OK.lang;
+  OK.applyI18n(copy);
 }
 
 async function getJson(url) {
@@ -293,7 +292,7 @@ userForm.addEventListener('submit', e=>{ e.preventDefault(); analyzeUser(usernam
 sortSelect.addEventListener('change', sortAndRender);
 repoSearch.addEventListener('input', sortAndRender);
 detailClose.addEventListener('click', ()=>{ detailSection.style.display='none'; });
-langToggle.addEventListener('click', ()=>{ lang=lang==='en'?'zh':'en'; localStorage.setItem('openkee-lang',lang); applyLanguage(); });
+OK.initLangToggle(langToggle, copy, applyLanguage);
 tokenSave.addEventListener('click', ()=>{
   const v=tokenInput.value.trim(); if(!v) return;
   ghToken=v; localStorage.setItem('repo-scope-token',v);

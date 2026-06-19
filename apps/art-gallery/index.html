@@ -13,8 +13,11 @@
 <meta name="theme-color" content="#f5f2eb"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../../shared.css"/>
 <style>
-:root{--bg:#f5f2eb;--sf:#fff;--ink:#1a1a1a;--mt:#6b5d4f;--dm:#9c8e7c;--rule:#d4c9b8;--blue:#1a3a5c}
+:root{--bg:#f5f2eb;--sf:#fff;--ink:#1a1a1a;--mt:#6b5d4f;--dm:#9c8e7c;--rule:#d4c9b8;--blue:#1a3a5c;
+/* 共享组件主题映射 */
+--ok-bg:var(--bg);--ok-panel:var(--sf);--ok-line:var(--rule);--ok-text:var(--ink);--ok-muted:var(--mt);--ok-accent:var(--blue);--ok-footer-line:var(--rule);--ok-footer-text:var(--dm);--ok-footer-link:var(--blue);--ok-topbar-line:var(--rule)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Source Sans 3","Noto Sans SC",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
 a{color:var(--ink);text-decoration:none}
@@ -63,18 +66,28 @@ a{color:var(--ink);text-decoration:none}
 </style>
 </head>
 <body>
-<div class="nav"><a href="../../index.html" style="color:var(--ink);text-decoration:none;opacity:0.5;font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span></div>
-<div class="header"><h1>🏛 Art Gallery</h1><div class="sub">Explore 400,000+ artworks from The Met</div></div>
+<div class="nav"><a href="../../index.html" class="ok-topbar-link" style="font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span><button id="langToggle" class="ok-lang-toggle" type="button" style="margin-left:auto">中文</button></div>
+<div class="header"><h1>🏛 Art Gallery</h1><div class="sub" data-ok-i18n="sub">Explore 400,000+ artworks from The Met</div></div>
 <div class="search">
-<form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn">Search</button></form>
-<button class="random" onclick="randomArt()">✦ Random artwork</button>
+<form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn" data-ok-i18n="search">Search</button></form>
+<button class="random" onclick="randomArt()" data-ok-i18n="random">✦ Random artwork</button>
 </div>
-<div class="loading" id="ld">Loading…</div>
+<div class="loading" id="ld" data-ok-i18n="loading">Loading…</div>
 <div class="gallery" id="out"></div>
-<div class="more"><button id="moreBtn" onclick="loadMore()" style="display:none">Load more</button></div>
+<div class="more"><button id="moreBtn" onclick="loadMore()" style="display:none" data-ok-i18n="loadMore">Load more</button></div>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()"><div class="modal" id="modal"></div></div>
 
+<script src="../../shared.js"></script>
 <script>
+const copy={
+en:{sub:'Explore 400,000+ artworks from The Met',search:'Search',random:'✦ Random artwork',loading:'Loading…',loadMore:'Load more',loadingMore:'Loading...',untitled:'Untitled',unknown:'Unknown',unknownArtist:'Unknown artist',noResults:'No results',date:'Date',medium:'Medium',dimensions:'Dimensions',department:'Department',period:'Period',culture:'Culture',type:'Type',credit:'Credit',close:'Close'},
+zh:{sub:'探索大都会艺术博物馆 40 万+ 件藏品',search:'搜索',random:'✦ 随机作品',loading:'加载中…',loadMore:'加载更多',loadingMore:'加载中...',untitled:'无题',unknown:'佚名',unknownArtist:'未知艺术家',noResults:'无结果',date:'年代',medium:'材质',dimensions:'尺寸',department:'部门',period:'时期',culture:'文化',type:'类型',credit:'来源',close:'关闭'}
+};
+let lang=OK.lang;
+function t(k){return copy[lang][k]||k}
+function applyLang(){lang=OK.lang;OK.applyI18n(copy);document.getElementById('inp').placeholder=lang==='en'?'Search… Monet, Van Gogh, Samurai…':'搜索… 莫奈、梵高、武士…';const mb=document.getElementById('moreBtn');if(mb&&!mb.disabled)mb.textContent=t('loadMore')}
+OK.initLangToggle(document.getElementById('langToggle'),copy,applyLang);
+
 const API='https://collectionapi.metmuseum.org/public/collection/v1';
 let allIds=[];
 let shown=0;
@@ -91,7 +104,7 @@ function search(){
     .then(function(r){return r.json()})
     .then(function(d){
       allIds=d.objectIDs||[];
-      if(!allIds.length)throw Error('No results for "'+q+'"');
+      if(!allIds.length)throw Error(t('noResults'));
       return loadBatch();
     })
     .catch(function(e){
@@ -134,9 +147,9 @@ function loadBatch(){
 
 function loadMore(){
   let btn=document.getElementById('moreBtn');
-  btn.textContent='Loading...';btn.disabled=true;
+  btn.textContent=t('loadingMore');btn.disabled=true;
   loadBatch().then(function(){
-    btn.textContent='Load more';btn.disabled=false;
+    btn.textContent=t('loadMore');btn.disabled=false;
   });
 }
 
@@ -148,7 +161,7 @@ function appendGrid(arts){
     const imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
     const div=document.createElement('div');
     div.className='art';
-    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+(a.title||'Untitled')+'</div><div class="meta">'+(a.artistDisplayName||'Unknown')+'</div><div class="date">'+(a.objectDate||'')+'</div></div>';
+    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+(a.title||t('untitled'))+'</div><div class="meta">'+(a.artistDisplayName||t('unknown'))+'</div><div class="date">'+(a.objectDate||'')+'</div></div>';
     div.onclick=function(){showDetail(a.objectID)};
     grid.appendChild(div);
   });
@@ -159,18 +172,18 @@ function showDetail(id){
     .then(function(r){return r.json()})
     .then(function(a){
       const img=a.primaryImage||a.primaryImageSmall||'';
-      const t1=a.title||'Untitled';const imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
+      const t1=a.title||t('untitled');const imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
       const rows=[];
-      if(a.objectDate)rows.push(['Date',a.objectDate]);
-      if(a.medium)rows.push(['Medium',a.medium]);
-      if(a.dimensions)rows.push(['Dimensions',a.dimensions]);
-      if(a.department)rows.push(['Department',a.department]);
-      if(a.period)rows.push(['Period',a.period]);
-      if(a.culture)rows.push(['Culture',a.culture]);
-      if(a.classification)rows.push(['Type',a.classification]);
-      if(a.creditLine)rows.push(['Credit',a.creditLine]);
+      if(a.objectDate)rows.push([t('date'),a.objectDate]);
+      if(a.medium)rows.push([t('medium'),a.medium]);
+      if(a.dimensions)rows.push([t('dimensions'),a.dimensions]);
+      if(a.department)rows.push([t('department'),a.department]);
+      if(a.period)rows.push([t('period'),a.period]);
+      if(a.culture)rows.push([t('culture'),a.culture]);
+      if(a.classification)rows.push([t('type'),a.classification]);
+      if(a.creditLine)rows.push([t('credit'),a.creditLine]);
       const table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
-      document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+(a.title||'Untitled')+'</h2><div class="artist">'+(a.artistDisplayName||'Unknown artist')+'</div><table>'+table+'</table></div></div>';
+      document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()" aria-label="'+t('close')+'">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+(a.title||t('untitled'))+'</h2><div class="artist">'+(a.artistDisplayName||t('unknownArtist'))+'</div><table>'+table+'</table></div></div>';
       document.getElementById('overlay').classList.add('on');
     });
 }
@@ -178,8 +191,11 @@ function showDetail(id){
 function closeDetail(){document.getElementById('overlay').classList.remove('on')}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
 
+applyLang();
 randomArt();
 </script>
-<div style="text-align:center;padding:1.5rem;border-top:1px solid #d4c9b8;margin-top:2rem;font-size:.72rem;color:#9c8e7c"><span>OpenKee · 2026</span> · <a href="https://github.com/OpenKee" target="_blank" style="color:#9c8e7c">GitHub</a> · Powered by The Met API</div>
+<footer class="ok-footer">
+  OpenKee · 2026 · <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">GitHub</a> · Powered by The Met API
+</footer>
 </body>
 </html>

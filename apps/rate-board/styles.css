@@ -10,6 +10,19 @@
   --up-bg: #f0fdf4;
   --down: #dc2626;
   --down-bg: #fef2f2;
+
+  /* 共享组件主题映射 */
+  --ok-bg: var(--bg);
+  --ok-panel: var(--panel);
+  --ok-line: var(--line);
+  --ok-text: var(--text);
+  --ok-muted: var(--muted);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: var(--accent-soft);
+  --ok-footer-line: var(--line);
+  --ok-footer-text: var(--muted);
+  --ok-footer-link: var(--accent);
+  --ok-topbar-line: rgba(128, 128, 128, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -68,17 +81,6 @@ h1 {
 .update-time {
   font-size: 0.72rem;
   color: var(--muted);
-}
-
-.lang-toggle {
-  font: inherit;
-  min-height: 2.2rem;
-  padding: 0 0.8rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.78rem;
 }
 
 /* Converter */

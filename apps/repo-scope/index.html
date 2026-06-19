@@ -15,19 +15,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="top-bar" style="padding:0.35rem 1.2rem;font-size:0.75rem;display:flex;align-items:center;border-bottom:1px solid rgba(128,128,128,0.1)"><a href="../../index.html" style="color:inherit;text-decoration:none;opacity:0.45;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">← OpenKee Tools</a></nav>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow" data-i18n="eyebrow">GitHub analysis utility</p>
-          <h1 data-i18n="title">Repo Scope</h1>
-          <p class="lead" data-i18n="lead">Analyze any GitHub user — repos, languages, activity scores, and health at a glance.</p>
+          <p class="eyebrow" data-ok-i18n="eyebrow">GitHub analysis utility</p>
+          <h1 data-ok-i18n="title">Repo Scope</h1>
+          <p class="lead" data-ok-i18n="lead">Analyze any GitHub user — repos, languages, activity scores, and health at a glance.</p>
         </div>
         <div class="header-right">
-          <button id="langToggle" class="lang-toggle" type="button">中文</button>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
         </div>
       </header>
 
@@ -35,14 +36,14 @@
       <section class="search-bar">
         <form id="userForm">
           <input id="usernameInput" type="text" placeholder="torvalds" autocomplete="off" />
-          <button type="submit" data-i18n="analyze">Analyze</button>
+          <button type="submit" data-ok-i18n="analyze">Analyze</button>
         </form>
         <details class="token-toggle">
-          <summary data-i18n="tokenToggle">Optional: GitHub token</summary>
+          <summary data-ok-i18n="tokenToggle">Optional: GitHub token</summary>
           <div class="token-row">
             <input id="tokenInput" type="password" placeholder="ghp_xxxx" autocomplete="off" />
-            <button id="tokenSave" type="button" data-i18n="tokenSave">Save</button>
-            <button id="tokenClear" type="button" class="btn-ghost" data-i18n="tokenClear">Clear</button>
+            <button id="tokenSave" type="button" data-ok-i18n="tokenSave">Save</button>
+            <button id="tokenClear" type="button" class="btn-ghost" data-ok-i18n="tokenClear">Clear</button>
           </div>
         </details>
       </section>
@@ -55,7 +56,7 @@
             <h2 id="profileName"></h2>
             <p id="profileBio" class="profile-bio"></p>
             <div class="profile-meta" id="profileMeta"></div>
-            <a id="profileLink" href="#" target="_blank" rel="noreferrer" class="profile-link" data-i18n="openProfile">Open profile →</a>
+            <a id="profileLink" href="#" target="_blank" rel="noreferrer" class="profile-link" data-ok-i18n="openProfile">Open profile →</a>
           </div>
         </div>
         <div class="stat-strip" id="statStrip"></div>
@@ -66,7 +67,7 @@
         <div class="score-card">
           <div class="score-ring" id="scoreRing"></div>
           <div class="score-info">
-            <h3 data-i18n="activityScore">Activity score</h3>
+            <h3 data-ok-i18n="activityScore">Activity score</h3>
             <p id="scoreDesc" class="score-desc"></p>
           </div>
         </div>
@@ -74,7 +75,7 @@
 
       <!-- Languages -->
       <section id="langSection" class="lang-section" style="display:none;">
-        <h2 data-i18n="languages">Languages</h2>
+        <h2 data-ok-i18n="languages">Languages</h2>
         <div id="langBars" class="lang-bars"></div>
       </section>
 
@@ -82,13 +83,13 @@
       <div id="repoLayout" class="repo-layout" style="display:none;">
         <section class="repo-section">
           <div class="repo-header">
-            <h2 data-i18n="repositories">Repositories</h2>
+            <h2 data-ok-i18n="repositories">Repositories</h2>
             <div class="repo-controls">
               <select id="sortSelect">
-                <option value="stars" data-i18n="byStars">By stars</option>
-                <option value="updated" data-i18n="byUpdated">By updated</option>
-                <option value="forks" data-i18n="byForks">By forks</option>
-                <option value="name" data-i18n="byName">By name</option>
+                <option value="stars" data-ok-i18n="byStars">By stars</option>
+                <option value="updated" data-ok-i18n="byUpdated">By updated</option>
+                <option value="forks" data-ok-i18n="byForks">By forks</option>
+                <option value="name" data-ok-i18n="byName">By name</option>
               </select>
               <input id="repoSearch" type="text" placeholder="Filter\u2026" />
             </div>
@@ -107,10 +108,11 @@
       </div>
     </main>
 
+    <script src="../../shared.js"></script>
     <script src="script.js"></script>
   
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #cdc2b3;text-align:center;font-family:IBM Plex Sans,system-ui,sans-serif;font-size:0.72rem;color:#6a6258;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">All projects</a>
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 
   </body>

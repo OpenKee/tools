@@ -15,29 +15,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="top-bar" style="padding:0.35rem 1.2rem;font-size:0.75rem;display:flex;align-items:center;border-bottom:1px solid rgba(128,128,128,0.1)"><a href="../../index.html" style="color:inherit;text-decoration:none;opacity:0.45;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">← OpenKee Tools</a></nav>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
     <main class="shell">
       <header class="masthead">
         <div class="masthead-copy">
-          <p class="kicker" data-i18n="eyebrow">GitHub trending explorer</p>
-          <h1 data-i18n="title">Trending Atlas</h1>
-          <p class="lead" data-i18n="lead">Discover what the open-source world is building right now.</p>
+          <p class="kicker" data-ok-i18n="eyebrow">GitHub trending explorer</p>
+          <h1 data-ok-i18n="title">Trending Atlas</h1>
+          <p class="lead" data-ok-i18n="lead">Discover what the open-source world is building right now.</p>
         </div>
-        <button id="langToggle" class="lang-toggle" type="button">中文</button>
+        <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
       </header>
 
       <section class="controls">
         <div class="range-tabs">
-          <button class="range-btn active" data-range="daily" data-i18n="daily">Today</button>
-          <button class="range-btn" data-range="weekly" data-i18n="weekly">This week</button>
-          <button class="range-btn" data-range="monthly" data-i18n="monthly">This month</button>
+          <button class="range-btn active" data-range="daily" data-ok-i18n="daily">Today</button>
+          <button class="range-btn" data-range="weekly" data-ok-i18n="weekly">This week</button>
+          <button class="range-btn" data-range="monthly" data-ok-i18n="monthly">This month</button>
         </div>
         <div class="lang-filter">
           <select id="langSelect">
-            <option value="" data-i18n="allLanguages">All languages</option>
+            <option value="" data-ok-i18n="allLanguages">All languages</option>
           </select>
         </div>
       </section>
@@ -49,10 +50,11 @@
       <section id="pagination" class="pagination"></section>
     </main>
 
+    <script src="../../shared.js"></script>
     <script src="script.js"></script>
 
-  <footer class="openkee-footer" style="margin-top:2rem;padding:1.2rem 0;border-top:1px solid #cdc2b3;text-align:center;font-family:IBM Plex Sans;font-size:0.72rem;color:#6a6258;letter-spacing:0.03em;">
-    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer" style="color:#1f4a88;text-decoration:none;">All projects</a>
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
   </footer>
 </body>
 </html>

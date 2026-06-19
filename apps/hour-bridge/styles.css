@@ -12,6 +12,18 @@
   --night: rgba(239, 68, 68, 0.2);
   --night-bg: rgba(239, 68, 68, 0.04);
   --selected: rgba(197, 107, 26, 0.25);
+
+  /* 共享组件主题映射 */
+  --ok-panel: var(--panel);
+  --ok-line: var(--line);
+  --ok-text: var(--ink);
+  --ok-muted: var(--muted);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: var(--accent-soft);
+  --ok-footer-line: var(--line);
+  --ok-footer-text: var(--muted);
+  --ok-footer-link: var(--accent);
+  --ok-topbar-line: rgba(128, 128, 128, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -82,17 +94,6 @@ h1 {
   display: block;
   font-size: 0.72rem;
   color: var(--muted);
-}
-
-.lang-toggle {
-  font: inherit;
-  min-height: 2.2rem;
-  padding: 0 0.8rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  font-size: 0.78rem;
 }
 
 /* Setup bar */

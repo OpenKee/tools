@@ -43,15 +43,14 @@ const copy = {
   },
 };
 
-let lang = localStorage.getItem('openkee-lang') || 'en';
+let lang = OK.lang;
 let history = JSON.parse(localStorage.getItem('node-atlas-history') || '[]');
 
 function t(k) { return copy[lang][k] || k; }
 
 function applyLanguage() {
-  document.documentElement.lang = lang;
-  langToggle.textContent = lang==='en'?'中文':'EN';
-  document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+  lang = OK.lang;
+  OK.applyI18n(copy);
 }
 
 function isIp(v) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()); }
@@ -248,7 +247,7 @@ async function lookup(target) {
 
 // Events
 lookupForm.addEventListener('submit', e => { e.preventDefault(); lookup(targetInput.value); });
-langToggle.addEventListener('click', () => { lang = lang==='en'?'zh':'en'; localStorage.setItem('openkee-lang',lang); applyLanguage(); });
+OK.initLangToggle(langToggle, copy, applyLanguage);
 
 // Init
 applyLanguage();

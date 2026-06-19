@@ -13,6 +13,19 @@
   --yellow-bg: #fefce8;
   --red: #dc2626;
   --red-bg: #fef2f2;
+
+  /* 共享组件主题映射 */
+  --ok-bg: var(--bg);
+  --ok-panel: var(--paper);
+  --ok-line: var(--line);
+  --ok-text: var(--ink);
+  --ok-muted: var(--muted);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: var(--accent-soft);
+  --ok-footer-line: var(--line);
+  --ok-footer-text: var(--muted);
+  --ok-footer-link: var(--accent);
+  --ok-topbar-line: rgba(128, 128, 128, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -64,16 +77,6 @@ h1 {
 }
 
 .header-right { display: flex; gap: 0.6rem; align-items: center; }
-
-.lang-toggle {
-  font: inherit;
-  min-height: 2.2rem;
-  padding: 0 0.7rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.78rem;
-}
 
 /* Search */
 .search-bar {
