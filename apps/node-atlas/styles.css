@@ -22,6 +22,7 @@
   --ok-footer-text: var(--muted);
   --ok-footer-link: var(--accent);
   --ok-topbar-line: rgba(128, 128, 128, 0.1);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

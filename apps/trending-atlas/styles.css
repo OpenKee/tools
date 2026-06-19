@@ -12,6 +12,7 @@
 
   /* 共享组件主题映射 */
   --ok-bg: var(--bg);
+  --ok-text: var(--ink);
   --ok-line: var(--line);
   --ok-muted: var(--muted);
   --ok-accent: var(--accent);

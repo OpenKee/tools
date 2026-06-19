@@ -14,6 +14,7 @@
   --selected: rgba(197, 107, 26, 0.25);
 
   /* 共享组件主题映射 */
+  --ok-bg: #f8f4ee;
   --ok-panel: var(--panel);
   --ok-line: var(--line);
   --ok-text: var(--ink);

@@ -39,6 +39,9 @@
   /* 圆角 */
   --ok-radius: 8px;
   --ok-radius-sm: 4px;
+
+  /* 显式声明浅色色彩方案，防止系统深色模式下表单控件渲染异常 */
+  color-scheme: light;
 }
 
 /* ---------- 基础重置 ---------- */
@@ -233,14 +236,5 @@ h1, h2, h3, h4, p, strong, span, small { margin: 0; }
     flex-direction: column;
     align-items: start;
     gap: 0.6rem;
-  }
-}
-
-/* ---------- 尊重用户系统色彩偏好（自动微调） ---------- */
-@media (prefers-color-scheme: dark) {
-  /* 仅对未显式声明主题的浅色 app 做温和适配；
-     已是深色的 app 自身 token 不受影响，因为它们显式覆盖了 --ok-* */
-  :root:not([data-ok-theme]) {
-    color-scheme: light dark;
   }
 }
