@@ -180,7 +180,7 @@ textarea::placeholder{color:var(--mt)}
 <div class="enc-section"><div class="panel-header"><span>Input</span></div><textarea id="encIn" placeholder="Text to encode/decode..." spellcheck="false"></textarea></div>
 <div class="enc-btns">
 <button class="enc-btn" onclick="encOut(btoa(unescape(encodeURIComponent(encIn.value))))">Base64 →</button>
-<button class="enc-btn" onclick="try{encOut(decodeURIComponent(escape(atob(encIn.value))))}catch(e){encOut('Error')}">← Base64</button>
+<button class="enc-btn" onclick="try{encOut(b64DecodeUnicode(encIn.value))}catch(e){encOut('Error')}">← Base64</button>
 <button class="enc-btn" onclick="encOut(encodeURIComponent(encIn.value))">URL →</button>
 <button class="enc-btn" onclick="try{encOut(decodeURIComponent(encIn.value))}catch(e){encOut('Error')}">← URL</button>
 <button class="enc-btn" onclick="encOut(Array.from(encIn.value).map(c=>'\\\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join(''))">Unicode →</button>

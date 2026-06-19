@@ -98,7 +98,7 @@ function search(){
     })
     .catch(function(e){
       document.getElementById('ld').classList.remove('on');
-      document.getElementById('out').innerHTML='<div style="text-align:center;padding:2rem;color:var(--mt)">'+e.message+'</div>';
+      document.getElementById('out').innerHTML='<div style="text-align:center;padding:2rem;color:var(--mt)">'+esc(e.message)+'</div>';
     })
     .finally(function(){btn.disabled=false});
 }
