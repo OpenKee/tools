@@ -44,6 +44,7 @@
       .card-tag.finance { color:#fbbf24; border-color:rgba(251,191,36,0.3); }
       .card-tag.media { color:#a78bfa; border-color:rgba(167,139,250,0.3); }
       .card-tag.travel { color:#f472b6; border-color:rgba(244,114,182,0.3); }
+      .card-tag.space { color:#38bdf8; border-color:rgba(56,189,248,0.3); }
       .card-name { font-size:1.05rem; font-weight:700; letter-spacing:-0.01em; }
       .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; flex:1; }
       .card-links { display:flex; gap:0.5rem; margin-top:0.3rem; }
@@ -76,8 +77,8 @@
       </header>
 
       <section class="stats">
-        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">12</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">5</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">15</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">6</div></div>
         <div class="stat-item"><div class="stat-label" data-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-i18n="active">Active</div></div>
       </section>
 
@@ -139,6 +140,18 @@
           name: 'Offday Planner', type: 'data', typeClass: 'data',
           desc: { en: 'Holiday and off-day planner tool.', zh: '假期与休息日规划工具。' },
         },
+        {
+          name: 'ISS Tracker', type: 'space', typeClass: 'space',
+          desc: { en: 'Real-time ISS position tracking with astronaut roster.', zh: '国际空间站实时位置追踪与宇航员名单。' },
+        },
+        {
+          name: 'Book Finder', type: 'media', typeClass: 'media',
+          desc: { en: 'Search millions of books from Open Library.', zh: '搜索 Open Library 海量图书。' },
+        },
+        {
+          name: 'QR Forge', type: 'data', typeClass: 'data',
+          desc: { en: 'Generate custom QR codes with live preview.', zh: '生成自定义二维码，实时预览。' },
+        },
       ];
 
       const copy = {
@@ -146,13 +159,13 @@
           title: 'API-powered tools and utilities.',
           lead: 'Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more \u2014 all powered by public APIs.',
           allProjects: 'All projects ↗', tools: 'Tools', categories: 'Categories', status: 'Status', active: 'Live',
-          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', open: 'Open ↗', back: '\u2190 All projects',
+          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', space: 'Space', open: 'Open ↗', back: '\u2190 All projects',
         },
         zh: {
           title: 'API 驱动的工具集。',
           lead: '汇率、天气简报、加密行情、电台流、地理编码……全部由公共 API 驱动。',
           allProjects: '全部项目 ↗', tools: '工具', categories: '分类', status: '状态', active: '在线',
-          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', open: '打开 ↗', back: '\u2190 全部项目',
+          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', space: '太空', open: '打开 ↗', back: '\u2190 全部项目',
         },
       };
 

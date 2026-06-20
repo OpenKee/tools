@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ISS Tracker — Real-time Space Station Position</title>
+    <meta name="description" content="Track the International Space Station in real time. Live coordinates, ground track, astronauts in space, and next pass predictions." />
+    <meta property="og:title" content="ISS Tracker" />
+    <meta property="og:description" content="Real-time International Space Station position tracker with live map and ground track." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/iss-tracker/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-left">
+          <p class="eyebrow" data-ok-i18n="eyebrow">Space tracking</p>
+          <h1 data-ok-i18n="title">ISS Tracker</h1>
+          <p class="lead" data-ok-i18n="lead">Follow the International Space Station as it orbits Earth at 27,600 km/h.</p>
+        </div>
+        <div class="header-right">
+          <div class="live-pill" id="livePill">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span data-ok-i18n="live">LIVE</span>
+            <span class="live-time" id="lastUpdate">--:--:--</span>
+          </div>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <section class="dashboard">
+        <!-- 地图区 -->
+        <div class="map-wrap">
+          <div id="map" role="application" aria-label="ISS real-time position map"></div>
+          <div class="map-badge" aria-hidden="true">
+            <span class="badge-label" data-ok-i18n="coords">Coordinates</span>
+            <span class="badge-value" id="badgeCoords">--</span>
+          </div>
+        </div>
+
+        <!-- 信息面板 -->
+        <aside class="info-panel" aria-label="ISS information panels">
+          <!-- 坐标与区域 -->
+          <div class="info-card">
+            <div class="card-head">
+              <span class="card-icon" aria-hidden="true">📍</span>
+              <span class="card-label" data-ok-i18n="coords">Coordinates</span>
+            </div>
+            <div class="card-rows">
+              <div class="row"><span data-ok-i18n="latitude">Latitude</span><strong id="latVal">--</strong></div>
+              <div class="row"><span data-ok-i18n="longitude">Longitude</span><strong id="lonVal">--</strong></div>
+              <div class="row"><span data-ok-i18n="region">Region</span><strong id="regionVal">--</strong></div>
+            </div>
+          </div>
+
+          <!-- 轨道参数 -->
+          <div class="info-card">
+            <div class="card-head">
+              <span class="card-icon" aria-hidden="true">🚀</span>
+              <span class="card-label" data-ok-i18n="orbit">Orbit</span>
+            </div>
+            <div class="card-rows">
+              <div class="row"><span data-ok-i18n="speed">Speed</span><strong id="speedVal">~27,600 km/h</strong></div>
+              <div class="row"><span data-ok-i18n="altitude">Altitude</span><strong id="altVal">~408 km</strong></div>
+              <div class="row"><span data-ok-i18n="orbitPeriod">Orbital period</span><strong>~92 min</strong></div>
+            </div>
+          </div>
+
+          <!-- 太空中的宇航员 -->
+          <div class="info-card">
+            <div class="card-head">
+              <span class="card-icon" aria-hidden="true">👨‍🚀</span>
+              <span class="card-label"><strong id="astrosCount">--</strong> <span data-ok-i18n="inSpace">in space</span></span>
+            </div>
+            <div class="astros-list" id="astrosList">
+              <div class="muted" data-ok-i18n="loadingAstros">Loading astronauts…</div>
+            </div>
+          </div>
+
+          <!-- 下一次经过指定位置 -->
+          <div class="info-card">
+            <div class="card-head">
+              <span class="card-icon" aria-hidden="true">🛰️</span>
+              <span class="card-label" data-ok-i18n="nextPass">Next pass over</span>
+            </div>
+            <div class="pass-form">
+              <input id="passLat" type="number" step="0.01" min="-90" max="90" placeholder="lat" aria-label="Latitude" />
+              <input id="passLon" type="number" step="0.01" min="-180" max="180" placeholder="lon" aria-label="Longitude" />
+              <button id="useLocBtn" class="btn-ghost" type="button" aria-label="Use my location">📍</button>
+              <button id="passBtn" class="btn-primary" type="button" data-ok-i18n="check">Check</button>
+            </div>
+            <div class="pass-result" id="passResult" aria-live="polite"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
