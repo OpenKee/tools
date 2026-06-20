@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Quest — Film &amp; TV Search</title>
+    <meta name="description" content="Search movies and TV shows, browse trending titles, and dive into cast, ratings, and plot details." />
+    <meta name="theme-color" content="#0f0f1a" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-ok-i18n="eyebrow">Cinema discovery</p>
+          <h1 data-ok-i18n="title">Movie Quest</h1>
+          <p class="lead" data-ok-i18n="lead">Search movies and TV shows, browse what's trending, and open any title for ratings, plot, and cast.</p>
+        </div>
+        <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+      </header>
+
+      <!-- 搜索区 -->
+      <section class="search" aria-label="Search movies and TV">
+        <div class="search-row">
+          <input id="searchInput" type="search" class="search-input" aria-label="Search movies and TV shows" autocomplete="off" />
+          <button id="searchBtn" class="search-btn" type="button" data-ok-i18n="search">Search</button>
+        </div>
+        <!-- 媒体类型切换（全部 / 电影 / 剧集） -->
+        <div class="type-toggle" role="group" aria-label="Media type">
+          <button class="type-btn active" type="button" data-type="all" data-ok-i18n="typeAll">All</button>
+          <button class="type-btn" type="button" data-type="movie" data-ok-i18n="typeMovie">Movies</button>
+          <button class="type-btn" type="button" data-type="series" data-ok-i18n="typeSeries">TV</button>
+        </div>
+        <p id="resultCount" class="result-count" aria-live="polite"></p>
+      </section>
+
+      <!-- 类型筛选（作用于热门轮播） -->
+      <section id="genreFilter" class="genre-filter" aria-label="Filter trending by genre">
+        <p class="filter-title" data-ok-i18n="genreTitle">Filter trending</p>
+        <div id="genreChips" class="chips"></div>
+      </section>
+
+      <!-- 热门轮播 -->
+      <section id="trendingSection" class="trending" aria-label="Trending movies">
+        <h2 class="section-title" data-ok-i18n="trendingTitle">Trending now</h2>
+        <div id="trendingRow" class="trending-row"></div>
+        <div id="trendingLoading" class="state loading" style="display:none;">
+          <div class="spinner" aria-hidden="true"></div>
+          <span data-ok-i18n="loadingTrending">Loading trending…</span>
+        </div>
+      </section>
+
+      <!-- 加载状态 -->
+      <div id="loading" class="state loading" style="display:none;">
+        <div class="spinner" aria-hidden="true"></div>
+        <span data-ok-i18n="loading">Searching…</span>
+      </div>
+
+      <!-- 错误状态 -->
+      <div id="errorBox" class="state error" style="display:none;">
+        <p id="errorMsg"></p>
+        <button id="retryBtn" class="btn-ghost" type="button" data-ok-i18n="tryAgain">Try again</button>
+      </div>
+
+      <!-- 搜索结果网格 -->
+      <section id="resultsSection" class="results-section" style="display:none;">
+        <h2 class="section-title" data-ok-i18n="resultsTitle">Search results</h2>
+        <div id="results" class="grid" aria-label="Search results"></div>
+      </section>
+
+      <!-- 空结果 -->
+      <div id="empty" class="state empty" style="display:none;">
+        <div class="empty-icon" aria-hidden="true"></div>
+        <p data-ok-i18n="noResults">No results. Try another keyword.</p>
+      </div>
+
+      <!-- 加载更多 -->
+      <div id="loadMoreWrap" class="load-more" style="display:none;">
+        <button id="loadMoreBtn" class="btn-ghost" type="button" data-ok-i18n="loadMore">Load more</button>
+        <p id="endText" class="end-text" style="display:none;" data-ok-i18n="endOfResults">End of results</p>
+      </div>
+    </main>
+
+    <!-- 详情模态框 -->
+    <div id="modal" class="modal" aria-hidden="true" aria-label="Title details">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="modal-close" data-close type="button" aria-label="Close details">×</button>
+        <div id="detailBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
