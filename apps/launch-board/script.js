@@ -152,14 +152,14 @@
   function esc(s) { return OK.escape(s); }
 
   // 状态分类：根据 Launch Library 2 的 status.id 映射到颜色类别
+  // API 文档：1=Go, 2=TBD, 3=TBC, 4=Hold, 5=In Flight, 6=Partial Failure, 7=Failure, 8=Never Going to Happen
   function statusCategory(launch) {
     var id = launch && launch.status && launch.status.id;
-    if (id === 1 || id === 2 || id === 3) return 'go';
+    if (id === 1) return 'go';
+    if (id === 2 || id === 3) return 'tbd';
     if (id === 4) return 'hold';
-    if (id === 5 || id === 6) return 'tbd';
-    if (id === 7) return 'success';
-    if (id === 8) return 'failed';
-    if (id === 9) return 'inflight';
+    if (id === 5) return 'inflight';
+    if (id === 6 || id === 7 || id === 8) return 'failed';
     return 'tbd';
   }
 
@@ -239,7 +239,7 @@
       {
         id: 'mock-1',
         name: 'Falcon 9 Block 5 | Starlink Group 8-12',
-        status: { id: 8, name: 'To Be Determined', abbrev: 'TBD' },
+        status: { id: 2, name: 'To Be Determined', abbrev: 'TBD' },
         net: new Date(now + 1 * day + 5 * hr).toISOString(),
         window_start: new Date(now + 1 * day + 5 * hr).toISOString(),
         window_end: new Date(now + 1 * day + 6 * hr).toISOString(),
@@ -252,7 +252,7 @@
       {
         id: 'mock-2',
         name: 'Long March 5 | Chang\'e 7',
-        status: { id: 8, name: 'To Be Determined', abbrev: 'TBD' },
+        status: { id: 2, name: 'To Be Determined', abbrev: 'TBD' },
         net: new Date(now + 4 * day + 11 * hr).toISOString(),
         window_start: new Date(now + 4 * day + 11 * hr).toISOString(),
         window_end: new Date(now + 4 * day + 12 * hr).toISOString(),
@@ -278,7 +278,7 @@
       {
         id: 'mock-4',
         name: 'Ariane 6 | Galactic 02',
-        status: { id: 8, name: 'To Be Determined', abbrev: 'TBD' },
+        status: { id: 2, name: 'To Be Determined', abbrev: 'TBD' },
         net: new Date(now + 9 * day + 14 * hr).toISOString(),
         window_start: new Date(now + 9 * day + 14 * hr).toISOString(),
         window_end: new Date(now + 9 * day + 15 * hr).toISOString(),
@@ -304,7 +304,7 @@
       {
         id: 'mock-6',
         name: 'Vulcan VC6 | Dream Chaser 1',
-        status: { id: 8, name: 'To Be Determined', abbrev: 'TBD' },
+        status: { id: 2, name: 'To Be Determined', abbrev: 'TBD' },
         net: new Date(now + 18 * day + 9 * hr).toISOString(),
         window_start: new Date(now + 18 * day + 9 * hr).toISOString(),
         window_end: new Date(now + 18 * day + 10 * hr).toISOString(),
@@ -449,7 +449,7 @@
       + agencyKeys.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + '</option>'; }).join('');
 
     // 状态筛选：固定分类
-    var cats = ['go', 'tbd', 'hold', 'success', 'failed', 'inflight'];
+    var cats = ['go', 'tbd', 'hold', 'failed', 'inflight'];
     elStatusFilter.innerHTML = '<option value="">' + esc(t('allStatuses')) + '</option>'
       + cats.map(function (c) { return '<option value="' + c + '">' + esc(statusLabel(c)) + '</option>'; }).join('');
   }
