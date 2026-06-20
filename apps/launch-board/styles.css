@@ -463,6 +463,10 @@ h1, h2, h3, p, strong, span, small { margin: 0; }
   justify-content: center;
   padding: 1rem;
 }
+/* hidden 属性必须能覆盖 display:flex，否则弹窗一直显示 */
+.modal[hidden] {
+  display: none;
+}
 
 .modal-backdrop {
   position: absolute;
