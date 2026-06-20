@@ -152,14 +152,15 @@
   function esc(s) { return OK.escape(s); }
 
   // 状态分类：根据 Launch Library 2 的 status.id 映射到颜色类别
-  // API 文档：1=Go, 2=TBD, 3=TBC, 4=Hold, 5=In Flight, 6=Partial Failure, 7=Failure, 8=Never Going to Happen
+  // API 实测：1=Go for Launch, 2=To Be Determined, 3=TBC, 4=Hold,
+  //          5=In Flight, 6=Partial Failure, 7=Failure, 8=To Be Confirmed
   function statusCategory(launch) {
     var id = launch && launch.status && launch.status.id;
     if (id === 1) return 'go';
-    if (id === 2 || id === 3) return 'tbd';
+    if (id === 2 || id === 3 || id === 8) return 'tbd';
     if (id === 4) return 'hold';
     if (id === 5) return 'inflight';
-    if (id === 6 || id === 7 || id === 8) return 'failed';
+    if (id === 6 || id === 7) return 'failed';
     return 'tbd';
   }
 
@@ -200,9 +201,23 @@
     return (launch.mission && launch.mission.name) || launch.name || t('notAvailable');
   }
 
+  // 判断是否为 TBD 发射（时间未确定，API 常返回月初 UTC 午夜占位）
+  function isTbdLaunch(launch) {
+    var cat = statusCategory(launch);
+    if (cat !== 'tbd') return false;
+    var d = launch && launch.net ? new Date(launch.net) : null;
+    if (!d || isNaN(d.getTime())) return true;
+    // 占位时间特征：UTC 00:00:00
+    return d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+  }
+
   // 时间格式化：本地时区 + UTC 标注，使用 Intl.DateTimeFormat
-  function formatTime(iso) {
+  function formatTime(iso, launch) {
     if (!iso) return { local: t('notAvailable'), utc: '' };
+    // TBD 占位时间不显示具体时刻
+    if (launch && isTbdLaunch(launch)) {
+      return { local: t('statusTbd'), utc: '' };
+    }
     var d = new Date(iso);
     if (isNaN(d.getTime())) return { local: t('notAvailable'), utc: '' };
     var locale = lang === 'zh' ? 'zh-CN' : 'en-US';
@@ -219,8 +234,9 @@
   }
 
   // 列表卡片用的紧凑时间
-  function formatShort(iso) {
+  function formatShort(iso, launch) {
     if (!iso) return t('notAvailable');
+    if (launch && isTbdLaunch(launch)) return t('statusTbd');
     var d = new Date(iso);
     if (isNaN(d.getTime())) return t('notAvailable');
     var locale = lang === 'zh' ? 'zh-CN' : 'en-US';
@@ -374,7 +390,7 @@
       return;
     }
     var l = nextLaunch;
-    var time = formatTime(l.net);
+    var time = formatTime(l.net, l);
     var html = ''
       + '<div class="hero-badge">' + esc(t('nextLaunch')) + '</div>'
       + '<div class="hero-name">' + esc(l.name || missionName(l)) + '</div>'
@@ -383,8 +399,13 @@
       +   '<span class="hm-item"><span class="hm-key">' + esc(t('launchProvider')) + ':</span><span class="hm-val">' + esc(agencyName(l)) + '</span></span>'
       +   '<span class="hm-item"><span class="hm-key">' + esc(t('launchSite')) + ':</span><span class="hm-val">' + esc(padName(l)) + '</span></span>'
       + '</div>'
-      + '<div class="hero-time">' + esc(t('localLabel') + ': ' + time.local) + ' <span class="ht-utc">· ' + esc(t('utcLabel') + ': ' + time.utc) + '</span></div>'
-      + '<div class="countdown" id="countdown" data-net="' + esc(l.net) + '"></div>';
+      + '<div class="hero-time">' + esc(t('localLabel') + ': ' + time.local) + ' <span class="ht-utc">· ' + esc(t('utcLabel') + ': ' + time.utc) + '</span></div>';
+    // TBD 发射时间未定，不显示倒计时
+    if (isTbdLaunch(l)) {
+      html += '<div class="cd-launched">' + esc(t('statusTbd')) + '</div>';
+    } else {
+      html += '<div class="countdown" id="countdown" data-net="' + esc(l.net) + '"></div>';
+    }
     if (usingFallback) {
       html += '<div class="fallback-notice">' + esc(t('fallbackNotice')) + '</div>';
     }
@@ -482,7 +503,7 @@
 
     elGrid.innerHTML = filtered.map(function (l) {
       var cat = statusCategory(l);
-      var time = formatShort(l.net);
+      var time = formatShort(l.net, l);
       return ''
         + '<div class="launch-card" data-id="' + esc(l.id) + '">'
         +   '<div class="lc-top">'
@@ -520,7 +541,7 @@
     if (!l) return;
 
     var cat = statusCategory(l);
-    var time = formatTime(l.net);
+    var time = formatTime(l.net, l);
     var cfg = (l.rocket && l.rocket.configuration) || {};
     var mission = l.mission || {};
     var pad = l.pad || {};
