@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Forge — QR Code Generator</title>
+    <meta name="description" content="Generate and customize QR codes for text, URLs, WiFi, email, and phone. Real-time preview, color options, and PNG download." />
+    <meta property="og:title" content="QR Forge" />
+    <meta property="og:description" content="Generate and customize QR codes for text, URLs, WiFi, email, and phone." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://openkee.github.io/qr-forge/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f8f9fa" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔳</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow" data-ok-i18n="eyebrow">QR tool</p>
+          <h1 data-ok-i18n="title">QR Forge</h1>
+          <p class="lead" data-ok-i18n="lead">Generate and customize QR codes for text, URLs, WiFi, email, and phone — with live preview and PNG download.</p>
+        </div>
+        <div class="header-right">
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <!-- 左侧控制面板 -->
+        <div class="control-panel">
+          <!-- 类型选择 tabs -->
+          <div class="field-group">
+            <span class="field-label" data-ok-i18n="typeLabel">Content type</span>
+            <div class="type-tabs" id="typeTabs" role="tablist" aria-label="QR content type">
+              <button class="type-tab active" data-type="text" type="button" role="tab" aria-selected="true" data-ok-i18n="typeText">Text</button>
+              <button class="type-tab" data-type="url" type="button" role="tab" aria-selected="false" data-ok-i18n="typeUrl">URL</button>
+              <button class="type-tab" data-type="wifi" type="button" role="tab" aria-selected="false" data-ok-i18n="typeWifi">WiFi</button>
+              <button class="type-tab" data-type="email" type="button" role="tab" aria-selected="false" data-ok-i18n="typeEmail">Email</button>
+              <button class="type-tab" data-type="phone" type="button" role="tab" aria-selected="false" data-ok-i18n="typePhone">Phone</button>
+            </div>
+          </div>
+
+          <!-- 动态输入区 -->
+          <div id="inputArea" class="input-area" aria-live="polite"></div>
+
+          <!-- 自定义选项 -->
+          <div class="field-group">
+            <label class="field-label" for="sizeSelect" data-ok-i18n="size">Size</label>
+            <select id="sizeSelect" class="text-input" aria-label="QR size">
+              <option value="128">128 px</option>
+              <option value="256" selected>256 px</option>
+              <option value="512">512 px</option>
+              <option value="1024">1024 px</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="fgColor" data-ok-i18n="foreground">Foreground</label>
+              <div class="color-input">
+                <input type="color" id="fgColor" value="#1a1a2e" aria-label="Foreground color" />
+                <span class="color-value" id="fgColorValue">#1a1a2e</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="bgColor" data-ok-i18n="background">Background</label>
+              <div class="color-input">
+                <input type="color" id="bgColor" value="#ffffff" aria-label="Background color" />
+                <span class="color-value" id="bgColorValue">#ffffff</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="eccSelect" data-ok-i18n="ecc">Error correction</label>
+              <select id="eccSelect" class="text-input" aria-label="Error correction level">
+                <option value="L">L — 7%</option>
+                <option value="M" selected>M — 15%</option>
+                <option value="Q">Q — 25%</option>
+                <option value="H">H — 30%</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="marginRange" data-ok-i18n="margin">Margin</label>
+              <div class="range-input">
+                <input type="range" id="marginRange" min="1" max="10" value="4" aria-label="Quiet zone margin" />
+                <span class="range-value" id="marginValue">4</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="generateBtn" class="ok-btn-primary generate-btn" type="button" data-ok-i18n="generate">Generate</button>
+        </div>
+
+        <!-- 右侧预览区 -->
+        <div class="preview-panel">
+          <div class="preview-card" id="previewCard">
+            <div class="preview-empty" id="previewEmpty" data-ok-i18n="previewEmpty">Enter content to generate a QR code</div>
+            <img id="qrImage" alt="QR code preview" class="qr-image" />
+            <div class="preview-loading" id="previewLoading">
+              <span class="spinner"></span>
+              <span data-ok-i18n="generating">Generating…</span>
+            </div>
+            <div class="preview-error" id="previewError" data-ok-i18n="generateError">Failed to generate QR code.</div>
+          </div>
+
+          <button id="downloadBtn" class="ok-btn-primary download-btn" type="button" data-ok-i18n="download" disabled>Download PNG</button>
+
+          <!-- 历史 -->
+          <div class="history-section">
+            <div class="section-head">
+              <h2 data-ok-i18n="history">History</h2>
+              <button id="clearHistoryBtn" class="link-btn" type="button" data-ok-i18n="clearHistory" aria-label="Clear history">Clear</button>
+            </div>
+            <div id="historyList" class="history-list" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+  </footer>
+
+  </body>
+</html>
