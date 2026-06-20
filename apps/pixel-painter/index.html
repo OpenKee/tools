@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel Painter — 像素画板</title>
+    <meta name="description" content="A tiny in-browser pixel art studio. Draw, fill, mirror and export PNG — all local, no uploads." />
+    <meta name="theme-color" content="#f7f7fa" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 顶部栏：返回链接 + 标题 + 语言切换 -->
+    <header class="ok-topbar">
+      <a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a>
+      <h1 class="topbar-title" data-ok-i18n="title">Pixel Painter</h1>
+      <button class="ok-lang-toggle" id="langBtn" type="button">中</button>
+    </header>
+
+    <main class="shell">
+      <!-- 简介 -->
+      <section class="intro">
+        <p class="eyebrow" data-ok-i18n="eyebrow">Pixel art studio</p>
+        <p class="lead" data-ok-i18n="lead">A tiny browser canvas for pixel art. Pick a tool, choose a color, and start drawing — everything stays on your device.</p>
+      </section>
+
+      <!-- 工作区：左侧控件 / 中间画布 / 右侧调色板 -->
+      <div class="workspace">
+        <!-- 左侧控件 -->
+        <aside class="side side-left">
+          <!-- 工具 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="tools">Tools</h2>
+            <div class="tool-grid" id="toolGrid">
+              <button class="tool-btn active" data-tool="brush" type="button">
+                <span class="ico">🖌️</span><span data-ok-i18n="toolBrush">Brush</span>
+              </button>
+              <button class="tool-btn" data-tool="eraser" type="button">
+                <span class="ico">🧽</span><span data-ok-i18n="toolEraser">Eraser</span>
+              </button>
+              <button class="tool-btn" data-tool="fill" type="button">
+                <span class="ico">🪣</span><span data-ok-i18n="toolFill">Fill</span>
+              </button>
+              <button class="tool-btn" data-tool="eyedropper" type="button">
+                <span class="ico">💧</span><span data-ok-i18n="toolEyedropper">Eyedropper</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- 画布尺寸 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="sizeLabel">Canvas size</h2>
+            <div class="size-grid" id="sizeGrid">
+              <button class="size-btn" data-size="8" type="button">8</button>
+              <button class="size-btn active" data-size="16" type="button">16</button>
+              <button class="size-btn" data-size="24" type="button">24</button>
+              <button class="size-btn" data-size="32" type="button">32</button>
+            </div>
+          </section>
+
+          <!-- 镜像绘制 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="mirrorLabel">Mirror</h2>
+            <div class="mirror-grid" id="mirrorGrid">
+              <button class="mirror-btn active" data-mirror="none" type="button" data-ok-i18n="mirrorNone">None</button>
+              <button class="mirror-btn" data-mirror="h" type="button" data-ok-i18n="mirrorH">Horizontal</button>
+              <button class="mirror-btn" data-mirror="v" type="button" data-ok-i18n="mirrorV">Vertical</button>
+              <button class="mirror-btn" data-mirror="both" type="button" data-ok-i18n="mirrorBoth">Both</button>
+            </div>
+          </section>
+
+          <!-- 操作 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="actions">Actions</h2>
+            <div class="action-grid">
+              <button class="action-btn" id="undoBtn" type="button">
+                <span class="ico">↩️</span><span data-ok-i18n="undo">Undo</span>
+              </button>
+              <button class="action-btn" id="redoBtn" type="button">
+                <span class="ico">↪️</span><span data-ok-i18n="redo">Redo</span>
+              </button>
+              <button class="action-btn" id="gridBtn" type="button">
+                <span class="ico">▦</span><span data-ok-i18n="grid">Grid</span>
+              </button>
+              <button class="action-btn danger" id="clearBtn" type="button">
+                <span class="ico">🗑️</span><span data-ok-i18n="clear">Clear</span>
+              </button>
+            </div>
+            <div class="export-row">
+              <label class="export-label" for="exportScale" data-ok-i18n="exportSize">Export scale</label>
+              <select id="exportScale" class="select">
+                <option value="1">1×</option>
+                <option value="8">8×</option>
+                <option value="16" selected>16×</option>
+                <option value="24">24×</option>
+              </select>
+              <button class="action-btn primary" id="exportBtn" type="button">
+                <span class="ico">💾</span><span data-ok-i18n="export">Export PNG</span>
+              </button>
+            </div>
+          </section>
+        </aside>
+
+        <!-- 中间画布 -->
+        <section class="canvas-area">
+          <div class="canvas-wrap">
+            <canvas id="board" width="384" height="384"></canvas>
+          </div>
+          <p class="hint" data-ok-i18n="hint">Click and drag to draw.</p>
+          <p class="shortcuts" data-ok-i18n="shortcuts">Shortcuts: Ctrl+Z undo · Ctrl+Y redo · B/E/F/I tools · G grid</p>
+        </section>
+
+        <!-- 右侧调色板 -->
+        <aside class="side side-right">
+          <!-- 当前颜色 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="currentLabel">Current</h2>
+            <div class="current-color">
+              <span class="swatch big" id="currentSwatch"></span>
+              <span class="current-hex" id="currentHex">#ec4899</span>
+            </div>
+          </section>
+
+          <!-- 调色板 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="paletteLabel">Palette</h2>
+            <div class="palette" id="palette"></div>
+            <div class="custom-row">
+              <label class="custom-label" for="customColor" data-ok-i18n="customColor">Custom color</label>
+              <input type="color" id="customColor" class="color-input" value="#ec4899" />
+            </div>
+          </section>
+
+          <!-- 最近使用 -->
+          <section class="panel">
+            <h2 class="panel-title" data-ok-i18n="recentLabel">Recent</h2>
+            <div class="recent" id="recent"></div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
