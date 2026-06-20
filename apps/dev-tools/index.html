@@ -1,358 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Dev Tools — CSS, JSON, SQL & Encoding Utilities</title>
-<meta name="description" content="Browser-based developer tools: CSS/HTML compressor, JSON/SQL formatter, Base64/URL encoder, hash generator, JWT decoder, regex tester, diff checker, and more." />
-<meta property="og:title" content="Dev Tools" />
-<meta property="og:description" content="14 browser-based developer utilities: CSS, JSON, SQL, encoding, hashing, and more." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://openkee.github.io/dev-tools/" />
-<meta name="twitter:card" content="summary" />
-<meta name="theme-color" content="#0a0a0a"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../../shared.css"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0a0a;--sf:#111;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.15);--tx:#e5e5e5;--mt:#666;--gn:#22c55e;--rd:#ef4444;--bl:#3b82f6;--yl:#eab308;--mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif;
-/* 共享组件主题映射 */
---ok-bg:var(--bg);--ok-panel:var(--sf);--ok-line:var(--bd);--ok-text:var(--tx);--ok-muted:var(--mt);--ok-accent:var(--bl);--ok-footer-line:var(--bd);--ok-footer-text:var(--mt);--ok-footer-link:var(--bl);--ok-topbar-line:var(--bd);color-scheme:dark}
-body{font-family:var(--sans);color:var(--tx);background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
-.nav{padding:.8rem 1.5rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;border-bottom:1px solid var(--bd);background:var(--sf)}
-.nav b{font-weight:700;font-size:1rem;letter-spacing:-.02em}
-.nav .sep{color:var(--mt)}
-.nav .r{margin-left:auto}
-.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-bottom:1px solid var(--bd)}
-.stat{background:var(--sf);padding:.6rem .8rem;text-align:center}
-.stat .v{font-size:1.2rem;font-weight:800;font-family:var(--mono)}
-.stat .l{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem}
-.stat .v.gn{color:var(--gn)}
-.app-layout{display:flex;flex:1;overflow:hidden}
-.sidebar{width:170px;min-width:170px;background:var(--sf);border-right:1px solid var(--bd);padding:.5rem;overflow-y:auto;flex-shrink:0}
-.sidebar-group{margin-bottom:.5rem}
-.sidebar-label{font-size:.6rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:.3rem .5rem .15rem}
-.sidebar .tool-tab{width:100%;text-align:left;background:0;border:none;color:var(--mt);font:inherit;font-size:.75rem;padding:.35rem .6rem;border-radius:6px;cursor:pointer;transition:all .15s;display:block}
-.sidebar .tool-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
-.sidebar .tool-tab.on{background:var(--bl);color:#fff}
-.tool-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.panel{display:flex;flex-direction:column;overflow:hidden;flex:1;position:relative;min-height:0}
-.panel-header{padding:.5rem .8rem;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0}
-.panel-header .actions{display:flex;gap:.3rem}
-.panel-header button{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.65rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s}
-.panel-header button:hover{border-color:var(--bd2);color:var(--tx)}
-textarea{flex:1;width:100%;resize:none;background:var(--bg);color:var(--tx);border:none;padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7;outline:none;tab-size:2}
-textarea::placeholder{color:var(--mt)}
-.divider{background:var(--bd);display:flex;align-items:center;justify-content:center;width:50px;flex-shrink:0}
-.divider svg{width:16px;height:16px;stroke:var(--mt);fill:none;stroke-width:2}
-.css-main{display:grid;grid-template-columns:1fr 50px 1fr;height:100%}
-.actions-bar{padding:.6rem 1.5rem;background:var(--sf);border-top:1px solid var(--bd);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;flex-shrink:0}
-.btn{height:2rem;padding:0 1rem;font:inherit;font-size:.75rem;font-weight:600;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem}
-.btn:hover{background:rgba(255,255,255,.06);border-color:var(--bd2)}
-.btn.p{background:var(--bl);border-color:var(--bl);color:#fff}
-.btn.p:hover{background:#2563eb}
-.btn.d{color:var(--rd);border-color:rgba(239,68,68,.3)}
-.btn.d:hover{background:rgba(239,68,68,.1)}
-.options{margin-left:auto;display:flex;gap:.5rem;align-items:center;font-size:.7rem;color:var(--mt)}
-.options label{display:flex;align-items:center;gap:.25rem;cursor:pointer;user-select:none}
-.options input[type=checkbox]{accent-color:var(--gn);width:14px;height:14px}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bl);color:#fff;padding:.5rem 1.2rem;border-radius:8px;font-size:.78rem;font-weight:600;transition:transform .3s ease;z-index:100}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.drop-zone{position:absolute;inset:0;display:none !important;align-items:center;justify-content:center;background:rgba(10,10,10,.9);border:2px dashed var(--bl);z-index:10;font-size:1rem;color:var(--bl);font-weight:600}
-.drop-zone.active{display:flex !important}
-.json-panel,.html-panel,.sql-panel{flex:1;overflow:hidden}
-.md-panel{flex:1;overflow:hidden}
-.encode-panel{flex:1;overflow:hidden}
-.encode-grid{display:grid;grid-template-columns:1fr 140px 1fr;height:100%}
-.enc-section{display:flex;flex-direction:column;overflow:hidden}
-.enc-btns{display:flex;flex-direction:column;gap:.35rem;padding:.8rem .4rem;justify-content:center;background:var(--sf);border-left:1px solid var(--bd);border-right:1px solid var(--bd)}
-.enc-btn{background:0;border:1px solid var(--bd);color:var(--mt);font:inherit;font-size:.68rem;font-weight:500;padding:.35rem .4rem;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.enc-btn:hover{border-color:var(--bd2);color:var(--tx);background:rgba(255,255,255,.04)}
-.md-grid{display:grid;grid-template-columns:1fr 50px 1fr;height:100%}
-.md-preview{flex:1;overflow-y:auto;padding:.8rem;font-size:.85rem;line-height:1.7}
-.md-preview h1{font-size:1.4rem;font-weight:800;margin:.8rem 0 .4rem;border-bottom:1px solid var(--bd);padding-bottom:.2rem}
-.md-preview h2{font-size:1.15rem;font-weight:700;margin:.7rem 0 .3rem}
-.md-preview h3{font-size:1rem;font-weight:600;margin:.5rem 0 .2rem}
-.md-preview p{margin:.4rem 0}
-.md-preview code{background:rgba(255,255,255,.08);padding:.1rem .3rem;border-radius:3px;font-family:var(--mono);font-size:.82em}
-.md-preview pre{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:6px;padding:.7rem;overflow-x:auto;margin:.4rem 0}
-.md-preview pre code{background:0;padding:0}
-.md-preview blockquote{border-left:3px solid var(--bl);padding-left:.7rem;color:var(--mt);margin:.4rem 0}
-.md-preview ul,.md-preview ol{padding-left:1.3rem;margin:.4rem 0}
-.md-preview li{margin:.15rem 0}
-.md-preview a{color:var(--bl)}
-.md-preview strong{font-weight:700}
-.md-preview em{font-style:italic}
-.md-preview hr{border:none;border-top:1px solid var(--bd);margin:.8rem 0}
-.md-preview table{border-collapse:collapse;width:100%;margin:.4rem 0}
-.md-preview th,.md-preview td{border:1px solid var(--bd);padding:.3rem .5rem;text-align:left;font-size:.82rem}
-.md-preview th{background:rgba(255,255,255,.05);font-weight:600}
-.hash-panel,.jwt-panel,.regex-panel,.diff-panel,.lorem-panel,.uuid-panel,.ts-panel,.color-panel{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.hash-wrap,.uuid-wrap,.lorem-wrap,.color-wrap,.ts-wrap,.regex-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:.8rem;gap:.4rem}
-.hash-results,.jwt-output{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
-.hash-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .7rem;border-bottom:1px solid var(--bd)}
-.hash-label{font-size:.7rem;font-weight:600;color:var(--mt);min-width:60px}
-.hash-val{flex:1;font-family:var(--mono);font-size:.78rem;word-break:break-all}
-.jwt-sections{display:flex;flex-direction:column;flex:1;overflow-y:auto}
-.jwt-section{padding:.5rem .8rem;border-bottom:1px solid var(--bd)}
-.jwt-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);font-weight:600;margin-bottom:.2rem}
-.jwt-pre{font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;word-break:break-all}
-.regex-row{display:flex;gap:.4rem}
-.regex-input{flex:1;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.45rem .7rem;border-radius:6px;outline:none;font-family:var(--mono)}
-.regex-input:focus{border-color:var(--bl)}
-.regex-flags{width:55px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font:inherit;font-size:.82rem;padding:.45rem;border-radius:6px;outline:none;font-family:var(--mono);text-align:center}
-.regex-flags:focus{border-color:var(--bl)}
-.regex-results{flex:1;overflow-y:auto}
-.diff-grid{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0}
-.diff-grid .panel{overflow:hidden}
-.diff-grid textarea{min-height:0}
-.diff-result{flex:1;overflow-y:auto;border-top:1px solid var(--bd)}
-.uuid-opts,.lorem-opts{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem}
-.ts-section{margin-bottom:.8rem}
-.ts-row{display:flex;gap:.4rem;margin-top:.2rem}
-.color-picker-row{display:flex;gap:.6rem;align-items:center;margin-bottom:.8rem}
-.color-values{display:flex;flex-direction:column;gap:0}
-.color-preview{width:100%;height:70px;border-radius:8px;margin-top:.8rem;border:1px solid var(--bd)}
-.diff-add{background:rgba(34,197,94,.12);color:var(--gn)}
-.diff-del{background:rgba(239,68,68,.12);color:var(--rd)}
-@media(max-width:768px){.sidebar{width:140px;min-width:140px}.stats-bar{grid-template-columns:repeat(2,1fr)}.options{margin-left:0;width:100%}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Tools — CSS, JSON, SQL & Encoding Utilities</title>
+  <meta name="description" content="Browser-based developer tools: CSS/HTML compressor, JSON/SQL formatter, Base64/URL encoder, hash generator, JWT decoder, regex tester, diff checker, and more." />
+  <meta property="og:title" content="Dev Tools" />
+  <meta property="og:description" content="17 browser-based developer utilities: CSS, JSON, SQL, encoding, hashing, and more." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://openkee.github.io/dev-tools/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../shared.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="nav"><a href="../../index.html" class="ok-topbar-link" style="color:var(--mt);margin-right:0.5rem;font-size:0.75rem">← Tools</a><b>openkee</b><span class="sep">/</span>dev-tools<button class="btn" id="langToggle" type="button" style="height:1.8rem;padding:0 .6rem;font-size:.72rem;margin-left:auto">中文</button></div>
-<div class="app-layout">
-<div class="sidebar" id="sidebar">
-<div class="sidebar-group"><div class="sidebar-label">Code</div>
-<button class="tool-tab on" data-tool="css">CSS Compressor</button>
-<button class="tool-tab" data-tool="html">HTML Compressor</button>
-<button class="tool-tab" data-tool="json">JSON Formatter</button>
-<button class="tool-tab" data-tool="sql">SQL Formatter</button>
-</div>
-<div class="sidebar-group"><div class="sidebar-label">Encoding</div>
-<button class="tool-tab" data-tool="encode">Encode / Decode</button>
-<button class="tool-tab" data-tool="hash">Hash Generator</button>
-<button class="tool-tab" data-tool="jwt">JWT Decoder</button>
-</div>
-<div class="sidebar-group"><div class="sidebar-label">Text</div>
-<button class="tool-tab" data-tool="md">Markdown Preview</button>
-<button class="tool-tab" data-tool="regex">Regex Tester</button>
-<button class="tool-tab" data-tool="diff">Diff Checker</button>
-<button class="tool-tab" data-tool="lorem">Lorem Ipsum</button>
-</div>
-<div class="sidebar-group"><div class="sidebar-label">Utility</div>
-<button class="tool-tab" data-tool="uuid">UUID Generator</button>
-<button class="tool-tab" data-tool="timestamp">Timestamp</button>
-<button class="tool-tab" data-tool="color">Color Tools</button>
-</div>
-</div>
-<div class="tool-area">
-<div class="stats-bar" id="stats">
-<div class="stat"><div class="v" id="s-orig">0 B</div><div class="l">Original</div></div>
-<div class="stat"><div class="v" id="s-min">0 B</div><div class="l">Minified</div></div>
-<div class="stat"><div class="v gn" id="s-save">0%</div><div class="l">Saved</div></div>
-<div class="stat"><div class="v" id="s-time">0ms</div><div class="l">Time</div></div>
-</div>
-<!-- CSS Tool -->
-<div class="css-main" id="panel-css">
-<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="cssSample()">Sample</button><button onclick="clearEl('cssIn')">Clear</button></div></div><textarea id="cssIn" placeholder="Paste CSS..." spellcheck="false"></textarea><div class="drop-zone" id="dropZone">Drop .css file</div></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('cssOut')">Copy</button></div></div><textarea id="cssOut" readonly></textarea></div>
-</div>
-<!-- HTML Tool -->
-<div id="panel-html" style="display:none" class="css-main">
-<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="htmlSample()">Sample</button></div></div><textarea id="htmlIn" placeholder="Paste HTML..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span>Minified</span><div class="actions"><button onclick="copyEl('htmlOut')">Copy</button></div></div><textarea id="htmlOut" readonly></textarea></div>
-</div>
-<!-- JSON Tool -->
-<div id="panel-json" style="display:none" class="css-main">
-<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="jsonSample()">Sample</button></div></div><textarea id="jsonIn" placeholder="Paste JSON..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('jsonOut')">Copy</button></div></div><textarea id="jsonOut" readonly></textarea></div>
-</div>
-<!-- SQL Tool -->
-<div id="panel-sql" style="display:none" class="css-main">
-<div class="panel" style="position:relative"><div class="panel-header"><span>Input</span><div class="actions"><button onclick="sqlSample()">Sample</button></div></div><textarea id="sqlIn" placeholder="Paste SQL..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span>Formatted</span><div class="actions"><button onclick="copyEl('sqlOut')">Copy</button></div></div><textarea id="sqlOut" readonly></textarea></div>
-</div>
-<!-- Encode Tool -->
-<div id="panel-encode" style="display:none" class="encode-grid">
-<div class="enc-section"><div class="panel-header"><span>Input</span></div><textarea id="encIn" placeholder="Text to encode/decode..." spellcheck="false"></textarea></div>
-<div class="enc-btns">
-<button class="enc-btn" onclick="encOut(btoa(unescape(encodeURIComponent(encIn.value))))">Base64 →</button>
-<button class="enc-btn" onclick="try{encOut(decodeURIComponent(escape(atob(encIn.value))))}catch(e){encOut('Error')}">← Base64</button>
-<button class="enc-btn" onclick="encOut(encodeURIComponent(encIn.value))">URL →</button>
-<button class="enc-btn" onclick="try{encOut(decodeURIComponent(encIn.value))}catch(e){encOut('Error')}">← URL</button>
-<button class="enc-btn" onclick="encOut(Array.from(encIn.value).map(c=>'\\\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join(''))">Unicode →</button>
-<button class="enc-btn" onclick="try{encOut(encIn.value.replace(/\\\\u([0-9a-fA-F]{4})/g,(_,h)=>String.fromCharCode(parseInt(h,16))))}catch(e){encOut('Error')}">← Unicode</button>
-</div>
-<div class="enc-section"><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEl('encOutEl')">Copy</button></div></div><textarea id="encOutEl" readonly></textarea></div>
-</div>
-<!-- Hash Tool -->
-<div id="panel-hash" style="display:none"><div class="hash-wrap"><div class="panel-header"><span>Input</span></div><textarea id="hashIn" placeholder="Text to hash..." spellcheck="false"></textarea><div class="hash-results"><div class="panel-header"><span>Results</span></div><div class="hash-item"><div class="hash-label">SHA-1</div><div class="hash-val" id="h-sha1">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">SHA-256</div><div class="hash-val" id="h-sha256">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">SHA-512</div><div class="hash-val" id="h-sha512">—</div><button class="enc-btn" onclick="copyText(this.previousElementSibling.textContent)">Copy</button></div></div></div></div>
-<!-- JWT Tool -->
-<div id="panel-jwt" style="display:none"><div class="panel-header"><span>JWT Token</span></div><textarea id="jwtIn" placeholder="Paste JWT..." spellcheck="false" style="flex:0;height:120px"></textarea><div class="jwt-output"><div class="panel-header"><span>Decoded</span><div class="actions"><button onclick="copyText(jwtPayload.textContent)">Copy</button></div></div><div class="jwt-sections"><div class="jwt-section"><div class="jwt-label">Header</div><pre id="jwtHeader" class="jwt-pre">—</pre></div><div class="jwt-section"><div class="jwt-label">Payload</div><pre id="jwtPayload" class="jwt-pre">—</pre></div><div class="jwt-section"><div class="jwt-label">Signature</div><div id="jwtSig" class="jwt-pre" style="color:var(--mt)">—</div></div></div></div></div>
-<!-- MD Tool -->
-<div id="panel-md" style="display:none" class="md-grid">
-<div class="panel" style="position:relative"><div class="panel-header"><span>Markdown</span><div class="actions"><button onclick="mdSample()">Sample</button></div></div><textarea id="mdIn" placeholder="Write Markdown..." spellcheck="false"></textarea></div>
-<div class="divider"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
-<div class="panel"><div class="panel-header"><span>Preview</span></div><div id="mdPrev" class="md-preview"></div></div>
-</div>
-<!-- Regex Tool -->
-<div id="panel-regex" style="display:none"><div class="regex-wrap"><div class="regex-row"><input id="rxPat" placeholder="Pattern (e.g. \\d+)" class="regex-input"/><input id="rxFlg" placeholder="Flags" class="regex-flags" value="g"/></div><div class="panel-header"><span>Test String</span></div><textarea id="rxIn" placeholder="Test string..." spellcheck="false"></textarea><div class="regex-results"><div class="panel-header"><span>Matches</span></div><div id="rxMatch" style="padding:.8rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">—</div></div></div></div>
-<!-- Diff Tool -->
-<div id="panel-diff" style="display:none"><div class="diff-grid"><div class="panel" style="position:relative"><div class="panel-header"><span>Text A</span></div><textarea id="diffA" placeholder="Original..." style="flex:1;min-height:0"></textarea></div><div class="panel" style="position:relative"><div class="panel-header"><span>Text B</span></div><textarea id="diffB" placeholder="Modified..." style="flex:1;min-height:0"></textarea></div></div><div class="diff-result"><div class="panel-header"><span>Diff</span><div class="actions"><button onclick="runDiff()">Compare</button></div></div><div id="diffOut" style="padding:.8rem;font-family:var(--mono);font-size:.8rem;line-height:1.8;overflow-y:auto;flex:1">—</div></div></div>
-<!-- Lorem Tool -->
-<div id="panel-lorem" style="display:none"><div class="lorem-wrap"><div class="lorem-opts"><button class="enc-btn" onclick="genLorem('p',1)">1 Para</button><button class="enc-btn" onclick="genLorem('p',3)">3 Paras</button><button class="enc-btn" onclick="genLorem('p',5)">5 Paras</button><button class="enc-btn" onclick="genLorem('s',10)">10 Sent</button><button class="enc-btn" onclick="genLorem('w',50)">50 Words</button></div><div class="panel-header"><span>Output</span><div class="actions"><button onclick="copyEl('loremOut')">Copy</button></div></div><textarea id="loremOut" readonly placeholder="Click a button..." style="flex:1;min-height:0"></textarea></div></div>
-<!-- UUID Tool -->
-<div id="panel-uuid" style="display:none"><div class="uuid-wrap"><div class="uuid-opts"><button class="btn p" onclick="genUuid(5)">5</button><button class="btn p" onclick="genUuid(10)">10</button><button class="btn p" onclick="genUuid(20)">20</button><label style="font-size:.75rem;color:var(--mt);display:flex;align-items:center;gap:.25rem"><input type="checkbox" id="uuidUp"> Upper</label></div><div class="panel-header"><span>UUIDs</span><div class="actions"><button onclick="copyEl('uuidOut')">Copy</button></div></div><textarea id="uuidOut" readonly placeholder="Click generate..." style="flex:1;min-height:0"></textarea></div></div>
-<!-- Timestamp Tool -->
-<div id="panel-timestamp" style="display:none"><div class="ts-wrap"><div class="ts-section"><div class="panel-header"><span>Timestamp → Date</span></div><div class="ts-row"><input id="tsIn" placeholder="Unix timestamp" class="regex-input"/><button class="enc-btn" onclick="ts2date()" aria-label="Timestamp to date">→</button></div><div id="tsDateOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Date → Timestamp</span></div><div class="ts-row"><input id="dateIn" type="datetime-local" class="regex-input"/><button class="enc-btn" onclick="date2ts()" aria-label="Date to timestamp">→</button></div><div id="tsOut" style="padding:.6rem;font-family:var(--mono);font-size:.85rem;color:var(--mt)">—</div></div><div class="ts-section"><div class="panel-header"><span>Now</span><div class="actions"><button onclick="setNow()">Set</button></div></div><div id="tsNow" style="padding:.6rem;font-family:var(--mono);font-size:.85rem">—</div></div></div></div>
-<!-- Color Tool -->
-<div id="panel-color" style="display:none"><div class="color-wrap"><div class="color-picker-row"><input type="color" id="colPick" value="#3b82f6" style="width:60px;height:40px;border:none;cursor:pointer;background:transparent"/><input id="colHex" placeholder="#3b82f6" class="regex-input" value="#3b82f6" style="font-family:var(--mono);max-width:200px"/></div><div class="color-values"><div class="hash-item"><div class="hash-label">HEX</div><div class="hash-val" id="cvHex">—</div><button class="enc-btn" onclick="copyText(cvHex.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">RGB</div><div class="hash-val" id="cvRgb">—</div><button class="enc-btn" onclick="copyText(cvRgb.textContent)">Copy</button></div><div class="hash-item"><div class="hash-label">HSL</div><div class="hash-val" id="cvHsl">—</div><button class="enc-btn" onclick="copyText(cvHsl.textContent)">Copy</button></div></div><div class="color-preview" id="colPrev"></div></div></div>
-</div></div>
-<div class="actions-bar"><button class="btn p" onclick="doCompress()">🔧 Compress</button><button class="btn d" onclick="clearAll()">Clear All</button><div class="options"><label><input type="checkbox" id="optCom" checked> Comments</label><label><input type="checkbox" id="optWs" checked> Whitespace</label><label><input type="checkbox" id="optCol" checked> Colors</label><label><input type="checkbox" id="optZer" checked> Zeros</label></div></div>
-<div class="toast" id="toast"></div>
-<script src="../../shared.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-let timer;
-// Tool switching
-const panels=['css','html','json','sql','encode','hash','jwt','md','regex','diff','lorem','uuid','timestamp','color'];
-function switchTool(t){document.querySelectorAll('.tool-tab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('[data-tool="'+t+'"]').forEach(b=>b.classList.add('on'));panels.forEach(p=>{const el=$('panel-'+p);if(el){if(p===t){
-  if(el.classList.contains('css-main')||el.classList.contains('encode-grid')){
-    el.style.display='';
-  }else{
-    el.style.display='flex';el.style.flexDirection='column';
-  }
-  el.style.flex='1';el.style.overflow='hidden';
-}else{el.style.display='none'}}});const types={css:{o:'Original',m:'Minified',s:'Saved'},html:{o:'Original',m:'Minified',s:'Saved'},json:{o:'Original',m:'Formatted',s:'Lines'},sql:{o:'Original',m:'Formatted',s:'Lines'},encode:{o:'Input',m:'Output',s:'Length'},hash:{o:'Input',m:'—',s:'—'},jwt:{o:'Input',m:'Decoded',s:'—'},md:{o:'Chars',m:'Words',s:'Lines'},regex:{o:'Pattern',m:'Matches',s:'—'},diff:{o:'Text A',m:'Text B',s:'Lines'},lorem:{o:'—',m:'—',s:'—'},uuid:{o:'Count',m:'—',s:'—'},timestamp:{o:'—',m:'—',s:'—'},color:{o:'HEX',m:'RGB',s:'HSL'}};const cfg=types[t]||types.css;const labels=document.querySelectorAll('.stat .l');if(labels[0])labels[0].textContent=cfg.o;if(labels[1])labels[1].textContent=cfg.m;if(labels[2])labels[2].textContent=cfg.s}
-$('sidebar').addEventListener('click',e=>{const b=e.target.closest('.tool-tab');if(b)switchTool(b.dataset.tool)});
-// Helpers
-function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
-function copyEl(id){const v=$(id).value;if(!v)return;navigator.clipboard.writeText(v);showToast('Copied')}
-function copyText(t){if(!t||t==='—')return;navigator.clipboard.writeText(t);showToast('Copied')}
-function clearEl(id){$(id).value=''}
-function clearAll(){clearEl('cssIn');clearEl('cssOut');['s-orig','s-min','s-save','s-time'].forEach(id=>{$(id).textContent=id==='s-save'?'0%':id==='s-time'?'0ms':'0 B'})}
-function encOut(v){$('encOutEl').value=v}
-function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
-function fmtSz(b){return b<1024?b+' B':(b/1024).toFixed(1)+' KB'}
-// CSS Compressor
-function doCompress(){const v=$('cssIn').value;if(!v.trim())return;const t0=performance.now();let r=v;if($('optCom').checked)r=r.replace(/\/\*[\s\S]*?\*\//g,'');if($('optWs').checked){r=r.replace(/\s+/g,' ');r=r.replace(/\s*\{\s*/g,'{');r=r.replace(/\s*\}\s*/g,'}');r=r.replace(/\s*;\s*/g,';');r=r.replace(/\s*:\s*/g,':');r=r.replace(/\s*,\s*/g,',');r=r.replace(/;\}/g,'}');r=r.trim()}if($('optCol').checked){r=r.replace(/#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3/g,'#$1$2$3');r=r.replace(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g,(_,R,g,b)=>{R=parseInt(R);g=parseInt(g);b=parseInt(b);if(R>255||g>255||b>255)return _;const h='#'+[R,g,b].map(c=>c.toString(16).padStart(2,'0')).join('');return h[1]===h[2]&&h[3]===h[4]&&h[5]===h[6]?'#'+h[1]+h[3]+h[5]:h})}if($('optZer').checked){r=r.replace(/:0(px|em|rem|vh|vw|%|pt|pc|in|mm|cm|ex|ch|lh)/g,':0');r=r.replace(/ 0\.(\d+)/g,' .$1');r=r.replace(/:0\.(\d+)/g,':.$1')}const ms=(performance.now()-t0).toFixed(1);$('cssOut').value=r;const os=new Blob([v]).size,ns=new Blob([r]).size;$('s-orig').textContent=fmtSz(os);$('s-min').textContent=fmtSz(ns);$('s-save').textContent=os?((1-ns/os)*100).toFixed(1)+'%':'0%';$('s-time').textContent=ms+'ms'}
-$('cssIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(doCompress,400)});
-// Drag & drop
-const dz=$('dropZone');$('cssIn').parentElement.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('active')});$('cssIn').parentElement.addEventListener('dragleave',()=>dz.classList.remove('active'));$('cssIn').parentElement.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('active');const f=e.dataTransfer.files[0];if(f&&(f.type==='text/css'||f.name.endsWith('.css'))){const r=new FileReader();r.onload=()=>{$('cssIn').value=r.result;doCompress()};r.readAsText(f)}});
-// HTML Compressor
-function compressHtml(){const v=$('htmlIn').value;if(!v.trim())return;$('htmlOut').value=v.replace(/<!--[\s\S]*?-->/g,'').replace(/\s+/g,' ').replace(/>\s+</g,'><').replace(/\s+>/g,'>').replace(/<\s+/g,'<').trim()}
-$('htmlIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(compressHtml,400)});
-// JSON Formatter
-function formatJson(){const v=$('jsonIn').value;if(!v.trim())return;try{$('jsonOut').value=JSON.stringify(JSON.parse(v),null,2);$('jsonOut').style.color=''}catch(e){$('jsonOut').value='Error: '+e.message;$('jsonOut').style.color='var(--rd)'}}
-$('jsonIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(formatJson,400)});
-// SQL Formatter
-function formatSql(){const v=$('sqlIn').value;if(!v.trim())return;const kw=['SELECT','FROM','WHERE','AND','OR','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM'];let r=v.replace(/\s+/g,' ').trim();for(const k of kw.sort((a,b)=>b.length-a.length))r=r.replace(new RegExp('\\b'+k.replace(/ /g,'\\s+'),'gi'),'\n'+k);$('sqlOut').value=r.trim()}
-$('sqlIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(formatSql,400)});
-// MD Preview
-function renderMd(){const raw=$('mdIn').value;let h=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');h=h.replace(/`([^`]+)`/g,'<code>$1</code>');h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');h=h.replace(/\*(.+?)\*/g,'<em>$1</em>');h=h.replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank">$1</a>');h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');h=h.replace(/^---$/gm,'<hr>');h=h.replace(/^- (.+)$/gm,'<li>$1</li>');h=h.replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>');h=h.replace(/\n\n/g,'</p><p>');h='<p>'+h+'</p>';$('mdPrev').innerHTML=h}
-$('mdIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(renderMd,300)});
-// Hash
-function runHash(){const v=$('hashIn').value;if(!v)return;const enc=new TextEncoder().encode(v);['SHA-1','SHA-256','SHA-512'].forEach(async a=>{try{const buf=await crypto.subtle.digest(a,enc);const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');const el=$('h-'+a.toLowerCase().replace('-',''));if(el)el.textContent=hex}catch(e){}})}
-$('hashIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(runHash,400)});
-// JWT
-function decodeJwt(){const v=$('jwtIn').value.trim();if(!v)return;try{const p=v.split('.');if(p.length<2)throw new Error('Invalid');const h=JSON.parse(atob(p[0].replace(/-/g,'+').replace(/_/g,'/')));const pay=JSON.parse(atob(p[1].replace(/-/g,'+').replace(/_/g,'/')));$('jwtHeader').textContent=JSON.stringify(h,null,2);$('jwtHeader').style.color='';$('jwtPayload').textContent=JSON.stringify(pay,null,2);$('jwtPayload').style.color='';$('jwtSig').textContent=p[2]?p[2].substring(0,40)+'...':'(none)'}catch(e){$('jwtHeader').textContent='Error: '+e.message;$('jwtHeader').style.color='var(--rd)';$('jwtPayload').textContent='';$('jwtSig').textContent=''}}
-$('jwtIn').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(decodeJwt,400)});
-// Regex
-function testRegex(){const p=$('rxPat').value,f=$('rxFlg').value,t=$('rxIn').value,el=$('rxMatch');if(!p||!t){el.textContent='—';return}try{const re=new RegExp(p,f);const m=[...t.matchAll(re)];if(!m.length){el.textContent='No matches';return}el.innerHTML=m.map((x,i)=>'<div><span style="color:var(--bl);font-weight:600">#'+(i+1)+'</span> <span style="color:var(--gn)">'+escHtml(x[0])+'</span> <span style="color:var(--mt)">@'+x.index+'</span></div>').join('')}catch(e){el.textContent='Error: '+e.message}}
-['rxPat','rxFlg','rxIn'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(testRegex,300)}));
-// Diff
-function runDiff(){const a=$('diffA').value.split('\n'),b=$('diffB').value.split('\n'),out=[];const mx=Math.max(a.length,b.length);for(let i=0;i<mx;i++){if(a[i]===undefined)out.push('<div class="diff-add">+ '+escHtml(b[i])+'</div>');else if(b[i]===undefined)out.push('<div class="diff-del">- '+escHtml(a[i])+'</div>');else if(a[i]!==b[i])out.push('<div class="diff-del">- '+escHtml(a[i])+'</div><div class="diff-add">+ '+escHtml(b[i])+'</div>');else out.push('<div>  '+escHtml(a[i])+'</div>')}$('diffOut').innerHTML=out.join('')}
-// Lorem
-const _lorem='Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat'.split(' ');
-function genLorem(t,n){let r='';if(t==='p'){for(let i=0;i<n;i++){const s=(i*30)%_lorem.length;r+=_lorem.slice(s,s+40+Math.floor(Math.random()*20)).join(' ').replace(/[^a-zA-Z]*$/,'')+'.\n\n'}}else{for(let i=0;i<n;i++)r+=_lorem[i%_lorem.length]+' '}$('loremOut').value=r.trim()}
-// UUID
-function genUuid(n){const u=document.getElementById('uuidUp').checked;$('uuidOut').value=Array.from({length:n},()=>{const v=crypto.randomUUID();return u?v.toUpperCase():v}).join('\n')}
-// Timestamp
-function ts2date(){const v=$('tsIn').value.trim(),n=parseInt(v);if(!n){$('tsDateOut').textContent='Invalid';return}const d=new Date(v.length>10?n:n*1000);$('tsDateOut').innerHTML='ISO: '+d.toISOString()+'<br>Local: '+d.toLocaleString()}
-function date2ts(){const v=$('dateIn').value;if(!v)return;const d=new Date(v);$('tsOut').innerHTML='Seconds: '+Math.floor(d.getTime()/1000)+'<br>Ms: '+d.getTime()}
-function setNow(){const d=new Date();$('tsNow').innerHTML='ISO: '+d.toISOString()+'<br>Unix: '+Math.floor(d.getTime()/1000)}
-// Color
-function updColor(hex){hex=hex.replace(/[^#0-9a-fA-F]/g,'');if(!hex.startsWith('#'))hex='#'+hex;if(hex.length===4)hex='#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];if(hex.length!==7)return;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);$('cvHex').textContent=hex;$('cvRgb').textContent='rgb('+r+','+g+','+b+')';const rn=r/255,gn=g/255,bn=b/255,mx=Math.max(rn,gn,bn),mn=Math.min(rn,gn,bn),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===rn)h=((gn-bn)/d+(gn<bn?6:0))*60;else if(mx===gn)h=((bn-rn)/d+2)*60;else h=((rn-gn)/d+4)*60}$('cvHsl').textContent='hsl('+Math.round(h)+','+Math.round(s*100)+'%,'+Math.round(l*100)+'%)';$('colPrev').style.background=hex;$('colPick').value=hex}
-$('colPick').addEventListener('input',e=>{$('colHex').value=e.target.value;updColor(e.target.value)});
-$('colHex').addEventListener('input',e=>updColor(e.target.value));
-// i18n
-let lang=OK.lang;
-const i18n={
-en:{},
-zh:{
-// Sidebar
-'CSS Compressor':'CSS 压缩','HTML Compressor':'HTML 压缩','JSON Formatter':'JSON 格式化','SQL Formatter':'SQL 格式化',
-'Encode / Decode':'编码转换','Hash Generator':'哈希生成','JWT Decoder':'JWT 解码',
-'Markdown Preview':'Markdown 预览','Regex Tester':'正则测试','Diff Checker':'文本对比','Lorem Ipsum':'占位文本',
-'UUID Generator':'UUID 生成','Timestamp':'时间戳','Color Tools':'颜色工具',
-'Code':'代码','Encoding':'编码','Text':'文本','Utility':'工具',
-// Stats
-'Original':'原始','Minified':'压缩后','Formatted':'格式化','Saved':'节省','Lines':'行数','Time':'耗时',
-'Input':'输入','Output':'输出','Decoded':'解码','Chars':'字符','Words':'词数','Length':'长度',
-'Count':'数量','HEX':'HEX','RGB':'RGB','HSL':'HSL','Pattern':'模式','Matches':'匹配',
-// Buttons
-'Sample':'示例','Clear':'清空','Copy':'复制','Download':'下载',
-'Compress':'压缩','Clear All':'全部清空','Compare':'对比','Set':'设为',
-// Panel headers
-'Minified':'压缩结果','Formatted':'格式化','Preview':'预览','Results':'结果',
-'Decoded':'解码结果','Differences':'差异','UUIDs':'UUID 列表',
-// Labels
-'Input JSON':'输入 JSON','Input CSS':'输入 CSS','Input HTML':'输入 HTML','Input SQL':'输入 SQL',
-'Minified Output':'压缩结果','Formatted Output':'格式化结果',
-'Text A':'文本 A','Text B':'文本 B','Diff':'差异',
-'Header':'头部','Payload':'载荷','Signature':'签名',
-'Timestamp → Date':'时间戳 → 日期','Date → Timestamp':'日期 → 时间戳','Now':'当前时间',
-'Comments':'注释','Whitespace':'空白','Colors':'颜色','Zeros':'零值',
-// Placeholders
-'Paste CSS...':'粘贴 CSS...','Paste HTML...':'粘贴 HTML...','Paste JSON...':'粘贴 JSON...',
-'Paste SQL...':'粘贴 SQL...','Paste JWT...':'粘贴 JWT...',
-'Text to encode/decode...':'输入编码/解码文本...','Text to hash...':'输入要哈希的文本...',
-'Test string...':'输入测试文本...','Write Markdown...':'编写 Markdown...',
-'Original...':'原文...','Modified...':'修改后...',
-'Unix timestamp':'Unix 时间戳','Flags':'标志',
-'Pattern (e.g. \\d+)':'模式 (如 \\d+)',
-'Click a button...':'点击按钮生成...','Click generate...':'点击生成...',
-'Drop .css file':'拖放 .css 文件',
-// Encode buttons
-'Base64 →':'Base64 编码 →','← Base64':'← Base64 解码',
-'URL →':'URL 编码 →','← URL':'← URL 解码',
-'Unicode →':'Unicode 编码 →','← Unicode':'← Unicode 解码',
-// Lorem buttons
-'1 Para':'1 段落','3 Paras':'3 段落','5 Paras':'5 段落','10 Sent':'10 句子','50 Words':'50 词',
-// UUID
-' Upper':' 大写',
-// Hash labels
-'SHA-1':'SHA-1','SHA-256':'SHA-256','SHA-512':'SHA-512',
-// Color
-'HEX':'HEX','RGB':'RGB','HSL':'HSL',
-}};
-function applyLang(){
-lang=OK.lang;
-OK.applyI18n(i18n);
-var dict=i18n[lang]||{};
-if(lang==='en')return;
-document.querySelectorAll('.sidebar .tool-tab').forEach(function(b){var t=dict[b.textContent.trim()];if(t)b.textContent=t});
-document.querySelectorAll('.panel-header span,.sidebar-label,.stat .l,.jwt-label,.hash-label').forEach(function(el){var t=el.textContent.trim();if(dict[t])el.textContent=dict[t]});
-document.querySelectorAll('.panel-header button,.enc-btn,.btn').forEach(function(el){var t=el.textContent.trim();if(dict[t])el.textContent=t});
-document.querySelectorAll('textarea[placeholder],input[placeholder]').forEach(function(el){if(dict[el.placeholder])el.placeholder=dict[el.placeholder]});
-var ol=document.querySelectorAll('.options label');
-['Comments','Whitespace','Colors','Zeros'].forEach(function(k,i){if(ol[i]&&dict[k])ol[i].lastChild.textContent=' '+dict[k]});
-}
-// 语言切换按钮交由共享脚本 OK 接管（统一 localStorage 持久化与按钮文案）
-OK.initLangToggle(document.getElementById('langToggle'), i18n, applyLang);
-applyLang();
-// Samples
-function cssSample(){$('cssIn').value='body{margin:0;padding:0;font-family:sans-serif;background:#fff;color:#333}.container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}.header{background:linear-gradient(135deg,#aabbcc,#112233);padding:1rem;border-radius:8px}.btn-primary{display:inline-block;background:#3b82f6;color:#fff;padding:.5rem 1rem;border-radius:6px;border:0 solid transparent;font-weight:600}';doCompress()}
-function htmlSample(){$('htmlIn').value='<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>Hello</title>\n</head>\n<body>\n<h1>Hello</h1>\n<p>A <strong>sample</strong> page.</p>\n<!-- remove me -->\n<ul><li>A</li><li>B</li></ul>\n</body>\n</html>';compressHtml()}
-function jsonSample(){$('jsonIn').value=JSON.stringify({name:"OpenKee",tools:["Rate Board","Crypto Board"],stats:{total:14,active:true},config:{theme:"dark",features:{offline:false}}});formatJson()}
-function sqlSample(){$('sqlIn').value='SELECT u.id, u.name, COUNT(o.id) as orders FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.status = \'active\' AND u.created_at > \'2025-01-01\' GROUP BY u.id, u.name HAVING COUNT(o.id) > 5 ORDER BY orders DESC LIMIT 20;';formatSql()}
-function mdSample(){$('mdIn').value='# Dev Tools\n\nA collection of **browser-based** utilities.\n\n## Features\n\n- CSS Compressor\n- JSON Formatter\n- Encode / Decode\n\n### Why?\n\n> Every tool is a single HTML file.\n\n```js\nconst tool = "dev-tools";\n```\n\n---\n\n| Tool | Status |\n|------|--------|\n| CSS | ✅ |\n| JSON | ✅ |';renderMd()}
-updColor('#3b82f6');setNow();
-</script>
+  <!-- 顶部导航栏 -->
+  <header class="ok-topbar dev-topbar">
+    <a href="../../index.html" class="ok-topbar-link" data-ok-i18n="back">← Tools</a>
+    <span class="topbar-sep">/</span>
+    <strong class="topbar-title" data-ok-i18n="title">Dev Tools</strong>
+    <button class="ok-lang-toggle" id="langBtn" type="button">中</button>
+  </header>
+
+  <!-- 应用主体：侧边栏 + 主区域 -->
+  <div class="app">
+    <!-- 侧边栏：工具列表（JS 动态生成） -->
+    <aside class="sidebar" id="sidebar" aria-label="Tools navigation"></aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <!-- 统计栏：4 个指标，标签随工具变化 -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat"><div class="v" id="stat1">—</div><div class="l" id="statL1">Original</div></div>
+        <div class="stat"><div class="v" id="stat2">—</div><div class="l" id="statL2">Minified</div></div>
+        <div class="stat"><div class="v" id="stat3">—</div><div class="l" id="statL3">Saved</div></div>
+        <div class="stat"><div class="v" id="stat4">—</div><div class="l" id="statL4">Time</div></div>
+      </div>
+
+      <!-- 工具面板区 -->
+      <div class="panels" id="panels">
+
+        <!-- 1. CSS 压缩 -->
+        <section class="tool-panel" data-tool-panel="css">
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <div class="pane-body">
+                <textarea id="cssIn" data-ok-i18n-ph="ph.css" spellcheck="false"></textarea>
+                <div class="drop-zone" id="cssDropZone" data-ok-i18n="msg.dropCss">Drop .css file</div>
+              </div>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.minified">Minified</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="cssOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="cssOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. HTML 压缩 -->
+        <section class="tool-panel" data-tool-panel="html" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <textarea id="htmlIn" data-ok-i18n-ph="ph.html" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.minified">Minified</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="htmlOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="htmlOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. JSON 格式化 -->
+        <section class="tool-panel" data-tool-panel="json" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <textarea id="jsonIn" data-ok-i18n-ph="ph.json" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.formatted">Formatted</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="jsonOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="jsonOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. SQL 格式化 -->
+        <section class="tool-panel" data-tool-panel="sql" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <textarea id="sqlIn" data-ok-i18n-ph="ph.sql" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.formatted">Formatted</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="sqlOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="sqlOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. JSON → CSV -->
+        <section class="tool-panel" data-tool-panel="csv" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <textarea id="csvIn" data-ok-i18n-ph="ph.csv" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.csvOutput">CSV Output</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="csvOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="csvOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. 编码转换 -->
+        <section class="tool-panel" data-tool-panel="encode" hidden>
+          <div class="encode-grid">
+            <div class="pane pane-input">
+              <div class="pane-head"><span data-ok-i18n="label.input">Input</span></div>
+              <textarea id="encIn" data-ok-i18n-ph="ph.encode" spellcheck="false"></textarea>
+            </div>
+            <div class="encode-mid">
+              <button class="enc-btn" data-action="enc" data-mode="b64-enc" type="button">Base64 →</button>
+              <button class="enc-btn" data-action="enc" data-mode="b64-dec" type="button">← Base64</button>
+              <button class="enc-btn" data-action="enc" data-mode="url-enc" type="button">URL →</button>
+              <button class="enc-btn" data-action="enc" data-mode="url-dec" type="button">← URL</button>
+              <button class="enc-btn" data-action="enc" data-mode="uni-enc" type="button">Unicode →</button>
+              <button class="enc-btn" data-action="enc" data-mode="uni-dec" type="button">← Unicode</button>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.output">Output</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="encOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="encOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. 哈希生成 -->
+        <section class="tool-panel" data-tool-panel="hash" hidden>
+          <div class="single-pane">
+            <div class="pane-head"><span data-ok-i18n="label.input">Input</span></div>
+            <textarea id="hashIn" data-ok-i18n-ph="ph.hash" spellcheck="false"></textarea>
+            <div class="hash-results">
+              <div class="hash-item">
+                <span class="hash-label">SHA-1</span>
+                <code class="hash-val" id="hSha1">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="hSha1" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label">SHA-256</span>
+                <code class="hash-val" id="hSha256">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="hSha256" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label">SHA-512</span>
+                <code class="hash-val" id="hSha512">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="hSha512" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. JWT 解码 -->
+        <section class="tool-panel" data-tool-panel="jwt" hidden>
+          <div class="single-pane">
+            <div class="pane-head"><span data-ok-i18n="label.jwtToken">JWT Token</span></div>
+            <textarea id="jwtIn" data-ok-i18n-ph="ph.jwt" spellcheck="false" class="short-area"></textarea>
+            <div class="jwt-sections">
+              <div class="jwt-section">
+                <div class="jwt-label" data-ok-i18n="label.header">Header</div>
+                <pre class="jwt-pre" id="jwtHeader">—</pre>
+              </div>
+              <div class="jwt-section">
+                <div class="jwt-label" data-ok-i18n="label.payload">Payload</div>
+                <pre class="jwt-pre" id="jwtPayload">—</pre>
+              </div>
+              <div class="jwt-section">
+                <div class="jwt-label" data-ok-i18n="label.signature">Signature</div>
+                <div class="jwt-pre jwt-sig" id="jwtSig">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. URL 解析器 -->
+        <section class="tool-panel" data-tool-panel="url" hidden>
+          <div class="single-pane url-pane">
+            <div class="pane-head"><span data-ok-i18n="label.urlInput">URL</span></div>
+            <input id="urlIn" class="text-input" data-ok-i18n-ph="ph.url" type="text" spellcheck="false" />
+            <div class="url-parts" id="urlParts">
+              <div class="url-part"><span class="url-key" data-ok-i18n="label.protocol">Protocol</span><code id="urlProtocol">—</code></div>
+              <div class="url-part"><span class="url-key" data-ok-i18n="label.host">Host</span><code id="urlHost">—</code></div>
+              <div class="url-part"><span class="url-key" data-ok-i18n="label.path">Path</span><code id="urlPath">—</code></div>
+              <div class="url-part"><span class="url-key" data-ok-i18n="label.hash">Hash</span><code id="urlHash">—</code></div>
+            </div>
+            <div class="pane-head"><span data-ok-i18n="label.queryParams">Query Parameters</span></div>
+            <div class="query-table" id="queryTable"></div>
+            <div class="pane-head"><span data-ok-i18n="label.rebuilt">Rebuilt URL</span></div>
+            <code class="url-rebuilt" id="urlRebuilt">—</code>
+          </div>
+        </section>
+
+        <!-- 10. Markdown 预览 -->
+        <section class="tool-panel" data-tool-panel="md" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.markdown">Markdown</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="sample" type="button" data-ok-i18n="btn.sample">Sample</button>
+                </div>
+              </div>
+              <textarea id="mdIn" data-ok-i18n-ph="ph.md" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head"><span data-ok-i18n="label.preview">Preview</span></div>
+              <div id="mdPrev" class="md-preview"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. 正则测试 -->
+        <section class="tool-panel" data-tool-panel="regex" hidden>
+          <div class="single-pane">
+            <div class="regex-row">
+              <input id="rxPat" class="text-input mono-input" data-ok-i18n-ph="ph.pattern" type="text" spellcheck="false" />
+              <input id="rxFlg" class="text-input mono-input regex-flags" value="g" type="text" spellcheck="false" />
+            </div>
+            <div class="pane-head"><span data-ok-i18n="label.testString">Test String</span></div>
+            <textarea id="rxIn" data-ok-i18n-ph="ph.regex" spellcheck="false"></textarea>
+            <div class="pane-head"><span data-ok-i18n="label.matches">Matches</span></div>
+            <div id="rxMatch" class="regex-results">—</div>
+          </div>
+        </section>
+
+        <!-- 12. 文本对比 -->
+        <section class="tool-panel" data-tool-panel="diff" hidden>
+          <div class="diff-grid">
+            <div class="pane">
+              <div class="pane-head"><span data-ok-i18n="label.textA">Text A</span></div>
+              <textarea id="diffA" data-ok-i18n-ph="ph.diffA" spellcheck="false"></textarea>
+            </div>
+            <div class="pane">
+              <div class="pane-head"><span data-ok-i18n="label.textB">Text B</span></div>
+              <textarea id="diffB" data-ok-i18n-ph="ph.diffB" spellcheck="false"></textarea>
+            </div>
+          </div>
+          <div class="diff-output">
+            <div class="pane-head"><span data-ok-i18n="label.diff">Diff</span></div>
+            <div id="diffOut" class="diff-result">—</div>
+          </div>
+        </section>
+
+        <!-- 13. 字符串转义 -->
+        <section class="tool-panel" data-tool-panel="escape" hidden>
+          <div class="dual-grid">
+            <div class="pane pane-input">
+              <div class="pane-head">
+                <span data-ok-i18n="label.input">Input</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="clear-input" type="button" data-ok-i18n="btn.clear">Clear</button>
+                </div>
+              </div>
+              <textarea id="escIn" data-ok-i18n-ph="ph.escape" spellcheck="false"></textarea>
+            </div>
+            <div class="pane pane-output">
+              <div class="pane-head">
+                <span data-ok-i18n="label.output">Output</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="copy-output" data-target="escOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+                </div>
+              </div>
+              <textarea id="escOut" readonly></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. Lorem Ipsum -->
+        <section class="tool-panel" data-tool-panel="lorem" hidden>
+          <div class="single-pane">
+            <div class="pane-head">
+              <span data-ok-i18n="label.output">Output</span>
+              <div class="pane-actions">
+                <button class="mini-btn" data-action="copy-output" data-target="loremOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+            </div>
+            <textarea id="loremOut" readonly data-ok-i18n-ph="ph.lorem"></textarea>
+          </div>
+        </section>
+
+        <!-- 15. UUID 生成 -->
+        <section class="tool-panel" data-tool-panel="uuid" hidden>
+          <div class="single-pane">
+            <div class="pane-head">
+              <span data-ok-i18n="label.uuids">UUIDs</span>
+              <div class="pane-actions">
+                <button class="mini-btn" data-action="copy-output" data-target="uuidOut" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+            </div>
+            <textarea id="uuidOut" readonly data-ok-i18n-ph="ph.uuid"></textarea>
+          </div>
+        </section>
+
+        <!-- 16. 时间戳转换 -->
+        <section class="tool-panel" data-tool-panel="timestamp" hidden>
+          <div class="single-pane ts-pane">
+            <div class="ts-section">
+              <div class="pane-head"><span data-ok-i18n="label.ts2date">Timestamp → Date</span></div>
+              <div class="ts-row">
+                <input id="tsIn" class="text-input mono-input" data-ok-i18n-ph="ph.ts" type="text" spellcheck="false" />
+                <button class="mini-btn" data-action="ts2date" type="button">→</button>
+              </div>
+              <div class="ts-out" id="tsDateOut">—</div>
+            </div>
+            <div class="ts-section">
+              <div class="pane-head"><span data-ok-i18n="label.date2ts">Date → Timestamp</span></div>
+              <div class="ts-row">
+                <input id="dateIn" class="text-input" type="datetime-local" />
+                <button class="mini-btn" data-action="date2ts" type="button">→</button>
+              </div>
+              <div class="ts-out" id="tsOut">—</div>
+            </div>
+            <div class="ts-section">
+              <div class="pane-head">
+                <span data-ok-i18n="label.now">Now</span>
+                <div class="pane-actions">
+                  <button class="mini-btn" data-action="set-now" type="button" data-ok-i18n="btn.set">Set</button>
+                </div>
+              </div>
+              <div class="ts-out" id="tsNow">—</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 17. 颜色工具 -->
+        <section class="tool-panel" data-tool-panel="color" hidden>
+          <div class="single-pane color-pane">
+            <div class="color-picker-row">
+              <input type="color" id="colPick" class="color-picker" value="#3b82f6" />
+              <input id="colHex" class="text-input mono-input" value="#3b82f6" type="text" spellcheck="false" />
+            </div>
+            <div class="hash-results">
+              <div class="hash-item">
+                <span class="hash-label">HEX</span>
+                <code class="hash-val" id="cvHex">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="cvHex" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label">RGB</span>
+                <code class="hash-val" id="cvRgb">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="cvRgb" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label">HSL</span>
+                <code class="hash-val" id="cvHsl">—</code>
+                <button class="mini-btn" data-action="copy-text" data-target="cvHsl" type="button" data-ok-i18n="btn.copy">Copy</button>
+              </div>
+            </div>
+            <div class="color-preview" id="colPrev"></div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- 操作栏：主按钮 + 选项（随工具动态变化） -->
+      <div class="actions-bar" id="actionsBar"></div>
+    </main>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../../shared.js"></script>
+  <script src="script.js"></script>
+
+  <footer class="ok-footer">
+    Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+  </footer>
 </body>
 </html>
