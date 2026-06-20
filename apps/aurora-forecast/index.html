@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Forecast — NOAA Space Weather</title>
+    <meta name="description" content="Aurora forecast powered by NOAA SWPC: current planetary Kp index, 3-day forecast, aurora oval visibility and observation advice." />
+    <meta name="theme-color" content="#0a0e27" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 顶部栏：标题 + 语言切换 -->
+    <header class="ok-topbar aurora-topbar">
+      <div class="topbar-left">
+        <a class="ok-topbar-link" href="../../index.html">← OpenKee</a>
+        <h1 class="topbar-title" data-ok-i18n="title">Aurora Forecast</h1>
+      </div>
+      <button class="ok-lang-toggle" id="langBtn" type="button">中</button>
+    </header>
+
+    <main class="shell">
+      <!-- 页头说明 + 控件 -->
+      <section class="masthead">
+        <p class="eyebrow" data-ok-i18n="eyebrow">NOAA SWPC · Space Weather</p>
+        <p class="lead" data-ok-i18n="lead">Real-time planetary Kp index, 3-day forecast and aurora oval visibility from NOAA SWPC.</p>
+        <div class="controls">
+          <label class="control-label">
+            <span data-ok-i18n="latitude">Latitude</span>
+            <select id="latSelect" class="select">
+              <option value="70">70°</option>
+              <option value="65">65°</option>
+              <option value="60">60°</option>
+              <option value="55" selected>55°</option>
+              <option value="50">50°</option>
+              <option value="45">45°</option>
+              <option value="40">40°</option>
+              <option value="35">35°</option>
+              <option value="30">30°</option>
+              <option value="-45">-45°</option>
+              <option value="-55">-55°</option>
+              <option value="-65">-65°</option>
+            </select>
+          </label>
+          <button id="refreshBtn" class="ok-btn-ghost" type="button" data-ok-i18n="refresh">Refresh</button>
+          <span id="statusNote" class="status-note"></span>
+        </div>
+      </section>
+
+      <!-- 加载状态 -->
+      <div id="loadingRow" class="ok-loading">
+        <span class="ok-spinner"></span>
+        <span data-ok-i18n="loading">Loading…</span>
+      </div>
+
+      <!-- 主体布局 -->
+      <div id="layout" class="layout" style="display:none;">
+        <!-- 当前 KP 指数大卡片 -->
+        <section class="card kp-card">
+          <div class="card-label" data-ok-i18n="currentKp">Current Kp Index</div>
+          <div class="kp-main">
+            <div class="kp-value" id="kpValue">—</div>
+            <div class="kp-level" id="kpLevel">—</div>
+          </div>
+          <div class="kp-meta">
+            <div class="meta-row">
+              <span class="meta-label" data-ok-i18n="visibleLat">Visible latitude</span>
+              <span class="meta-value" id="kpVisibleLat">—</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label" data-ok-i18n="lastUpdated">Last updated</span>
+              <span class="meta-value" id="kpUpdated">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 观测建议卡片 -->
+        <section class="card advice-card">
+          <div class="card-label" data-ok-i18n="observation">Observation Advice</div>
+          <div class="advice-icon" id="adviceIcon">💡</div>
+          <p class="advice-text" id="adviceText">—</p>
+          <p class="advice-sub" id="adviceSub"></p>
+        </section>
+
+        <!-- 未来 3 天 KP 预报条形图 -->
+        <section class="card forecast-card">
+          <div class="card-label" data-ok-i18n="forecast3day">3-Day Kp Forecast</div>
+          <div id="forecastChart" class="forecast-chart"></div>
+        </section>
+
+        <!-- 极光可见范围可视化 -->
+        <section class="card aurora-card">
+          <div class="card-label" data-ok-i18n="auroraMap">Aurora Visibility</div>
+          <div class="aurora-grid">
+            <div class="aurora-panel">
+              <div class="aurora-title" data-ok-i18n="northHemi">Northern Hemisphere</div>
+              <canvas id="northCanvas" class="aurora-canvas" width="300" height="300"></canvas>
+            </div>
+            <div class="aurora-panel">
+              <div class="aurora-title" data-ok-i18n="southHemi">Southern Hemisphere</div>
+              <canvas id="southCanvas" class="aurora-canvas" width="300" height="300"></canvas>
+            </div>
+          </div>
+          <p class="aurora-note" data-ok-i18n="auroraNote">Brighter colors = higher aurora probability. Dashed ring marks your latitude.</p>
+        </section>
+
+        <!-- KP 指数等级图例 -->
+        <section class="card legend-card">
+          <div class="card-label" data-ok-i18n="legend">Kp Index Legend</div>
+          <div class="legend-grid" id="legendGrid"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="ok-footer">
+      <span data-ok-i18n="dataSource">Data: NOAA SWPC</span> · <span data-ok-i18n="builtBy">Built by</span> <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
