@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mars Weather — NASA InSight 火星天气</title>
+    <meta name="description" content="火星天气：基于 NASA 洞察号数据的火星近期温度、气压、风速与季节信息，附温度趋势图与火星地球对比。" />
+    <meta property="og:title" content="Mars Weather" />
+    <meta property="og:description" content="NASA InSight 火星天气数据，含 7 天温度趋势、气压、风速与季节信息。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#1a0f0a" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔴</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-left">
+          <p class="eyebrow" data-ok-i18n="eyebrow">Mars · InSight mission</p>
+          <h1 data-ok-i18n="title">Mars Weather</h1>
+          <p class="lead" data-ok-i18n="lead">来自 NASA 洞察号的火星地表天气记录：温度、气压、风与季节。</p>
+        </div>
+        <div class="header-right">
+          <div class="unit-toggle" role="group" aria-label="Temperature unit">
+            <button id="unitC" class="unit-btn on" type="button" aria-pressed="true" data-ok-i18n="celsius">°C</button>
+            <button id="unitF" class="unit-btn" type="button" aria-pressed="false" data-ok-i18n="fahrenheit">°F</button>
+          </div>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- 状态条：数据来源 / 更新时间 / 季节 -->
+      <section class="status-bar" id="statusBar" aria-live="polite">
+        <div class="status-item">
+          <span class="status-label" data-ok-i18n="dataSource">数据来源</span>
+          <span class="status-value" id="sourceVal">NASA InSight</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label" data-ok-i18n="season">当前季节</span>
+          <span class="status-value" id="seasonVal">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label" data-ok-i18n="latestSol">最新 Sol</span>
+          <span class="status-value" id="solVal">—</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label" data-ok-i18n="updated">更新时间</span>
+          <span class="status-value" id="updatedVal">—</span>
+        </div>
+      </section>
+
+      <!-- 当前季节信息卡片 -->
+      <section class="season-card" id="seasonCard" aria-label="Mars season">
+        <div class="season-planet" aria-hidden="true">
+          <div class="planet-body"></div>
+          <div class="planet-glow"></div>
+        </div>
+        <div class="season-info">
+          <span class="season-eyebrow" data-ok-i18n="martianSeason">火星季节</span>
+          <h2 class="season-name" id="seasonName">—</h2>
+          <p class="season-desc" id="seasonDesc">—</p>
+        </div>
+      </section>
+
+      <!-- 温度趋势图 -->
+      <section class="chart-card" aria-label="Temperature trend chart">
+        <div class="card-head">
+          <h3 class="card-title" data-ok-i18n="trendTitle">7 Sol 温度趋势</h3>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot max"></span><span data-ok-i18n="maxTemp">最高温</span></span>
+            <span class="legend-item"><span class="legend-dot min"></span><span data-ok-i18n="minTemp">最低温</span></span>
+          </div>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <svg id="trendChart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Temperature trend line chart"></svg>
+        </div>
+      </section>
+
+      <!-- 7 天天气卡片网格 -->
+      <section class="section-head">
+        <h3 class="section-title" data-ok-i18n="solDaysTitle">近期 Sol 天气</h3>
+        <span class="section-hint" data-ok-i18n="solHint">Sol = 火星日（约 24 小时 37 分）</span>
+      </section>
+      <div class="sol-grid" id="solGrid" aria-live="polite">
+        <div class="loading-note" id="loadingNote">
+          <span class="ok-spinner" aria-hidden="true"></span>
+          <span data-ok-i18n="loading">正在加载火星天气数据…</span>
+        </div>
+      </div>
+
+      <!-- 火星 vs 地球对比 -->
+      <section class="section-head">
+        <h3 class="section-title" data-ok-i18n="compareTitle">火星 vs 地球</h3>
+      </section>
+      <div class="compare-grid" id="compareGrid"></div>
+
+      <!-- 数据来源说明 -->
+      <section class="source-note" id="sourceNote">
+        <h3 class="note-title" data-ok-i18n="sourceTitle">数据来源说明</h3>
+        <p class="note-text" data-ok-i18n="sourceText">温度、气压与风速数据来自 NASA 洞察号（InSight）火星气象服务。InSight 任务已于 2022 年结束，API 可能返回任务末期的最后可用数据；当 API 不可用时，页面将展示内置模拟数据以保证功能完整。</p>
+        <a class="note-link" href="https://api.nasa.gov/" target="_blank" rel="noreferrer">api.nasa.gov →</a>
+      </section>
+    </main>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot; <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
