@@ -98,7 +98,8 @@ const passResult = document.getElementById('passResult');
 // ---------- API 地址 ----------
 // 使用支持 HTTPS 的 API，避免混合内容拦截
 const ISS_NOW_URL = 'https://api.wheretheiss.at/v1/satellites/25544';
-const ASTROS_URL = 'https://www.howmanypeopleareinspacerightnow.com/peopleinspace.json';
+// howmanypeopleareinspacerightnow.com 未设置 CORS，通过 corsproxy.io 访问
+const ASTROS_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://www.howmanypeopleareinspacerightnow.com/peopleinspace.json');
 
 // ---------- 运行时状态 ----------
 let lang = OK.lang;
@@ -199,7 +200,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 // ---------- 获取 ISS 位置 ----------
 function fetchISSPosition() {
-  OK.fetchJSON(ISS_NOW_URL)
+  OK.fetchJSON(ISS_NOW_URL, { timeout: 20000 })
     .then(function (data) {
       if (!data || typeof data.latitude === 'undefined') {
         throw new Error('Bad iss-now response');
@@ -308,7 +309,7 @@ function formatTime(ts) {
 
 // ---------- 宇航员 ----------
 function fetchAstronauts() {
-  OK.fetchJSON(ASTROS_URL)
+  OK.fetchJSON(ASTROS_URL, { timeout: 20000 })
     .then(function (data) {
       if (!data || typeof data.number === 'undefined') throw new Error('Bad astros response');
       astrosData = data;
