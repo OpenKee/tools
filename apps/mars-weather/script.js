@@ -1,15 +1,15 @@
 /* ============================================================
    Mars Weather — 火星天气
-   数据来源：NASA InSight Mars Weather Service API
+   数据来源：MAAS2 API（NASA Curiosity / InSight 公开数据聚合）
    API 不可用时降级到内置模拟数据，保证页面功能完整。
    ============================================================ */
 
 // ---------- 国际化文案 ----------
 const copy = {
   en: {
-    eyebrow: 'Mars · InSight mission',
+    eyebrow: 'Mars · Curiosity / InSight data',
     title: 'Mars Weather',
-    lead: 'Surface weather records from NASA’s InSight lander: temperature, pressure, wind and season.',
+    lead: 'Surface weather records from Mars: temperature, pressure, wind and season. Latest Sol fetched live via MAAS2, with a 7-Sol trend built from the most recent observation.',
     celsius: '°C',
     fahrenheit: '°F',
     dataSource: 'Data source',
@@ -24,7 +24,7 @@ const copy = {
     solHint: 'Sol = a Mars day (~24h 37m)',
     loading: 'Loading Mars weather data…',
     sourceTitle: 'Data source',
-    sourceText: 'Temperature, pressure and wind data come from NASA’s InSight Mars Weather Service. The InSight mission ended in 2022; the API may return the last available data from the mission. When the API is unavailable, the page falls back to built-in simulated data so all features keep working.',
+    sourceText: 'The latest Sol data comes from the MAAS2 API, which aggregates NASA Curiosity and InSight rover weather observations. Because MAAS2 only exposes the most recent Sol, the surrounding 6 Sols are generated from the latest reading to show the 7-Sol trend. When the API is unavailable, the page falls back to built-in simulated data so all features keep working.',
     // Sol 卡片
     sol: 'Sol',
     high: 'High',
@@ -53,14 +53,14 @@ const copy = {
     earth: 'Earth',
     // 状态
     simulated: 'Simulated data',
-    liveData: 'NASA InSight',
+    liveData: 'MAAS2 live',
     fetchError: 'Failed to fetch live data, showing simulated data.',
     noData: 'No weather data available.',
   },
   zh: {
-    eyebrow: '火星 · 洞察号任务',
+    eyebrow: '火星 · 好奇号 / 洞察号数据',
     title: '火星天气',
-    lead: '来自 NASA 洞察号的火星地表天气记录：温度、气压、风与季节。',
+    lead: '火星地表天气记录：温度、气压、风与季节。最新 Sol 通过 MAAS2 实时获取，7 Sol 趋势基于最近一次观测生成。',
     celsius: '°C',
     fahrenheit: '°F',
     dataSource: '数据来源',
@@ -75,7 +75,7 @@ const copy = {
     solHint: 'Sol = 火星日（约 24 小时 37 分）',
     loading: '正在加载火星天气数据…',
     sourceTitle: '数据来源说明',
-    sourceText: '温度、气压与风速数据来自 NASA 洞察号（InSight）火星气象服务。InSight 任务已于 2022 年结束，API 可能返回任务末期的最后可用数据；当 API 不可用时，页面将展示内置模拟数据以保证功能完整。',
+    sourceText: '最新的 Sol 数据来自 MAAS2 API，它聚合了 NASA 好奇号与洞察号的火星气象观测数据。由于 MAAS2 只提供最新的一个 Sol，周围的 6 个 Sol 会基于最近一次的读数生成，以展示 7 Sol 趋势；当 API 不可用时，页面将展示内置模拟数据以保证功能完整。',
     // Sol 卡片
     sol: 'Sol',
     high: '最高',
@@ -104,7 +104,7 @@ const copy = {
     earth: '地球',
     // 状态
     simulated: '模拟数据',
-    liveData: 'NASA InSight',
+    liveData: 'MAAS2 实时',
     fetchError: '实时数据获取失败，已切换为模拟数据。',
     noData: '暂无天气数据。',
   }
@@ -125,7 +125,7 @@ const chartSvg = document.getElementById('trendChart');
 const compareGrid = document.getElementById('compareGrid');
 
 // ---------- API 地址 ----------
-const INSIGHT_URL = 'https://api.nasa.gov/insight_weather/?api_key=DEMO_KEY&feedtype=json&ver=1.0';
+const MAAS2_URL = 'https://api.maas2.apollorion.com/';
 
 // ---------- 运行时状态 ----------
 let lang = OK.lang;
@@ -188,38 +188,72 @@ function buildMockData() {
   return days;
 }
 
-// ---------- 解析 NASA InSight API 返回 ----------
-// 真实 API 使用 sol_keys 数组；任务文档示例写作 sol_days，此处兼容两者。
+// ---------- 解析 MAAS2 API 返回 ----------
+// MAAS2 返回单个最新 Sol 对象。我们把它作为最新一天，再基于它生成前 6 天。
 function parseApiResponse(data) {
-  if (!data) return null;
-  const keyList = data.sol_keys || data.sol_days;
-  if (!keyList || !keyList.length) return null;
-  const keys = keyList.slice(-7); // 取最近 7 个 Sol
-  const days = [];
-  for (let i = 0; i < keys.length; i++) {
-    const k = keys[i];
-    const d = data[k];
-    if (!d || !d.AT) continue;
-    const day = {
-      sol: parseInt(k, 10),
-      date: d.First_UTC ? new Date(d.First_UTC) : new Date(),
-      at: {
-        av: num(d.AT.av),
-        mx: num(d.AT.mx),
-        mn: num(d.AT.mn),
-      },
-      pre: d.PRE ? { av: num(d.PRE.av) } : null,
-      hws: d.HWS ? { av: num(d.HWS.av) } : null,
-      wd: (d.WD && d.WD.most_common) ? {
-        compass_point: d.WD.most_common.compass_point,
-        compass_degrees: d.WD.most_common.compass_degrees,
-      } : null,
-      season: d.Season || 'unknown',
-      simulated: false,
-    };
-    days.push(day);
+  if (!data || data.sol == null) return null;
+  const latest = maas2ToDay(data, false);
+  if (!latest) return null;
+  const days = [latest];
+  // 生成前 6 天：温度、气压、风速在真实值附近小幅波动
+  for (let i = 1; i < 7; i++) {
+    const factor = i / 6; // 0..1，越往前偏离越大
+    const jitter = (max, min) => (Math.random() * (max - min) + min) * factor;
+    const mx = latest.at.mx + jitter(4, -4);
+    const mn = latest.at.mn + jitter(4, -4);
+    const pre = latest.pre && latest.pre.av != null
+      ? latest.pre.av + jitter(12, -12)
+      : null;
+    const hws = latest.hws && latest.hws.av != null
+      ? latest.hws.av + jitter(2, -2)
+      : null;
+    days.unshift({
+      sol: latest.sol - i,
+      date: new Date(latest.date.getTime() - i * 88700000), // 约一个火星日
+      at: { av: +((mx + mn) / 2).toFixed(1), mx: +mx.toFixed(1), mn: +mn.toFixed(1) },
+      pre: pre != null ? { av: +pre.toFixed(1) } : null,
+      hws: hws != null ? { av: Math.max(0, +hws.toFixed(1)) } : null,
+      wd: latest.wd,
+      season: latest.season,
+      simulated: true, // 历史 Sol 为基于真实数据生成的填充数据
+    });
   }
-  return days.length ? days : null;
+  return days;
+}
+
+// 将 MAAS2 单个 Sol 对象转成统一 day 结构
+function maas2ToDay(d, simulated) {
+  const sol = parseInt(d.sol, 10);
+  if (isNaN(sol)) return null;
+  const mx = num(d.max_temp);
+  const mn = num(d.min_temp);
+  const pre = num(d.pressure);
+  const hws = d.wind_speed !== '--' && d.wind_speed != null ? num(d.wind_speed) : null;
+  const date = d.terrestrial_date ? new Date(d.terrestrial_date) : new Date();
+  return {
+    sol: sol,
+    date: date,
+    at: {
+      av: mx != null && mn != null ? +((mx + mn) / 2).toFixed(1) : (mx != null ? mx : (mn != null ? mn : null)),
+      mx: mx,
+      mn: mn,
+    },
+    pre: pre != null ? { av: pre } : null,
+    hws: hws != null ? { av: hws } : null,
+    wd: parseWindDirection(d.wind_direction),
+    season: d.season || 'unknown',
+    simulated: simulated,
+  };
+}
+
+function parseWindDirection(raw) {
+  if (!raw) return null;
+  const str = String(raw).trim().toUpperCase();
+  const DIRS = { N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
+                 S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5 };
+  const deg = DIRS[str];
+  if (deg == null) return null;
+  return { compass_point: str, compass_degrees: deg };
 }
 
 // 安全取数
@@ -241,12 +275,12 @@ function fmtTemp(c) {
 // ---------- 获取天气数据（实时优先，失败降级模拟） ----------
 function fetchWeather() {
   showLoading(true);
-  OK.fetchJSON(INSIGHT_URL, { timeout: 10000 })
+  OK.fetchJSON(MAAS2_URL, { timeout: 15000 })
     .then(function (data) {
       const parsed = parseApiResponse(data);
       if (!parsed) {
         // API 返回但无有效数据，降级
-        console.warn('InSight API returned no usable data, falling back to mock.');
+        console.warn('MAAS2 API returned no usable data, falling back to mock.');
         useMockData();
         return;
       }
@@ -256,7 +290,7 @@ function fetchWeather() {
       renderAll();
     })
     .catch(function (err) {
-      console.warn('InSight API fetch failed:', err);
+      console.warn('MAAS2 API fetch failed:', err);
       useMockData();
     });
 }

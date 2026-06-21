@@ -95,6 +95,7 @@
       flipHint: 'Tap card to flip',
       meaningLabel: 'Meaning', translationLabel: 'Translation',
       prev: 'Prev', next: 'Next', flip: 'Flip', speakWord: 'Word', speakExample: 'Example',
+      lookup: 'Look up', lookupError: 'Lookup failed', lookupNoResult: 'No online definition found',
       selfAssess: 'Self-assess:',
       markKnown: 'Known', markFuzzy: 'Fuzzy', markUnknown: 'Unknown',
       spellPrompt: 'Spell the word for:', spellSubmit: 'Check', spellPlaceholder: 'Type the word…',
@@ -115,6 +116,7 @@
       flipHint: '点击卡片翻转',
       meaningLabel: '释义', translationLabel: '例句翻译',
       prev: '上一张', next: '下一张', flip: '翻转', speakWord: '朗读单词', speakExample: '朗读例句',
+      lookup: '查词典', lookupError: '查询失败', lookupNoResult: '未找到在线释义',
       selfAssess: '自我评估：',
       markKnown: '认识', markFuzzy: '模糊', markUnknown: '不认识',
       spellPrompt: '请拼写对应的单词：', spellSubmit: '提交', spellPlaceholder: '输入英文单词…',
@@ -282,6 +284,34 @@
       if (v) u.voice = v;
       synth.speak(u);
     } catch (e) {}
+  }
+
+  /* ---------- 查词（调用第三方词典 API） ---------- */
+  function lookupCurrentWord() {
+    var list = filteredWords();
+    var w = list[cardIndex];
+    if (!w) return;
+    fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.word))
+      .then(function (res) {
+        if (!res.ok) throw new Error('lookup failed');
+        return res.json();
+      })
+      .then(function (data) {
+        if (!Array.isArray(data) || !data.length) throw new Error('no result');
+        var entry = data[0];
+        var phonetic = '';
+        if (entry.phonetics && entry.phonetics.length) {
+          for (var i = 0; i < entry.phonetics.length; i++) {
+            if (entry.phonetics[i].text) { phonetic = entry.phonetics[i].text; break; }
+          }
+        }
+        var meaning = entry.meanings && entry.meanings[0];
+        if (!meaning || !meaning.definitions || !meaning.definitions.length) throw new Error('no result');
+        dom.cardPhonetic.textContent = phonetic || w.phonetic;
+        dom.cardPos.textContent = meaning.partOfSpeech ? meaning.partOfSpeech + '.' : w.pos;
+        dom.cardMeaning.textContent = meaning.definitions[0].definition;
+      })
+      .catch(function () { alert(t('lookupError')); });
   }
 
   /* ---------- 渲染：统计 ---------- */
@@ -507,7 +537,7 @@
       'modeCard', 'modeSpell', 'modeChoice', 'levelAll', 'level1', 'level2', 'level3',
       'noSpeechNotice', 'cardSection', 'cardCounter', 'flipCard', 'cardLevel', 'cardWord',
       'cardPhonetic', 'cardPos', 'cardExample', 'cardMeaning', 'cardExampleZh',
-      'btnPrev', 'btnSpeakWord', 'btnSpeakExample', 'btnFlip', 'btnNext',
+      'btnPrev', 'btnSpeakWord', 'btnSpeakExample', 'btnLookup', 'btnFlip', 'btnNext',
       'btnKnown', 'btnFuzzy', 'btnUnknown',
       'spellSection', 'spellMeaning', 'spellLevel', 'spellForm', 'spellInput',
       'btnSpellCheck', 'spellResult', 'btnSpellNext', 'btnSpellSpeak',
@@ -562,6 +592,7 @@
       var w = filteredWords()[cardIndex];
       if (w) speak(w.example);
     });
+    dom.btnLookup.addEventListener('click', lookupCurrentWord);
     dom.btnKnown.addEventListener('click', function () { markCard('known'); });
     dom.btnFuzzy.addEventListener('click', function () { markCard('fuzzy'); });
     dom.btnUnknown.addEventListener('click', function () { markCard('unknown'); });

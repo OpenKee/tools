@@ -425,6 +425,27 @@
           </div>
         </section>
 
+        <!-- 18. 网络工具 -->
+        <section class="tool-panel" data-tool-panel="network" hidden>
+          <div class="single-pane network-pane">
+            <div class="hash-results">
+              <div class="hash-item">
+                <span class="hash-label" data-ok-i18n="net.publicIp">Public IP</span>
+                <code class="hash-val" id="netIp">—</code>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label" data-ok-i18n="net.location">Location</span>
+                <code class="hash-val" id="netLoc">—</code>
+              </div>
+              <div class="hash-item">
+                <span class="hash-label" data-ok-i18n="net.isp">ISP</span>
+                <code class="hash-val" id="netIsp">—</code>
+              </div>
+            </div>
+            <button class="btn primary" id="netRefresh" type="button" data-ok-i18n="net.refresh">Refresh</button>
+          </div>
+        </section>
+
       </div>
 
       <!-- 操作栏：主按钮 + 选项（随工具动态变化） -->

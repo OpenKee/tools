@@ -38,6 +38,7 @@
       'tool.uuid': 'UUID Generator',
       'tool.timestamp': 'Timestamp',
       'tool.color': 'Color Tools',
+      'tool.network': 'Network',
       // 统计标签
       'stat.original': 'Original',
       'stat.minified': 'Minified',
@@ -60,6 +61,13 @@
       'stat.hsl': 'HSL',
       'stat.pattern': 'Pattern',
       'stat.dash': '—',
+      // 网络
+      'net.publicIp': 'Public IP',
+      'net.location': 'Location',
+      'net.isp': 'ISP',
+      'net.refresh': 'Refresh',
+      'net.loading': 'Loading...',
+      'net.error': 'Failed to load',
       // 按钮
       'btn.compress': '🔧 Compress',
       'btn.copy': 'Copy',
@@ -149,6 +157,8 @@
       'lorem.p5': '5 Paragraphs',
       'lorem.s10': '10 Sentences',
       'lorem.w50': '50 Words',
+      'lorem.loading': 'Loading...',
+      'lorem.error': 'API unavailable, using local fallback.',
       // UUID 按钮
       'uuid.gen5': 'Generate 5',
       'uuid.gen10': 'Generate 10',
@@ -191,6 +201,7 @@
       'tool.uuid': 'UUID 生成',
       'tool.timestamp': '时间戳',
       'tool.color': '颜色工具',
+      'tool.network': '网络',
       // 统计标签
       'stat.original': '原始',
       'stat.minified': '压缩后',
@@ -213,6 +224,13 @@
       'stat.hsl': 'HSL',
       'stat.pattern': '模式',
       'stat.dash': '—',
+      // 网络
+      'net.publicIp': '公网 IP',
+      'net.location': '位置',
+      'net.isp': '运营商',
+      'net.refresh': '刷新',
+      'net.loading': '加载中...',
+      'net.error': '加载失败',
       // 按钮
       'btn.compress': '🔧 压缩',
       'btn.copy': '复制',
@@ -324,7 +342,7 @@
     { id: 'code', tools: ['css', 'html', 'json', 'sql', 'csv'] },
     { id: 'encoding', tools: ['encode', 'hash', 'jwt', 'url'] },
     { id: 'text', tools: ['md', 'regex', 'diff', 'escape'] },
-    { id: 'utility', tools: ['lorem', 'uuid', 'timestamp', 'color'] }
+    { id: 'utility', tools: ['lorem', 'uuid', 'timestamp', 'color', 'network'] }
   ];
 
   // ========== DOM 引用 ==========
@@ -1181,6 +1199,37 @@
       'Unix: ' + Math.floor(d.getTime() / 1000);
   }
 
+  // ---------- 18. 网络工具 ----------
+  async function refreshNetwork() {
+    const ipEl = $('netIp');
+    const locEl = $('netLoc');
+    const ispEl = $('netIsp');
+    if (!ipEl || !locEl || !ispEl) return;
+
+    ipEl.textContent = t('net.loading');
+    locEl.textContent = t('net.loading');
+    ispEl.textContent = t('net.loading');
+
+    try {
+      const ipRes = await fetch('https://api.ipify.org?format=json');
+      if (!ipRes.ok) throw new Error('IP fetch failed');
+      const ipData = await ipRes.json();
+      const ip = ipData.ip;
+
+      const infoRes = await fetch('https://ipapi.co/' + ip + '/json/');
+      if (!infoRes.ok) throw new Error('Info fetch failed');
+      const info = await infoRes.json();
+
+      ipEl.textContent = ip || '—';
+      locEl.textContent = [info.city, info.country_name].filter(Boolean).join(', ') || '—';
+      ispEl.textContent = info.org || '—';
+    } catch (e) {
+      ipEl.textContent = t('net.error');
+      locEl.textContent = t('net.error');
+      ispEl.textContent = t('net.error');
+    }
+  }
+
   // ---------- 17. 颜色工具 ----------
   function updateColor(hex, source) {
     hex = String(hex || '').trim().replace(/[^#0-9a-fA-F]/g, '');
@@ -1332,7 +1381,8 @@
         '<button class="btn danger" data-action="clear-all" data-ok-i18n="btn.clearAll">Clear All</button>',
       timestamp: '<button class="btn" data-action="set-now" data-ok-i18n="btn.set">Set Now</button>' +
         '<button class="btn danger" data-action="clear-all" data-ok-i18n="btn.clearAll">Clear All</button>',
-      color: '<button class="btn danger" data-action="clear-all" data-ok-i18n="btn.clearAll">Clear All</button>'
+      color: '<button class="btn danger" data-action="clear-all" data-ok-i18n="btn.clearAll">Clear All</button>',
+      network: '<button class="btn primary" data-action="net-refresh" data-ok-i18n="net.refresh">Refresh</button>'
     };
     bar.innerHTML = templates[toolId] || '';
     // 翻译新添加的元素
@@ -1359,8 +1409,9 @@
     lorem: ['stat.length', 'stat.count', 'stat.dash', 'stat.dash'],
     uuid: ['stat.count', 'stat.dash', 'stat.dash', 'stat.dash'],
     timestamp: ['stat.dash', 'stat.dash', 'stat.dash', 'stat.dash'],
-    color: ['stat.hex', 'stat.rgb', 'stat.hsl', 'stat.dash']
-  };
+    color: ['stat.hex', 'stat.rgb', 'stat.hsl', 'stat.dash'],
+    network: ['stat.dash', 'stat.dash', 'stat.dash', 'stat.dash']
+    };
 
   function switchTool(toolId) {
     currentTool = toolId;
@@ -1401,6 +1452,7 @@
       case 'diff': runDiff(); break;
       case 'color': updateColor($('colHex').value || '#3b82f6'); break;
       case 'timestamp': setNow(); break;
+      case 'network': refreshNetwork(); break;
       // encode, escape, lorem, uuid 不需要初始化（等待用户操作）
     }
   }
@@ -1474,6 +1526,9 @@
   // 面板内按钮点击（事件委托）
   function bindPanels() {
     $('panels').addEventListener('click', e => {
+      const netRefreshBtn = e.target.closest('#netRefresh');
+      if (netRefreshBtn) { refreshNetwork(); return; }
+
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const panel = btn.closest('.tool-panel');
@@ -1539,6 +1594,7 @@
       if (action === 'clear-all') { clearCurrentTool(); return; }
       if (action === 'compress') { cssCompress(); return; }
       if (action === 'compare') { runDiff(); return; }
+      if (action === 'net-refresh') { refreshNetwork(); return; }
       if (action === 'download-csv') {
         const v = $('csvOut').value;
         if (v) downloadFile('data.csv', v, 'text/csv;charset=utf-8');

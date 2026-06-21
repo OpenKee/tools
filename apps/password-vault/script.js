@@ -24,6 +24,8 @@ var strengthFill = document.getElementById('strengthFill');
 var strengthBar = document.querySelector('.strength-bar');
 var entropyValue = document.getElementById('entropyValue');
 var crackTimeValue = document.getElementById('crackTimeValue');
+var breachResult = document.getElementById('breachResult');
+var breachBtn = document.getElementById('breachBtn');
 var countUpper = document.getElementById('countUpper');
 var countLower = document.getElementById('countLower');
 var countDigit = document.getElementById('countDigit');
@@ -83,6 +85,11 @@ var copy = {
     timeYear: 'year',
     ariaCopy: 'Copy password',
     ariaRegenerate: 'Regenerate password',
+    ariaCheckBreach: 'Check password breach',
+    checkBreach: 'Check breach',
+    breachSafe: 'No breaches found',
+    breachFound: 'Found in {n} breaches',
+    breachError: 'Check failed',
     ariaLength: 'Password length',
     ariaBatchCount: 'Batch count',
     ariaStrength: 'Password strength',
@@ -134,6 +141,11 @@ var copy = {
     timeYear: '年',
     ariaCopy: '复制密码',
     ariaRegenerate: '重新生成密码',
+    ariaCheckBreach: '检查密码是否泄露',
+    checkBreach: '检查泄露',
+    breachSafe: '未发现泄露',
+    breachFound: '发现于 {n} 次泄露中',
+    breachError: '检查失败',
     ariaLength: '密码长度',
     ariaBatchCount: '批量数量',
     ariaStrength: '密码强度',
@@ -294,6 +306,53 @@ function formatCrackTime(entropy) {
   }
   var rounded = val < 10 ? Math.round(val * 10) / 10 : Math.round(val);
   return rounded + ' ' + unitWord(rounded, key);
+}
+
+// ---------- 泄露检查（Have I Been Pwned k-Anonymity） ----------
+function bufferToHex(buffer) {
+  var bytes = new Uint8Array(buffer);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    hex += bytes[i].toString(16).padStart(2, '0');
+  }
+  return hex;
+}
+
+function checkBreach(password) {
+  if (!password || password === '—') {
+    breachResult.textContent = t('breachError');
+    return;
+  }
+  breachResult.textContent = '…';
+  var encoder = new TextEncoder();
+  crypto.subtle.digest('SHA-1', encoder.encode(password)).then(function (buffer) {
+    var hash = bufferToHex(buffer).toUpperCase();
+    var prefix = hash.slice(0, 5);
+    var suffix = hash.slice(5);
+    return fetch('https://api.pwnedpasswords.com/range/' + prefix, {
+      headers: { 'Accept': 'text/plain' }
+    }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    }).then(function (text) {
+      var lines = text.split('\n');
+      var found = 0;
+      for (var i = 0; i < lines.length; i++) {
+        var parts = lines[i].split(':');
+        if (parts.length === 2 && parts[0] === suffix) {
+          found = parseInt(parts[1], 10) || 0;
+          break;
+        }
+      }
+      if (found > 0) {
+        breachResult.textContent = t('breachFound').replace('{n}', String(found));
+      } else {
+        breachResult.textContent = t('breachSafe');
+      }
+    });
+  }).catch(function () {
+    breachResult.textContent = t('breachError');
+  });
 }
 
 // ---------- 渲染：密码显示 ----------
@@ -516,6 +575,7 @@ function applyLanguage() {
   batchCount.setAttribute('aria-label', t('ariaBatchCount'));
   copyBtn.setAttribute('aria-label', t('ariaCopy'));
   regenBtn.setAttribute('aria-label', t('ariaRegenerate'));
+  breachBtn.setAttribute('aria-label', t('ariaCheckBreach'));
   // 重新渲染动态内容
   renderStrength(currentPassword, currentPassword ? calcPoolSizeForCurrent() : 0);
   renderHistory();
@@ -559,6 +619,11 @@ regenBtn.addEventListener('click', generateAndShow);
 // 复制按钮
 copyBtn.addEventListener('click', function () {
   copyToClipboard(currentPassword);
+});
+
+// 泄露检查按钮
+breachBtn.addEventListener('click', function () {
+  checkBreach(currentPassword);
 });
 
 // 批量生成

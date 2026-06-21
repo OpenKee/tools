@@ -37,7 +37,9 @@
       hint: 'Click and drag to draw. Pick a tool on the left and a color on the right.',
       shortcuts: 'Shortcuts: Ctrl+Z undo · Ctrl+Y redo · B/E/F/I tools · G grid',
       clearConfirm: 'Clear the entire canvas? This can be undone with Ctrl+Z.',
-      recentEmpty: 'No colors yet'
+      recentEmpty: 'No colors yet',
+      randomPalette: 'Random palette',
+      paletteError: 'Failed to load palette'
     },
     zh: {
       eyebrow: '像素画工作室',
@@ -68,7 +70,9 @@
       hint: '点击并拖动鼠标绘制。在左侧选工具，右侧选颜色。',
       shortcuts: '快捷键：Ctrl+Z 撤销 · Ctrl+Y 重做 · B/E/F/I 切换工具 · G 网格',
       clearConfirm: '确定清空整个画布吗？可用 Ctrl+Z 撤销。',
-      recentEmpty: '暂无颜色'
+      recentEmpty: '暂无颜色',
+      randomPalette: '随机调色板',
+      paletteError: '加载调色板失败'
     }
   };
 
@@ -100,6 +104,7 @@
   var clearBtn = document.getElementById('clearBtn');
   var exportBtn = document.getElementById('exportBtn');
   var exportScale = document.getElementById('exportScale');
+  var randomPaletteBtn = document.getElementById('randomPaletteBtn');
   var paletteEl = document.getElementById('palette');
   var recentEl = document.getElementById('recent');
   var customColor = document.getElementById('customColor');
@@ -319,6 +324,23 @@
     setColor(currentColor);
   }
 
+  function loadRandomPalette() {
+    var seed = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    fetch('https://www.thecolorapi.com/scheme?hex=' + seed + '&mode=analogic&count=8')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var colors = [];
+        for (var i = 0; i < data.colors.length && colors.length < 8; i++) {
+          colors.push('#' + data.colors[i].hex.clean);
+        }
+        PRESET = colors;
+        renderPalette();
+      })
+      .catch(function () {
+        alert(t('paletteError'));
+      });
+  }
+
   function renderRecent() {
     recentEl.innerHTML = '';
     if (!recentColors.length) {
@@ -534,6 +556,7 @@
     gridBtn.addEventListener('click', toggleGrid);
     clearBtn.addEventListener('click', clearCanvas);
     exportBtn.addEventListener('click', exportPNG);
+    randomPaletteBtn.addEventListener('click', loadRandomPalette);
     // 自定义颜色
     customColor.addEventListener('input', function () { setColor(customColor.value); });
     // 画布绘制
