@@ -8,9 +8,17 @@
 
   var STORAGE_KEY = 'openkee-lang';
 
+  // 安全读取 localStorage：在 Tracking Prevention 等隐私模式下访问可能抛出异常
+  function safeGetLang() {
+    try {
+      if (global.localStorage) return localStorage.getItem(STORAGE_KEY) || 'en';
+    } catch (e) {}
+    return 'en';
+  }
+
   var OK = {
     /* 当前语言：'en' | 'zh' */
-    lang: global.localStorage ? (localStorage.getItem(STORAGE_KEY) || 'en') : 'en',
+    lang: safeGetLang(),
 
     /**
      * 翻译取值。
@@ -50,9 +58,13 @@
       }
       refresh();
 
+      function safeSetLang(value) {
+        try { if (global.localStorage) localStorage.setItem(STORAGE_KEY, value); } catch (e) {}
+      }
+
       btn.addEventListener('click', function () {
         OK.lang = OK.lang === 'en' ? 'zh' : 'en';
-        try { localStorage.setItem(STORAGE_KEY, OK.lang); } catch (e) {}
+        safeSetLang(OK.lang);
         OK.applyI18n(dict);
         refresh();
         if (typeof onToggle === 'function') onToggle();
