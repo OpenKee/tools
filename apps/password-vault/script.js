@@ -151,7 +151,7 @@ var SIMILAR = '0Oo1lI|`';
 // ---------- 应用状态 ----------
 var lang = OK.lang;
 var currentPassword = '';
-var history = [];
+var pwdHistory = [];
 var batchPasswords = [];
 
 // ---------- 工具函数 ----------
@@ -361,7 +361,7 @@ function generateAndShow() {
 function addToHistory(pwd, poolSize) {
   if (!pwd) return;
   // 与最近一条相同则跳过
-  if (history.length && history[0].password === pwd) return;
+  if (pwdHistory.length && pwdHistory[0].password === pwd) return;
 
   var entropy = calcEntropy(pwd.length, poolSize);
   var level = strengthFromEntropy(entropy);
@@ -371,23 +371,23 @@ function addToHistory(pwd, poolSize) {
     minute: '2-digit',
   });
 
-  history.unshift({
+  pwdHistory.unshift({
     password: pwd,
     entropy: entropy,
     level: level,
     timeStr: timeStr,
   });
   // 最多保留 20 条
-  if (history.length > 20) history.length = 20;
+  if (pwdHistory.length > 20) pwdHistory.length = 20;
   renderHistory();
 }
 
 function renderHistory() {
-  if (!history.length) {
+  if (!pwdHistory.length) {
     historyList.innerHTML = '<p class="history-empty">' + OK.escape(t('noHistory')) + '</p>';
     return;
   }
-  var html = history.map(function (h, i) {
+  var html = pwdHistory.map(function (h, i) {
     return '<button class="history-item" data-idx="' + i + '" type="button" aria-label="' +
       OK.escape(t('copy')) + '">' +
       '<span class="history-level level-' + h.level + '">' + OK.escape(levelLabel(h.level)) + '</span>' +
@@ -402,7 +402,7 @@ function renderHistory() {
   for (var i = 0; i < items.length; i++) {
     (function (btn, idx) {
       btn.addEventListener('click', function () {
-        copyToClipboard(history[idx].password);
+        copyToClipboard(pwdHistory[idx].password);
       });
     })(items[i], i);
   }
@@ -569,7 +569,7 @@ copyBatchBtn.addEventListener('click', copyAllBatch);
 
 // 清空历史
 clearHistoryBtn.addEventListener('click', function () {
-  history.length = 0;
+  pwdHistory.length = 0;
   renderHistory();
 });
 

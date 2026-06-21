@@ -21,6 +21,7 @@ const sortSelect = document.getElementById('sortSelect');
 const repoSearch = document.getElementById('repoSearch');
 const repoGrid = document.getElementById('repoGrid');
 const repoPagination = document.getElementById('repoPagination');
+const repoLayout = document.getElementById('repoLayout');
 const detailSection = document.getElementById('detailSection');
 const detailName = document.getElementById('detailName');
 const detailBody = document.getElementById('detailBody');

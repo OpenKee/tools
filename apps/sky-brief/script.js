@@ -133,6 +133,7 @@ async function loadForecast(lat, lon, label) {
 function render(label, f, air) {
   lastData = { label, forecast: f, air };
   const c = f.current;
+  currentCityData = { temp: c.temperature_2m };
   const aqi = air.current.us_aqi ?? 0;
 
   // Hero
