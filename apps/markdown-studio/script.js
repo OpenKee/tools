@@ -14,6 +14,7 @@ var sampleBtn = document.getElementById('sampleBtn');
 var importBtn = document.getElementById('importBtn');
 var exportMdBtn = document.getElementById('exportMdBtn');
 var exportHtmlBtn = document.getElementById('exportHtmlBtn');
+var githubRenderBtn = document.getElementById('githubRenderBtn');
 var fileInput = document.getElementById('fileInput');
 
 // ---------- i18n 文案字典 ----------
@@ -28,6 +29,8 @@ var copy = {
     import: 'Import',
     exportMd: 'Export .md',
     exportHtml: 'Export .html',
+    renderGithub: 'GitHub Render',
+    renderFail: 'GitHub render failed, using local renderer.',
     empty: 'Nothing to preview yet. Start typing on the left.',
     chars: 'chars',
     words: 'words',
@@ -67,6 +70,8 @@ var copy = {
     import: '导入',
     exportMd: '导出 .md',
     exportHtml: '导出 .html',
+    renderGithub: 'GitHub 渲染',
+    renderFail: 'GitHub 渲染失败，已切换到本地渲染。',
     empty: '暂无内容可预览，请在左侧开始输入。',
     chars: '字符',
     words: '词数',
@@ -466,6 +471,29 @@ function renderMarkdown(src) {
 }
 
 // ============================================================
+// GitHub Markdown API 渲染
+// ============================================================
+function renderWithGitHub() {
+  var text = editor.value;
+  fetch('https://api.github.com/markdown', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text, mode: 'gfm' })
+  })
+    .then(function (res) {
+      if (!res.ok) throw new Error('GitHub API returned ' + res.status);
+      return res.text();
+    })
+    .then(function (html) {
+      preview.innerHTML = html;
+    })
+    .catch(function () {
+      preview.innerHTML = renderMarkdown(text);
+      alert(t('renderFail'));
+    });
+}
+
+// ============================================================
 // 预览渲染 + 字数统计
 // ============================================================
 function render() {
@@ -768,6 +796,9 @@ fileInput.addEventListener('change', function () {
 // 导出
 exportMdBtn.addEventListener('click', exportMd);
 exportHtmlBtn.addEventListener('click', exportHtml);
+
+// GitHub 渲染
+githubRenderBtn.addEventListener('click', renderWithGitHub);
 
 // ============================================================
 // 初始化
