@@ -111,6 +111,13 @@ h1 {
   font-weight: 600;
 }
 
+.token-hint {
+  margin: 0.35rem 0 0.1rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .token-toggle {
   margin-top: 0.4rem;
   font-size: 0.76rem;

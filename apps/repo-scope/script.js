@@ -45,8 +45,11 @@ const copy = {
     byStars:'By stars', byUpdated:'By updated', byForks:'By forks', byName:'By name',
     followers:'Followers', publicRepos:'Public repos', totalStars:'Total stars', repos:'repos',
     loading:'Loading\u2026',
-    errorRateLimit:'Rate limited. Add a token to raise limit to 5000/hr.',
+    errorRateLimit:'GitHub API rate limit exceeded. Add a personal access token to raise limit to 5000/hr.',
+    errorRateLimitReset:'Resets at {time}.',
+    errorForbidden:'Access forbidden. The user may be suspended or a token is required.',
     errorNotFound:'User not found.', errorGeneric:'Error: {msg}',
+    tokenRecommended:'Tip: GitHub limits unauthenticated requests to 60/hr. Add a token below for reliable analysis.',
     fresh:'fresh', dormant:'dormant', hot:'hot', fork:'fork',
     created:'Created', pushed:'Last push', license:'License', topics:'Topics',
     scoreHigh:'Very active — regular commits, stars growing, healthy issue response.',
@@ -66,8 +69,11 @@ const copy = {
     byStars:'按星标', byUpdated:'按更新', byForks:'按 Fork', byName:'按名称',
     followers:'关注者', publicRepos:'公开仓库', totalStars:'累计星标', repos:'个仓库',
     loading:'加载中\u2026',
-    errorRateLimit:'限流了，输入 token 提升到 5000 次/小时。',
+    errorRateLimit:'GitHub API 请求次数已达上限。添加 Personal Access Token 可提升到 5000 次/小时。',
+    errorRateLimitReset:'重置时间：{time}',
+    errorForbidden:'访问被拒绝。该用户可能已被冻结，或需要提供 token。',
     errorNotFound:'用户不存在。', errorGeneric:'出错：{msg}',
+    tokenRecommended:'提示：GitHub 未认证请求限制为 60 次/小时。建议在下方添加 token 以获得稳定体验。',
     fresh:'刚更新', dormant:'沉寂', hot:'热门', fork:'复刻',
     created:'创建于', pushed:'最近推送', license:'许可证', topics:'标签',
     scoreHigh:'非常活跃 — 定期提交，星标增长，issue 响应健康。',
@@ -86,6 +92,7 @@ let allRepos = [];
 let filteredRepos = [];
 let currentPage = 1;
 const PER_PAGE = 20;
+const CACHE_TTL = 10 * 60 * 1000; // 10 分钟缓存
 
 if (ghToken) tokenInput.value = ghToken;
 
@@ -98,14 +105,49 @@ function applyLanguage() {
   OK.applyI18n(copy);
 }
 
+function rateLimitInfo(r) {
+  return {
+    limit: parseInt(r.headers.get('x-ratelimit-limit')||'0',10),
+    remaining: parseInt(r.headers.get('x-ratelimit-remaining')||'0',10),
+    reset: parseInt(r.headers.get('x-ratelimit-reset')||'0',10),
+  };
+}
+
 async function getJson(url) {
   const h = {Accept:'application/vnd.github+json'};
   if (ghToken) h.Authorization = `Bearer ${ghToken}`;
   const r = await fetch(url,{headers:h});
-  if (r.status===403) throw new Error('rate_limit');
+  const rl = rateLimitInfo(r);
+  if (r.status===403) {
+    // 403 可能是限流，也可能是其他禁止访问场景；结合 remaining 判断
+    if (rl.remaining === 0 || rl.limit === 60) {
+      const err = new Error('rate_limit');
+      err.resetAt = rl.reset ? new Date(rl.reset * 1000) : null;
+      throw err;
+    }
+    throw new Error('forbidden');
+  }
   if (r.status===404) throw new Error('not_found');
   if (!r.ok) { const b=await r.json().catch(()=>({})); throw new Error(b.message||`${r.status}`); }
   return r.json();
+}
+
+function cacheKey(username) { return 'repo-scope-cache-' + username.toLowerCase(); }
+
+function getCache(username) {
+  try {
+    const raw = localStorage.getItem(cacheKey(username));
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (Date.now() - data.ts > CACHE_TTL) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+function setCache(username, profile, repos) {
+  try {
+    localStorage.setItem(cacheKey(username), JSON.stringify({ ts: Date.now(), profile, repos }));
+  } catch (e) {}
 }
 
 function daysSince(d) { return (Date.now()-new Date(d).getTime())/86400000; }
@@ -260,22 +302,66 @@ async function analyzeUser(username) {
   detailSection.style.display = 'none';
   repoGrid.innerHTML = `<div class="loading"><span class="spinner"></span>${t('loading')}</div>`;
 
+  // 优先使用缓存，避免重复触发限流
+  const cached = getCache(username);
+  if (cached) {
+    renderFromData(cached.profile, cached.repos);
+    // 后台静默刷新一次（不阻塞 UI）
+    refreshInBackground(username);
+    return;
+  }
+
   try {
     const [profile, repos] = await Promise.all([
       getJson(`https://api.github.com/users/${username}`),
       getJson(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`),
     ]);
     allRepos = repos.filter(r=>!r.fork).sort((a,b)=>b.stargazers_count-a.stargazers_count);
-    renderProfile(profile);
-    renderStats(profile, allRepos);
-    renderScore(profile, allRepos);
-    renderLanguages(allRepos);
-    sortAndRender();
+    setCache(username, profile, allRepos);
+    renderFromData(profile, allRepos);
   } catch(e) {
     repoGrid.innerHTML = '';
-    const msg = e.message==='rate_limit'?t('errorRateLimit'):e.message==='not_found'?t('errorNotFound'):t('errorGeneric').replace('{msg}',e.message);
+    let msg;
+    if (e.message==='rate_limit') {
+      msg = t('errorRateLimit');
+      if (e.resetAt) {
+        msg += ' ' + t('errorRateLimitReset').replace('{time}', e.resetAt.toLocaleTimeString(lang==='en'?'en-US':'zh-CN'));
+      }
+      // 自动展开 token 输入区，提醒用户填入
+      document.querySelector('.token-toggle').open = true;
+      tokenInput.focus();
+    } else if (e.message==='forbidden') {
+      msg = t('errorForbidden');
+    } else if (e.message==='not_found') {
+      msg = t('errorNotFound');
+    } else {
+      msg = t('errorGeneric').replace('{msg}',e.message);
+    }
     repoGrid.innerHTML = `<p class="error-msg">${msg}</p>`;
   }
+}
+
+function renderFromData(profile, repos) {
+  allRepos = repos;
+  renderProfile(profile);
+  renderStats(profile, allRepos);
+  renderScore(profile, allRepos);
+  renderLanguages(allRepos);
+  sortAndRender();
+}
+
+async function refreshInBackground(username) {
+  try {
+    const [profile, repos] = await Promise.all([
+      getJson(`https://api.github.com/users/${username}`),
+      getJson(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`),
+    ]);
+    const nonForks = repos.filter(r=>!r.fork).sort((a,b)=>b.stargazers_count-a.stargazers_count);
+    setCache(username, profile, nonForks);
+    if (usernameInput.value.trim().toLowerCase() === username.toLowerCase()) {
+      renderFromData(profile, nonForks);
+    }
+  } catch (e) { /* 静默失败，缓存数据仍可用 */ }
 }
 
 function sortAndRender() {
