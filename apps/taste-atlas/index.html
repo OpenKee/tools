@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taste Atlas — Recipe Explorer</title>
+    <meta name="description" content="Explore recipes from around the world with TheMealDB." />
+    <meta name="theme-color" content="#1a120b" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍲</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar taste-topbar">
+      <a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a>
+      <div class="topbar-right">
+        <button id="langBtn" class="ok-lang-toggle" type="button">中文</button>
+      </div>
+    </nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <p class="eyebrow" data-ok-i18n="eyebrow">TheMealDB · Global recipes</p>
+        <h1 data-ok-i18n="title">Taste Atlas</h1>
+        <p class="lead" data-ok-i18n="lead">Discover recipes from around the world. Search by name, filter by category or cuisine, or roll the dice for a random dish.</p>
+      </header>
+
+      <section class="controls">
+        <form id="searchForm" class="search-row">
+          <input id="searchInput" type="text" placeholder="Search recipes…" autocomplete="off" />
+          <button type="submit" data-ok-i18n="search">Search</button>
+          <button id="randomBtn" type="button" class="ok-btn-ghost" data-ok-i18n="random">Random</button>
+        </form>
+        <div class="filter-row">
+          <select id="categorySelect" class="filter-select">
+            <option value="" data-ok-i18n="allCategories">All categories</option>
+          </select>
+          <select id="areaSelect" class="filter-select">
+            <option value="" data-ok-i18n="allAreas">All cuisines</option>
+          </select>
+          <span id="statusNote" class="status-note"></span>
+        </div>
+      </section>
+
+      <div id="loadingRow" class="ok-loading">
+        <span class="ok-spinner"></span>
+        <span data-ok-i18n="loading">Loading…</span>
+      </div>
+
+      <div id="recipeGrid" class="recipe-grid"></div>
+      <div id="emptyState" class="empty-state" style="display:none;" data-ok-i18n="empty">No recipes found.</div>
+    </main>
+
+    <div id="detailModal" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-panel">
+        <button id="modalClose" class="modal-close" type="button" aria-label="Close">×</button>
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <footer class="ok-footer">
+      <span data-ok-i18n="dataSource">Data: TheMealDB</span>
+      <span><a href="https://openkee.github.io/" data-ok-i18n="allProjects">All projects ↗</a></span>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
