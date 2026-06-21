@@ -82,6 +82,7 @@
 
   /* ---------- 常量 ---------- */
   var KP_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json';
+  var KP_FORECAST_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json';
   var AURORA_URL = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json';
   var LEVEL_COLORS = { low: '#4ade80', med: '#22d3ee', high: '#a855f7', storm: '#f43f5e' };
   var LEGEND = [
@@ -150,22 +151,22 @@
   }
 
   /* ---------- 示例数据（API 失败时降级用） ---------- */
-  // 生成 mock KP 数据（结构与 NOAA 一致：表头 + 行）
+  // 生成 mock KP 数据（结构与 NOAA 新格式一致：对象数组）
   function mockKp() {
-    var rows = [['time_tag', 'Kp', 'a_running', 'station_count']];
+    var rows = [];
     var now = new Date();
     var h;
     // 过去 30 小时（实测）
     for (h = -30; h <= 0; h += 3) {
       var tm = new Date(now.getTime() + h * 3600000);
       var kp = 2 + 2 * Math.sin(h / 8) + (h > -6 ? 1.5 : 0);
-      rows.push([fmtUTC(tm), Math.max(0, kp).toFixed(2), '10', '8']);
+      rows.push({ time_tag: fmtUTC(tm), Kp: Math.max(0, kp).toFixed(2), a_running: 10, station_count: 8 });
     }
     // 未来 72 小时（预报），含一次风暴峰值
     for (h = 3; h <= 72; h += 3) {
       var tf = new Date(now.getTime() + h * 3600000);
       var kp2 = 3 + 3 * Math.sin(h / 10) + (h > 24 && h < 42 ? 2.5 : 0);
-      rows.push([fmtUTC(tf), Math.min(9, Math.max(0, kp2)).toFixed(2), '10', '0']);
+      rows.push({ time_tag: fmtUTC(tf), Kp: Math.min(9, Math.max(0, kp2)).toFixed(2), a_running: 10, station_count: 0 });
     }
     return rows;
   }
@@ -193,27 +194,59 @@
       }
     }
     return {
-      observation_time: new Date(now - 3600000).toISOString(),
-      forecast_time: new Date(now).toISOString(),
+      'Observation Time': new Date(now - 3600000).toISOString(),
+      'Forecast Time': new Date(now).toISOString(),
+      'Data Format': '[Longitude, Latitude, Aurora]',
       coordinates: coords
     };
   }
 
   /* ---------- 解析 KP 数据 ---------- */
-  function parseKp(rows) {
+  // NOAA 当前提供两种格式：对象数组 [{time_tag,Kp,a_running,station_count}]（新）
+  // 或嵌套数组 [['time_tag', 'Kp', ...], [...]]（旧）。此处兼容两者。
+  function normalizeKpRow(r) {
+    if (!r) return null;
+    if (Array.isArray(r)) {
+      return {
+        time: parseTime(r[0]),
+        kp: parseFloat(r[1]),
+        station: parseInt(r[3], 10) || 0
+      };
+    }
+    var time = r.time_tag || r.TimeTag || r.time;
+    var kp = r.Kp || r.kp || r.KP;
+    var station = r.station_count || r.StationCount || r.station || 0;
+    return {
+      time: parseTime(time),
+      kp: parseFloat(kp),
+      station: parseInt(station, 10) || 0
+    };
+  }
+
+  function parseKp(rows, forecastRows) {
     if (!rows || !rows.length) return { current: null, forecast: [] };
-    var data = rows.slice(1).map(function (r) {
-      return { time: parseTime(r[0]), kp: parseFloat(r[1]), station: parseInt(r[3], 10) || 0 };
-    }).filter(function (d) { return !isNaN(d.kp) && d.time && !isNaN(d.time.getTime()); });
 
     var now = Date.now();
+    var data = rows.map(normalizeKpRow).filter(function (d) {
+      return d && !isNaN(d.kp) && d.time && !isNaN(d.time.getTime());
+    });
+
     var measured = data.filter(function (d) { return d.station > 0; });
     var current = measured.length ? measured[measured.length - 1] : null;
     if (!current) {
       current = data.filter(function (d) { return d.time.getTime() <= now; }).pop() || data[0] || null;
     }
-    // 未来预报，取前 24 个（3 天 × 每天 8 个）
-    var forecast = data.filter(function (d) { return d.time.getTime() > now; }).slice(0, 24);
+
+    // 预报优先使用专用 forecast 接口；若不可用，用历史数据兜底
+    var forecast = [];
+    if (forecastRows && forecastRows.length) {
+      forecast = forecastRows.map(normalizeKpRow).filter(function (d) {
+        return d && !isNaN(d.kp) && d.time && !isNaN(d.time.getTime());
+      }).filter(function (d) { return d.time.getTime() > now; }).slice(0, 24);
+    }
+    if (!forecast.length) {
+      forecast = data.filter(function (d) { return d.time.getTime() > now; }).slice(0, 24);
+    }
     if (!forecast.length) forecast = data.slice(-24);
     return { current: current, forecast: forecast };
   }
@@ -371,7 +404,10 @@
   }
 
   function renderAurora(data, userLat) {
-    var coords = (data && data.coordinates) ? data.coordinates : [];
+    var coords = [];
+    if (data) {
+      coords = data.coordinates || data['Coordinates'] || [];
+    }
     drawHemisphere(northCanvas, coords, 'north', userLat);
     drawHemisphere(southCanvas, coords, 'south', userLat);
   }
@@ -445,20 +481,26 @@
   function load() {
     showLoading(true);
     var kpFallback = false;
+    var forecastFallback = false;
     var auroraFallback = false;
 
-    var kpP = OK.fetchJSON(KP_URL).then(parseKp).catch(function () {
+    var kpP = OK.fetchJSON(KP_URL).catch(function () {
       kpFallback = true;
-      return parseKp(mockKp());
+      return mockKp();
+    });
+    var fcP = OK.fetchJSON(KP_FORECAST_URL).catch(function () {
+      forecastFallback = true;
+      return null;
     });
     var auP = OK.fetchJSON(AURORA_URL).catch(function () {
       auroraFallback = true;
       return mockAurora();
     });
 
-    Promise.all([kpP, auP]).then(function (res) {
-      state.kpParsed = res[0];
-      state.aurora = res[1];
+    Promise.all([kpP, fcP, auP]).then(function (res) {
+      state.kpParsed = parseKp(res[0], res[1]);
+      state.aurora = res[2];
+      // 只有核心数据（当前 KP / 极光图）降级才提示；预报接口失败会静默使用历史/模拟数据
       state.usedFallback = kpFallback || auroraFallback;
       showLoading(false);
       rerender();
