@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Atlas Info — Country Encyclopedia</title>
 <meta name="description" content="Explore any country: flag, population, languages, currencies, borders, and more.">
-<meta property="og:title" content="Atlas Info"><meta property="og:description" content="Explore any country: flag, population, languages, currencies, borders. REST Countries API." />
+<meta property="og:title" content="Atlas Info"><meta property="og:description" content="Explore any country: flag, population, languages, currencies, borders. World Bank + jsDelivr/world-countries." />
     <meta property="og:type" content="website">
 <meta property="og:url" content="https://openkee.github.io/atlas-info/">
 <meta name="twitter:card" content="summary" />
@@ -51,7 +51,7 @@ h1{margin-top:0.3rem;font-size:clamp(2rem,5vw,3rem);line-height:0.95;letter-spac
 </style></head><body><div class="shell">
 <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
 <header class="masthead" style="display:flex;justify-content:space-between;align-items:start">
-<div><p class="eyebrow" data-ok-i18n="eyebrow">Country encyclopedia</p><h1 data-ok-i18n="title">Atlas Info</h1><p class="lead" data-ok-i18n="lead">Search any country. Flag, population, languages, currencies, borders — from local data.</p></div>
+<div><p class="eyebrow" data-ok-i18n="eyebrow">Country encyclopedia</p><h1 data-ok-i18n="title">Atlas Info</h1><p class="lead" data-ok-i18n="lead">Search any country. Flag, population, languages, currencies, borders — via World Bank + jsDelivr.</p></div>
 <div style="display:flex;gap:0.5rem;align-items:center"><a href="https://openkee.github.io/" style="font-size:0.82rem;padding:0.4rem 0.8rem;border:1px solid var(--line);border-radius:6px;color:var(--text)" data-ok-i18n="allProjects">All projects ↗</a><button id="langToggle" class="ok-lang-toggle" type="button">中文</button></div>
 </header>
 <section class="search"><input id="searchInput" type="text" placeholder="Search country…" autocomplete="off"><button id="searchBtn" data-ok-i18n="search">Search</button></section>
@@ -69,8 +69,8 @@ const searchInput=document.getElementById('searchInput'),searchBtn=document.getE
 const REGIONS=[{k:'',l:{en:'All',zh:'全部'}},{k:'africa',l:{en:'Africa',zh:'非洲'}},{k:'americas',l:{en:'Americas',zh:'美洲'}},{k:'asia',l:{en:'Asia',zh:'亚洲'}},{k:'europe',l:{en:'Europe',zh:'欧洲'}},{k:'oceania',l:{en:'Oceania',zh:'大洋洲'}}];
 
 const i18n={
-en:{eyebrow:'Country encyclopedia',title:'Atlas Info',lead:'Search any country. Flag, population, languages, currencies, borders — from local data.',search:'Search',allProjects:'All projects ↗',capital:'Capital',population:'Population',region:'Region',subregion:'Subregion',languages:'Languages',currencies:'Currencies',borders:'Borders',openMaps:'Google Maps',openOSM:'OpenStreetMap',none:'None',countries:'countries'},
-zh:{eyebrow:'国家百科',title:'Atlas Info',lead:'搜索任意国家。国旗、人口、语言、货币、边境 — 来自本地数据。',search:'搜索',allProjects:'全部项目 ↗',capital:'首都',population:'人口',region:'地区',subregion:'子地区',languages:'语言',currencies:'货币',borders:'边境',openMaps:'Google 地图',openOSM:'OpenStreetMap',none:'无',countries:'个国家'}
+en:{eyebrow:'Country encyclopedia',title:'Atlas Info',lead:'Search any country. Flag, population, languages, currencies, borders — via World Bank + jsDelivr.',search:'Search',allProjects:'All projects ↗',capital:'Capital',population:'Population',region:'Region',subregion:'Subregion',languages:'Languages',currencies:'Currencies',borders:'Borders',openMaps:'Google Maps',openOSM:'OpenStreetMap',none:'None',countries:'countries'},
+zh:{eyebrow:'国家百科',title:'Atlas Info',lead:'搜索任意国家。国旗、人口、语言、货币、边境 — 通过 World Bank + jsDelivr。',search:'搜索',allProjects:'全部项目 ↗',capital:'首都',population:'人口',region:'地区',subregion:'子地区',languages:'语言',currencies:'货币',borders:'边境',openMaps:'Google 地图',openOSM:'OpenStreetMap',none:'无',countries:'个国家'}
 };
 
 let allCountries=[],activeRegion='',lang=OK.lang;
@@ -88,10 +88,20 @@ OK.initLangToggle(langToggle,i18n,applyLang);
 
 async function loadAll(){
 try{
-const r=await fetch('data.json');
-if(!r.ok)throw new Error(r.status);
-const data=await r.json();
-if(!Array.isArray(data))throw new Error('Not array');
+const [countriesRes, popRes] = await Promise.all([
+  fetch('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json'),
+  fetch('https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&per_page=300&date=2023')
+]);
+if(!countriesRes.ok)throw new Error('countries '+countriesRes.status);
+if(!popRes.ok)throw new Error('population '+popRes.status);
+const countries=await countriesRes.json();
+const popData=await popRes.json();
+if(!Array.isArray(countries))throw new Error('countries not array');
+const popMap={};
+if(Array.isArray(popData)&&popData.length>1){
+  popData[1].forEach(item=>{if(item.countryiso3code&&item.value)popMap[item.countryiso3code]=item.value});
+}
+const data=countries.map(c=>({...c,population:popMap[c.cca3]||0}));
 allCountries=data.sort((a,b)=>(a.name?.common||'').localeCompare(b.name?.common||''));
 renderBar();renderGrid(allCountries);
 }catch(e){countryGrid.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">'+e.message+'</div>'}
