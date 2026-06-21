@@ -232,7 +232,7 @@
       }
 
       function render() {
-        const folder = name => 'apps/' + name.toLowerCase().replace(/\s+/g, '-') + '/';
+        const folder = name => 'apps/' + name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-') + '/';
         projectGrid.innerHTML = PROJECTS.map(p => `
           <div class="card">
             <span class="card-tag ${p.typeClass}">${t(p.typeClass)}</span>
