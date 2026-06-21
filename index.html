@@ -46,6 +46,7 @@
       .card-tag.travel { color:#f472b6; border-color:rgba(244,114,182,0.3); }
       .card-tag.space { color:#38bdf8; border-color:rgba(56,189,248,0.3); }
       .card-tag.food { color:#f59e0b; border-color:rgba(245,158,11,0.3); }
+      .card-tag.game { color:#8b5cf6; border-color:rgba(139,92,246,0.3); }
       .card-name { font-size:1.05rem; font-weight:700; letter-spacing:-0.01em; }
       .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; flex:1; }
       .card-links { display:flex; gap:0.5rem; margin-top:0.3rem; }
@@ -78,8 +79,8 @@
       </header>
 
       <section class="stats">
-        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">24</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">7</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">25</div></div>
+        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">8</div></div>
         <div class="stat-item"><div class="stat-label" data-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-i18n="active">Active</div></div>
       </section>
 
@@ -189,6 +190,10 @@
           name: 'Taste Atlas', type: 'food', typeClass: 'food',
           desc: { en: 'Explore recipes from around the world via TheMealDB.', zh: '通过 TheMealDB 探索全球食谱。' },
         },
+        {
+          name: 'Poké Deck', type: 'game', typeClass: 'game',
+          desc: { en: 'Pokémon explorer with stats, types, abilities, and flavor text.', zh: '宝可梦图鉴：种族值、属性、特性与图鉴介绍。' },
+        },
       ];
 
       const copy = {
@@ -196,13 +201,13 @@
           title: 'API-powered tools and utilities.',
           lead: 'Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more \u2014 all powered by public APIs.',
           allProjects: 'All projects ↗', tools: 'Tools', categories: 'Categories', status: 'Status', active: 'Live',
-          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', space: 'Space', food: 'Food', open: 'Open ↗', back: '\u2190 All projects',
+          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', space: 'Space', food: 'Food', game: 'Game', open: 'Open ↗', back: '\u2190 All projects',
         },
         zh: {
           title: 'API 驱动的工具集。',
           lead: '汇率、天气简报、加密行情、电台流、地理编码……全部由公共 API 驱动。',
           allProjects: '全部项目 ↗', tools: '工具', categories: '分类', status: '状态', active: '在线',
-          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', space: '太空', food: '美食', open: '打开 ↗', back: '\u2190 全部项目',
+          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', space: '太空', food: '美食', game: '游戏', open: '打开 ↗', back: '\u2190 全部项目',
         },
       };
 
