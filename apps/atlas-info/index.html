@@ -88,7 +88,7 @@ OK.initLangToggle(langToggle,i18n,applyLang);
 
 async function loadAll(){
 try{
-const r=await fetch('https://restcountries.com/v3.1/all?fields=name,flags,population,region,cca3');
+const r=await fetch('data.json');
 if(!r.ok)throw new Error(r.status);
 const data=await r.json();
 if(!Array.isArray(data))throw new Error('Not array');
@@ -112,18 +112,20 @@ function filter(){
 
 function renderGrid(countries){
   resultCount.textContent=countries.length+' '+t('countries');
-  countryGrid.innerHTML=countries.map(c=>'<div class="country-mini" data-code="'+c.cca3+'"><span class="c-flag">'+(c.flags?.emoji||'')+'</span><div><div class="c-name">'+(c.name?.common||'')+'</div><div class="c-sub">'+(c.region||'')+' · '+num(c.population||0)+'</div></div></div>').join('');
+  countryGrid.innerHTML=countries.map(c=>'<div class="country-mini" data-code="'+c.cca3+'"><span class="c-flag">'+(c.flag||'')+'</span><div><div class="c-name">'+(c.name?.common||'')+'</div><div class="c-sub">'+(c.region||'')+' · '+num(c.population||0)+'</div></div></div>').join('');
   countryGrid.querySelectorAll('[data-code]').forEach(el=>el.addEventListener('click',()=>showDetail(el.dataset.code)))
 }
 
-async function showDetail(code){
-  let c=allCountries.find(x=>x.cca3===code);if(!c)return;
-  try{const r=await fetch('https://restcountries.com/v3.1/alpha/'+code+'?fields=name,flags,population,region,subregion,capital,languages,currencies,borders,cca3,latlng,maps');if(r.ok)c=await r.json()}catch(e){console.warn('Detail fetch failed:',e)}
+function showDetail(code){
+  const c=allCountries.find(x=>x.cca3===code);if(!c)return;
   const langs=c.languages?Object.values(c.languages).join(', '):'—';
   const currs=c.currencies?Object.values(c.currencies).map(x=>x.name+' ('+(x.symbol||'')+')').join(', '):'—';
-  const borders=c.borders?.map(b=>{const bc=allCountries.find(x=>x.cca3===b);return bc?'<button class="border-chip" data-code="'+b+'">'+(bc.flags?.emoji||'')+' '+(bc.name?.common||b)+'</button>':'<button class="border-chip" data-code="'+b+'">'+b+'</button>'}).join('')||t('none');
+  const borders=c.borders?.map(b=>{const bc=allCountries.find(x=>x.cca3===b);return bc?'<button class="border-chip" data-code="'+b+'">'+(bc.flag||'')+' '+(bc.name?.common||b)+'</button>':'<button class="border-chip" data-code="'+b+'">'+b+'</button>'}).join('')||t('none');
+  const lat=c.latlng?.[0],lng=c.latlng?.[1];
+  const gMap=lat!=null&&lng!=null?'https://www.google.com/maps/search/?api=1&query='+lat+','+lng:'#';
+  const osm=lat!=null&&lng!=null?'https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lng+'#map=5/'+lat+'/'+lng:'#';
   detailCard.style.display='';
-  detailCard.innerHTML='<div class="card"><div class="flag">'+(c.flags?.emoji||'')+'</div><div class="info"><h2>'+(c.name?.common||'')+'</h2><div class="native">'+(c.name?.official||'')+'</div><div class="grid"><div class="item"><div class="i-label">'+t('capital')+'</div><div class="i-val">'+(c.capital?.[0]||'—')+'</div></div><div class="item"><div class="i-label">'+t('population')+'</div><div class="i-val">'+num(c.population||0)+'</div></div><div class="item"><div class="i-label">'+t('region')+'</div><div class="i-val">'+(c.region||'—')+'</div></div><div class="item"><div class="i-label">'+t('subregion')+'</div><div class="i-val">'+(c.subregion||'—')+'</div></div><div class="item"><div class="i-label">'+t('languages')+'</div><div class="i-val">'+langs+'</div></div><div class="item"><div class="i-label">'+t('currencies')+'</div><div class="i-val">'+currs+'</div></div></div><div class="borders"><h3>'+t('borders')+'</h3><div class="border-chips">'+borders+'</div></div><div class="map-link"><a href="'+(c.maps?.googleMaps||'#')+'" target="_blank">'+t('openMaps')+' ↗</a> · <a href="'+(c.maps?.openStreetMaps||'#')+'" target="_blank">'+t('openOSM')+' ↗</a></div></div></div>';
+  detailCard.innerHTML='<div class="card"><div class="flag">'+(c.flag||'')+'</div><div class="info"><h2>'+(c.name?.common||'')+'</h2><div class="native">'+(c.name?.official||'')+'</div><div class="grid"><div class="item"><div class="i-label">'+t('capital')+'</div><div class="i-val">'+(c.capital?.[0]||'—')+'</div></div><div class="item"><div class="i-label">'+t('population')+'</div><div class="i-val">'+num(c.population||0)+'</div></div><div class="item"><div class="i-label">'+t('region')+'</div><div class="i-val">'+(c.region||'—')+'</div></div><div class="item"><div class="i-label">'+t('subregion')+'</div><div class="i-val">'+(c.subregion||'—')+'</div></div><div class="item"><div class="i-label">'+t('languages')+'</div><div class="i-val">'+langs+'</div></div><div class="item"><div class="i-label">'+t('currencies')+'</div><div class="i-val">'+currs+'</div></div></div><div class="borders"><h3>'+t('borders')+'</h3><div class="border-chips">'+borders+'</div></div><div class="map-link"><a href="'+gMap+'" target="_blank">'+t('openMaps')+' ↗</a> · <a href="'+osm+'" target="_blank">'+t('openOSM')+' ↗</a></div></div></div>';
   detailCard.querySelectorAll('[data-code]').forEach(b=>b.addEventListener('click',()=>showDetail(b.dataset.code)));
   detailCard.scrollIntoView({behavior:'smooth'})
 }
