@@ -125,7 +125,8 @@ const chartSvg = document.getElementById('trendChart');
 const compareGrid = document.getElementById('compareGrid');
 
 // ---------- API 地址 ----------
-const MAAS2_URL = 'https://api.maas2.apollorion.com/';
+// MAAS2 本身未设置 CORS，通过 corsproxy.io（免费公开代理）在浏览器端访问。
+const MAAS2_URL = 'https://corsproxy.io/?url=https%3A%2F%2Fapi.maas2.apollorion.com%2F';
 
 // ---------- 运行时状态 ----------
 let lang = OK.lang;
