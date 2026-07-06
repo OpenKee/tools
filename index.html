@@ -47,7 +47,6 @@
       .card-tag.travel { color:#f472b6; border-color:rgba(244,114,182,0.3); }
       .card-tag.space { color:#38bdf8; border-color:rgba(56,189,248,0.3); }
       .card-tag.food { color:#f59e0b; border-color:rgba(245,158,11,0.3); }
-      .card-tag.game { color:#8b5cf6; border-color:rgba(139,92,246,0.3); }
       .card-tag.fun { color:#fb7185; border-color:rgba(251,113,133,0.3); }
       .card-name { font-size:1.05rem; font-weight:700; letter-spacing:-0.01em; }
       .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; flex:1; }
@@ -81,8 +80,8 @@
       </header>
 
       <section class="stats">
-        <div class="stat-item"><div class="stat-label" data-ok-i18n="tools">Tools</div><div class="stat-value">37</div></div>
-        <div class="stat-item"><div class="stat-label" data-ok-i18n="categories">Categories</div><div class="stat-value">9</div></div>
+        <div class="stat-item"><div class="stat-label" data-ok-i18n="tools">Tools</div><div class="stat-value">28</div></div>
+        <div class="stat-item"><div class="stat-label" data-ok-i18n="categories">Categories</div><div class="stat-value">8</div></div>
         <div class="stat-item"><div class="stat-label" data-ok-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-ok-i18n="active">Active</div></div>
       </section>
 
@@ -128,10 +127,6 @@
         {
           name: 'Hour Bridge', type: 'data', typeClass: 'data',
           desc: { en: 'Time zone bridge — compare times across regions.', zh: '时区桥梁 — 跨区域时间对照。' },
-        },
-        {
-          name: 'Art Gallery', slug: 'art-gallery', type: 'media', typeClass: 'media',
-          desc: { en: 'Explore 50,000+ artworks from the Art Institute of Chicago.', zh: '探索芝加哥艺术馆 5 万+ 件藏品。' },
         },
         {
           name: 'Earthquake', type: 'data', typeClass: 'data',
@@ -182,10 +177,6 @@
           desc: { en: 'Upcoming rocket launches with live countdown.', zh: '即将发射的火箭日程，含实时倒计时。' },
         },
         {
-          name: 'Pixel Painter', type: 'media', typeClass: 'media',
-          desc: { en: 'Pixel art editor with palette, undo, and PNG export.', zh: '像素画板，含调色板、撤销、导出 PNG。' },
-        },
-        {
           name: 'Word Forge', type: 'data', typeClass: 'data',
           desc: { en: 'Vocabulary trainer with speech, spelling, and quizzes.', zh: '单词学习，含朗读、拼写、选择题。' },
         },
@@ -194,40 +185,12 @@
           desc: { en: 'Explore recipes from around the world via TheMealDB.', zh: '通过 TheMealDB 探索全球食谱。' },
         },
         {
-          name: 'Poké Deck', type: 'game', typeClass: 'game',
-          desc: { en: 'Pokémon explorer with stats, types, abilities, and flavor text.', zh: '宝可梦图鉴：种族值、属性、特性与图鉴介绍。' },
-        },
-        {
-          name: 'Quiz Arena', type: 'fun', typeClass: 'fun',
-          desc: { en: 'Trivia challenge with categories, difficulty levels, and scoring.', zh: '知识竞答：分类、难度、计分。' },
-        },
-        {
-          name: 'Anime Atlas', type: 'fun', typeClass: 'fun',
-          desc: { en: 'Search and browse anime from MyAnimeList via Jikan.', zh: '通过 Jikan 搜索和浏览 MyAnimeList 动画。' },
-        },
-        {
           name: 'Meme Forge', type: 'fun', typeClass: 'fun',
           desc: { en: 'Random memes from Reddit by subreddit or fully random.', zh: 'Reddit 随机梗图，可按 subreddit 或完全随机。' },
         },
         {
-          name: 'Idea Spark', type: 'fun', typeClass: 'fun',
-          desc: { en: 'Random activity ideas when you are bored, with type and participants filters.', zh: '无聊时随机推荐活动，支持类型和参与人数筛选。' },
-        },
-        {
           name: 'Cocktail Bar', type: 'food', typeClass: 'food',
           desc: { en: 'Search cocktail recipes with ingredients, steps, and glassware.', zh: '鸡尾酒配方搜索：材料、步骤、酒杯。' },
-        },
-        {
-          name: 'Cosmic Lens', type: 'space', typeClass: 'space',
-          desc: { en: 'NASA Astronomy Picture of the Day with date explorer.', zh: 'NASA 每日天文图片，支持日期探索。' },
-        },
-        {
-          name: 'Cat Atlas', type: 'fun', typeClass: 'fun',
-          desc: { en: 'Browse cat photos by breed with temperament and origin info.', zh: '按品种浏览猫咪图片，含性情和起源信息。' },
-        },
-        {
-          name: 'Star Wars', type: 'fun', typeClass: 'fun',
-          desc: { en: 'Explore characters, planets, and starships from the SWAPI.', zh: '探索星球大战角色、星球和星舰。' },
         },
         {
           name: 'HN Reader', type: 'data', typeClass: 'data',
@@ -252,13 +215,13 @@
           title: 'API-powered tools and utilities.',
           lead: 'Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more \u2014 all powered by public APIs.',
           allProjects: 'All projects ↗', tools: 'Tools', categories: 'Categories', status: 'Status', active: 'Live',
-          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', space: 'Space', food: 'Food', game: 'Game', fun: 'Fun', open: 'Open ↗', back: '\u2190 All projects',
+          data: 'Data', geo: 'Geo', finance: 'Finance', media: 'Media', travel: 'Travel', space: 'Space', food: 'Food', fun: 'Fun', open: 'Open ↗', back: '\u2190 All projects',
         },
         zh: {
           title: 'API 驱动的工具集。',
           lead: '汇率、天气简报、加密行情、电台流、地理编码……全部由公共 API 驱动。',
           allProjects: '全部项目 ↗', tools: '工具', categories: '分类', status: '状态', active: '在线',
-          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', space: '太空', food: '美食', game: '游戏', fun: '娱乐', open: '打开 ↗', back: '\u2190 全部项目',
+          data: '数据', geo: '地理', finance: '金融', media: '媒体', travel: '旅行', space: '太空', food: '美食', fun: '娱乐', open: '打开 ↗', back: '\u2190 全部项目',
         },
       };
 
