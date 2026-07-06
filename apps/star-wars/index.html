@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Star Wars Archive — Characters, Planets &amp; Starships</title>
+    <meta name="description" content="Explore Star Wars characters, planets, and starships from the SWAPI archive." />
+    <meta name="theme-color" content="#07070f" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar sw-topbar">
+      <a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a>
+      <div class="topbar-right">
+        <button id="langBtn" class="ok-lang-toggle" type="button">中文</button>
+      </div>
+    </nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <p class="eyebrow" data-ok-i18n="eyebrow">SWAPI · Galactic Archive</p>
+        <h1 data-ok-i18n="title">Star Wars Archive</h1>
+        <p class="lead" data-ok-i18n="lead">Search the galaxy for legendary characters, distant planets, and iconic starships. Data from the Star Wars API.</p>
+      </header>
+
+      <section class="controls">
+        <!-- 标签页：角色 / 星球 / 星舰 -->
+        <div class="tabs" role="tablist" aria-label="Categories">
+          <div class="tab-indicator" aria-hidden="true"></div>
+          <button class="tab active" type="button" role="tab" data-tab="people" data-ok-i18n="tabPeople">Characters</button>
+          <button class="tab" type="button" role="tab" data-tab="planets" data-ok-i18n="tabPlanets">Planets</button>
+          <button class="tab" type="button" role="tab" data-tab="starships" data-ok-i18n="tabStarships">Starships</button>
+        </div>
+
+        <!-- 搜索 -->
+        <form id="searchForm" class="search-row">
+          <input id="searchInput" type="text" autocomplete="off" aria-label="Search" />
+          <button type="submit" data-ok-i18n="search">Search</button>
+          <button id="clearBtn" type="button" class="ok-btn-ghost" data-ok-i18n="clear">Clear</button>
+        </form>
+
+        <!-- 分页 -->
+        <div class="pager">
+          <button id="prevBtn" type="button" class="ok-btn-ghost page-btn" data-ok-i18n="prev" disabled>← Prev</button>
+          <span id="pageInfo" class="page-info"></span>
+          <button id="nextBtn" type="button" class="ok-btn-ghost page-btn" data-ok-i18n="next" disabled>Next →</button>
+        </div>
+      </section>
+
+      <div id="loadingRow" class="ok-loading">
+        <span class="ok-spinner"></span>
+        <span data-ok-i18n="loading">Loading…</span>
+      </div>
+
+      <div id="errorBox" class="ok-error" style="display:none;"></div>
+      <div id="grid" class="sw-grid"></div>
+      <div id="emptyState" class="empty-state" style="display:none;" data-ok-i18n="empty">No results found in this galaxy.</div>
+    </main>
+
+    <!-- 详情弹窗 -->
+    <div id="detailModal" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-panel" role="dialog" aria-modal="true">
+        <button id="modalClose" class="modal-close" type="button" aria-label="Close">×</button>
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <footer class="ok-footer">
+      <span data-ok-i18n="dataSource">Data: SWAPI (swapi.dev)</span>
+      <span><a href="https://openkee.github.io/" data-ok-i18n="allProjects">All projects ↗</a></span>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

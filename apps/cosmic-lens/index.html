@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cosmic Lens — NASA 每日天文图片</title>
+    <meta name="description" content="基于 NASA APOD 的每日天文一图：大图展示、历史日期回看、随机探索，支持中英文。" />
+    <meta property="og:title" content="Cosmic Lens" />
+    <meta property="og:description" content="NASA 每日天文一图（APOD），含历史日期回看与随机探索。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#060611" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-left">
+          <p class="eyebrow" data-ok-i18n="eyebrow">NASA · Astronomy Picture of the Day</p>
+          <h1 data-ok-i18n="title">Cosmic Lens</h1>
+          <p class="lead" data-ok-i18n="lead">一扇望向宇宙的每日之窗。NASA 每天精选一张宇宙影像，并由专业天文学家撰写简短说明。</p>
+        </div>
+        <div class="header-right">
+          <label class="date-field">
+            <span class="date-label" data-ok-i18n="date">日期</span>
+            <input type="date" id="dateInput" min="1995-06-16" />
+          </label>
+          <button id="todayBtn" class="ok-btn-ghost" type="button" data-ok-i18n="today">今天</button>
+          <button id="randomBtn" class="btn-accent" type="button" data-ok-i18n="random">随机探索</button>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- APOD 展示舞台：图片 / 视频 / 加载 / 错误 -->
+      <section class="stage" id="stage" aria-live="polite" aria-label="Astronomy Picture of the Day">
+        <div class="state loading">
+          <span class="orbit" aria-hidden="true"></span>
+          <span data-ok-i18n="loading">正在接收来自深空的信号…</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot;
+      Data &copy; <a href="https://apod.nasa.gov/" target="_blank" rel="noreferrer">NASA APOD</a> &middot;
+      <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
