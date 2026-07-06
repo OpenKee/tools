@@ -193,7 +193,7 @@
           desc: { en: 'Search cocktail recipes with ingredients, steps, and glassware.', zh: '鸡尾酒配方搜索：材料、步骤、酒杯。' },
         },
         {
-          name: 'HN Reader', type: 'data', typeClass: 'data',
+          name: 'HN Reader', slug: 'hn-reader', type: 'data', typeClass: 'data',
           desc: { en: 'Browse Hacker News top stories, Ask HN, Show HN, and jobs.', zh: '浏览 Hacker News 热门文章、Ask HN、Show HN 和招聘。' },
         },
         {
@@ -229,14 +229,14 @@
       const projectGrid = document.getElementById('projectGrid');
 
       function render() {
-        const folder = name => 'apps/' + name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-') + '/';
+        const folder = p => 'apps/' + (p.slug || p.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g,' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')) + '/';
         projectGrid.innerHTML = PROJECTS.map(p => `
           <div class="card">
             <span class="card-tag ${p.typeClass}">${OK.t(p.typeClass, copy)}</span>
             <div class="card-name">${p.name}</div>
             <div class="card-desc">${p.desc[OK.lang]}</div>
             <div class="card-links">
-              <a class="card-link" href="${folder(p.name)}">${OK.t('open', copy)}</a>
+              <a class="card-link" href="${folder(p)}">${OK.t('open', copy)}</a>
             </div>
           </div>
         `).join('');
