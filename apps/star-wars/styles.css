@@ -1,0 +1,493 @@
+/* ============================================================
+   Star Wars Archive — 星战档案
+   深色太空主题：星空背景 + 星战黄强调 + 光剑色（蓝/红）分类
+   ============================================================ */
+
+:root {
+  /* 表面与文字 */
+  --bg: #07070f;
+  --surface: #11111c;
+  --surface-2: #1b1b2a;
+  --text: #f5f5fb;
+  --text-muted: #9a9ab0;
+  --border: #2a2a3d;
+
+  /* 强调色：星战黄 + 光剑蓝/红 */
+  --accent: #fbbf24;
+  --saber-blue: #3b82f6;
+  --saber-red: #ef4444;
+  --accent-contrast: #0a0a12;
+
+  color-scheme: dark;
+
+  /* 映射到 shared.css 的 --ok-* token */
+  --ok-bg: var(--bg);
+  --ok-panel: var(--surface);
+  --ok-text: var(--text);
+  --ok-muted: var(--text-muted);
+  --ok-line: var(--border);
+  --ok-accent: var(--accent);
+  --ok-accent-soft: rgba(251, 191, 36, 0.12);
+  --ok-topbar-line: var(--border);
+  --ok-footer-line: var(--border);
+  --ok-footer-text: var(--text-muted);
+  --ok-footer-link: var(--accent);
+  --ok-radius: 14px;
+  --ok-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+
+  --ok-font: "Outfit", system-ui, -apple-system, sans-serif;
+  --ok-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--ok-font);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 星云辉光底层 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(1200px 700px at 82% -10%, rgba(251, 191, 36, 0.10), transparent 60%),
+    radial-gradient(1000px 700px at 8% 0%, rgba(59, 130, 246, 0.10), transparent 55%),
+    radial-gradient(900px 600px at 50% 112%, rgba(239, 68, 68, 0.08), transparent 55%),
+    var(--bg);
+}
+
+/* 星点漂移层 */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: -1;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 200px 200px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 320px 150px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 400px 300px, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 450px 350px;
+  background-repeat: repeat;
+  opacity: 0.7;
+  animation: starDrift 200s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes starDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-450px, -350px, 0); }
+}
+
+h1, h2, h3, p, strong, span, small { margin: 0; }
+
+/* ---------- 顶部导航 ---------- */
+.sw-topbar {
+  justify-content: space-between;
+  background: rgba(7, 7, 15, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.topbar-right { display: flex; gap: 0.6rem; align-items: center; }
+
+/* ---------- 主容器 ---------- */
+.shell {
+  width: min(1140px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.4rem 0 4rem;
+  position: relative;
+}
+
+.masthead { padding: 1.4rem 0 1.2rem; }
+.eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  font-weight: 600;
+}
+h1 {
+  margin-top: 0.5rem;
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+.lead {
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+/* ---------- 控件区 ---------- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.1rem 0 1.4rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.4rem;
+}
+
+/* 标签页 + 滑动指示器 */
+.tabs {
+  position: relative;
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem;
+  align-self: flex-start;
+}
+.tab {
+  position: relative;
+  z-index: 2;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 200ms;
+}
+.tab.active { color: var(--accent-contrast); }
+.tab:not(.active):hover { color: var(--text); }
+.tab-indicator {
+  position: absolute;
+  z-index: 1;
+  top: 0.3rem;
+  left: 0;
+  height: calc(100% - 0.6rem);
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.55);
+  transition: transform 320ms cubic-bezier(.5, 1.2, .4, 1), width 320ms cubic-bezier(.5, 1.2, .4, 1);
+}
+
+/* 搜索行 */
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.search-row input {
+  flex: 1;
+  min-width: 220px;
+  font: inherit;
+  height: 2.6rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.search-row input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+.search-row button {
+  font: inherit;
+  height: 2.6rem;
+  padding: 0 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 150ms, transform 150ms;
+}
+.search-row button:hover {
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.5);
+  transform: translateY(-1px);
+}
+.search-row .ok-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  height: 2.6rem;
+}
+.search-row .ok-btn-ghost:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: none;
+  box-shadow: none;
+}
+
+/* 分页 */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.page-btn { height: 2.2rem; padding: 0 0.85rem; }
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn:not(:disabled):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.page-info {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--ok-mono);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- 卡片网格 ---------- */
+.sw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.sw-card {
+  position: relative;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--ok-radius);
+  padding: 1.1rem 1.1rem 1.2rem;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+  animation: cardIn 380ms cubic-bezier(.3, 1, .4, 1) backwards;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 顶部光剑色条（按类型区分） */
+.sw-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-glow, var(--accent));
+  opacity: 0.9;
+}
+/* 悬停内发光 */
+.sw-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(220px 120px at 50% -20%, var(--card-glow, var(--accent)), transparent 70%);
+  opacity: 0;
+  transition: opacity 220ms;
+  pointer-events: none;
+}
+.sw-card:hover::after { opacity: 0.2; }
+
+.sw-card[data-kind="people"]    { --card-glow: var(--saber-blue); --card-glow-soft: rgba(59, 130, 246, 0.35); }
+.sw-card[data-kind="planets"]   { --card-glow: var(--accent);     --card-glow-soft: rgba(251, 191, 36, 0.35); }
+.sw-card[data-kind="starships"] { --card-glow: var(--saber-red);  --card-glow-soft: rgba(239, 68, 68, 0.35); }
+
+.sw-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-glow);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), 0 0 28px var(--card-glow-soft);
+}
+
+.sw-card-kicker {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--card-glow);
+  font-weight: 600;
+  font-family: var(--ok-mono);
+}
+.sw-card-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-top: 0.4rem;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.sw-card-meta {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.sw-card-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.sw-card-meta-label {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--ok-mono);
+}
+.sw-card-meta-row b {
+  color: var(--text);
+  font-weight: 600;
+  font-family: var(--ok-mono);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ---------- 状态 ---------- */
+.empty-state {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.ok-error { margin-top: 1rem; }
+
+/* ---------- 弹窗 ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal[hidden] { display: none; }
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 3, 8, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 200ms ease;
+}
+.modal-panel {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--ok-radius);
+  box-shadow: var(--ok-shadow);
+  animation: modalIn 260ms cubic-bezier(.3, 1.2, .4, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  transition: border-color 150ms, color 150ms;
+}
+.modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+.modal-body { padding: 0; }
+.modal-head {
+  padding: 1.6rem 1.6rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.modal-kicker {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  font-weight: 600;
+  font-family: var(--ok-mono);
+}
+.modal-title {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  margin-top: 0.35rem;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.homeworld-link {
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.homeworld-link b { color: var(--accent); font-weight: 700; }
+
+.modal-section {
+  padding: 1rem 1.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.modal-section:last-child { border-bottom: none; }
+.modal-section h3 {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 0.7rem;
+  font-weight: 600;
+}
+.attr-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.5rem;
+}
+.attr {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.attr-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-family: var(--ok-mono);
+}
+.attr-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+.attr-value.muted { color: var(--text-muted); font-weight: 400; }
+
+@media (max-width: 640px) {
+  .sw-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem; }
+  .modal-head, .modal-section { padding-left: 1.1rem; padding-right: 1.1rem; }
+  .tabs { align-self: stretch; display: flex; }
+  .tab { flex: 1; padding: 0.55rem 0.5rem; }
+}
