@@ -9,6 +9,7 @@ const routes = [
   { path: '/apps/qr-forge', name: 'qr-forge', component: () => import('./views/QrForge.vue') },
   { path: '/apps/sun-moon', name: 'sun-moon', component: () => import('./views/SunMoon.vue') },
   { path: '/apps/crypto-pulse', name: 'crypto-pulse', component: () => import('./views/CryptoPulse.vue') },
+  { path: '/apps/earthquake', name: 'earthquake', component: () => import('./views/Earthquake.vue') },
   // 其余 25 个应用暂未迁移，首页卡片用 <a href> 跳转到旧路径（整页刷新）。
 ]
 
