@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Pulse — 加密货币实时行情</title>
+    <meta name="description" content="实时追踪市值前列的加密货币：价格、24h/7d 涨跌、市值、收藏与详情。由 CoinGecko 提供数据。" />
+    <meta property="og:title" content="Crypto Pulse" />
+    <meta property="og:description" content="实时加密货币行情看板，支持搜索、排序、收藏与详情查看。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#0a0f1a" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-left">
+          <p class="eyebrow" data-ok-i18n="eyebrow">Live crypto markets</p>
+          <h1 data-ok-i18n="title">Crypto Pulse</h1>
+          <p class="lead" data-ok-i18n="lead">实时追踪市值前列的加密货币行情，支持搜索、排序、收藏与详情查看。</p>
+        </div>
+        <div class="header-right">
+          <span id="updatedAt" class="update-time"></span>
+          <button id="refreshBtn" class="ok-btn-ghost" type="button" aria-label="Refresh" title="Refresh">↻</button>
+          <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+        </div>
+      </header>
+
+      <!-- 汇总统计 -->
+      <section class="stats" id="stats" aria-live="polite"></section>
+
+      <!-- 搜索栏 -->
+      <section class="controls">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="searchInput" class="search-input" type="search" autocomplete="off"
+                 data-ok-i18n-ph="searchPlaceholder" placeholder="Search by name or symbol…" aria-label="Search coins" />
+        </div>
+        <span id="countInfo" class="count-info"></span>
+      </section>
+
+      <!-- 行情表格 -->
+      <section class="table-wrap">
+        <div class="thead" role="row">
+          <span class="th th-star" aria-hidden="true"></span>
+          <span class="th th-rank sortable" data-sort="rank" role="columnheader" tabindex="0">#</span>
+          <span class="th th-name" role="columnheader" data-ok-i18n="colName">Name</span>
+          <span class="th th-price sortable" data-sort="price" role="columnheader" tabindex="0" data-ok-i18n="colPrice">Price</span>
+          <span class="th th-24h sortable" data-sort="change24h" role="columnheader" tabindex="0" data-ok-i18n="col24h">24h %</span>
+          <span class="th th-7d sortable" data-sort="change7d" role="columnheader" tabindex="0" data-ok-i18n="col7d">7d %</span>
+          <span class="th th-mcap sortable" data-sort="mcap" role="columnheader" tabindex="0" data-ok-i18n="colMcap">Market Cap</span>
+          <span class="th th-vol sortable" data-sort="volume" role="columnheader" tabindex="0" data-ok-i18n="colVol">24h Volume</span>
+        </div>
+        <div id="coinList" class="tbody" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-backdrop" id="modal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <footer class="ok-footer">
+      Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a> &middot;
+      Data &copy; <a href="https://www.coingecko.com/" target="_blank" rel="noreferrer">CoinGecko</a> &middot;
+      <a href="https://openkee.github.io/" target="_blank" rel="noreferrer">All projects</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
