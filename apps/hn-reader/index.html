@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HN Reader — Hacker News 科技新闻阅读器</title>
+    <meta name="description" content="A compact, dark-themed Hacker News reader with tabs for Top, Best, New, Ask HN, Show HN and Jobs. Infinite scroll, relative time, source domains." />
+    <meta name="theme-color" content="#0b0e14" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link">← OpenKee Tools</a></nav>
+
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="kicker" data-ok-i18n="eyebrow">Hacker News reader</p>
+          <h1 data-ok-i18n="title">HN Reader</h1>
+          <p class="lead" data-ok-i18n="lead">A compact feed of what Hacker News is reading right now.</p>
+        </div>
+        <button id="langToggle" class="ok-lang-toggle" type="button">中文</button>
+      </header>
+
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Stories">
+        <button class="tab active" type="button" role="tab" data-tab="top" aria-selected="true" data-ok-i18n="top">Top</button>
+        <button class="tab" type="button" role="tab" data-tab="best" aria-selected="false" data-ok-i18n="best">Best</button>
+        <button class="tab" type="button" role="tab" data-tab="new" aria-selected="false" data-ok-i18n="new">New</button>
+        <button class="tab" type="button" role="tab" data-tab="ask" aria-selected="false" data-ok-i18n="ask">Ask HN</button>
+        <button class="tab" type="button" role="tab" data-tab="show" aria-selected="false" data-ok-i18n="show">Show HN</button>
+        <button class="tab" type="button" role="tab" data-tab="job" aria-selected="false" data-ok-i18n="jobs">Jobs</button>
+      </nav>
+
+      <div id="status" class="status" aria-live="polite"></div>
+      <section id="list" class="list" aria-busy="false"></section>
+      <div id="sentinel" class="sentinel" aria-hidden="true"></div>
+    </main>
+
+    <footer class="ok-footer">
+      Data from <a href="https://github.com/HackerNews/API" target="_blank" rel="noreferrer">Hacker News API</a> &middot; Built by <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">OpenKee</a>
+    </footer>
+
+    <script src="../../shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
