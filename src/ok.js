@@ -64,3 +64,39 @@ export function lsRemove(key) {
 export function locale() {
   return i18nState.lang === 'zh' ? 'zh-CN' : 'en-US'
 }
+
+/* ---------- 地理编码（Open-Meteo Geocoding） ----------
+   多个视图原本各自实现，此处抽出公共函数供融合应用复用。
+   返回标准化结果数组，空数组表示无匹配。 */
+export async function geocode(name, { count = 5, lang } = {}) {
+  const language = lang || (i18nState.lang === 'zh' ? 'zh' : 'en')
+  const url =
+    'https://geocoding-api.open-meteo.com/v1/search?count=' + count +
+    '&language=' + language + '&format=json&name=' + encodeURIComponent(name)
+  const data = await fetchJSON(url, { timeout: 10000 })
+  if (!data || !Array.isArray(data.results)) return []
+  return data.results.map(function (r) {
+    return {
+      name: r.name,
+      lat: r.latitude,
+      lon: r.longitude,
+      country: r.country,
+      countryCode: r.country_code,
+      admin1: r.admin1,
+      timezone: r.timezone,
+    }
+  })
+}
+
+/** Haversine 距离（公里），用于地震/位置半径计算。 */
+export function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371
+  const toRad = function (d) { return (d * Math.PI) / 180 }
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  return 2 * R * Math.asin(Math.sqrt(a))
+}

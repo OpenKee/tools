@@ -4,10 +4,73 @@
    - nameZh：中文名，中文模式下首页卡片显示
    - slug：可选，手动指定 URL slug（少数特殊名字需要）
    全部应用已迁移到 Vue SPA，用 RouterLink 跳转。
-   太空类 4 个应用聚合为 Space Hub，GitHub 类 3 个应用聚合为 GitHub Hub。
+   前 4 个为"API 融合"应用：多个 API 协作产生单独调用没有的价值。
    ============================================================ */
 
 export const PROJECTS = [
+  /* ---------- API 融合应用 ---------- */
+  {
+    name: 'Trip Prep', nameZh: '旅行准备台', type: 'travel', typeClass: 'travel',
+    desc: {
+      en: 'Plan any trip in one screen: country facts, weather, exchange rates, time difference, sunrise/sunset, air quality, and nearby quakes — fused from 7 APIs.',
+      zh: '一屏搞定出行准备：国家信息、天气、汇率、时差、日出日落、空气质量、周边地震，7 个 API 协作。',
+    },
+  },
+  {
+    name: 'Earth Now', nameZh: '此刻地球', type: 'space', typeClass: 'space',
+    desc: {
+      en: 'A live snapshot of Earth right now: recent quakes, ISS position, aurora Kp, next launch, Mars weather, and people in space.',
+      zh: '此刻地球快照：最新地震、ISS 位置、极光 Kp、下次发射、火星天气、在轨人数，6 个实时 API 协作。',
+    },
+  },
+  {
+    name: 'City Dashboard', nameZh: '城市仪表盘', type: 'geo', typeClass: 'geo',
+    desc: {
+      en: 'Environmental dashboard for any city: weather, 24h temperature + AQI dual-axis chart, sunrise timeline, and nearby quakes.',
+      zh: '任意城市的环境仪表盘：天气、24 小时温度与空气质量双轴图、日出日落时间轴、周边地震。',
+    },
+  },
+  {
+    name: 'Repo Deep Dive', nameZh: '仓库深挖', type: 'data', typeClass: 'data',
+    desc: {
+      en: 'Deep-dive any GitHub repo: stats, language node graph, top contributors, 52-week commit activity, and topics.',
+      zh: '深度透视任意 GitHub 仓库：统计数据、语言节点图、核心贡献者、52 周提交活动、话题标签。',
+    },
+  },
+
+  /* ---------- 太空类 ---------- */
+  {
+    name: 'ISS Tracker', nameZh: '空间站追踪', type: 'space', typeClass: 'space',
+    desc: { en: 'Track the ISS in real time: position, speed, altitude, astronauts, and next pass over your location.', zh: '实时追踪国际空间站：位置、速度、高度、宇航员、下次过境预测。' },
+  },
+  {
+    name: 'Mars Weather', nameZh: '火星天气', type: 'space', typeClass: 'space',
+    desc: { en: "Latest weather from Mars: temperature, pressure, wind, and season from NASA's Curiosity/InSight.", zh: '火星最新天气：温度、气压、风速、季节，数据来自 NASA Curiosity/InSight。' },
+  },
+  {
+    name: 'Aurora Forecast', nameZh: '极光预报', type: 'space', typeClass: 'space',
+    desc: { en: 'Aurora forecast: current Kp index, visibility latitude, and auroral oval map.', zh: '极光预报：当前 Kp 指数、可见纬度、极光椭圆图。' },
+  },
+  {
+    name: 'Launch Board', nameZh: '发射日程', type: 'space', typeClass: 'space',
+    desc: { en: 'Upcoming rocket launches worldwide: countdown, rocket, payload, and launch site.', zh: '全球即将发射的火箭：倒计时、火箭、载荷、发射场。' },
+  },
+
+  /* ---------- GitHub 类 ---------- */
+  {
+    name: 'Trending Atlas', nameZh: '趋势仓库', type: 'data', typeClass: 'data',
+    desc: { en: 'Discover trending GitHub repositories by day/week/month and language.', zh: '按日/周/月和语言发现 GitHub 热门仓库。' },
+  },
+  {
+    name: 'Repo Scope', nameZh: '仓库透视', type: 'data', typeClass: 'data',
+    desc: { en: 'Analyze any GitHub user or repo: profile, repos, language stats, activity score.', zh: '透视任意 GitHub 用户或仓库：资料、仓库列表、语言分布、活跃度评分。' },
+  },
+  {
+    name: 'Node Atlas', nameZh: '节点情报', type: 'data', typeClass: 'data',
+    desc: { en: 'IP and domain intelligence: geolocation, DNS records, SSL certificates, and response latency.', zh: 'IP 与域名情报：地理定位、DNS 记录、SSL 证书、响应延迟。' },
+  },
+
+  /* ---------- 金融 / 数据 / 媒体 / 地理等 ---------- */
   {
     name: 'Rate Board', nameZh: '汇率看板', type: 'finance', typeClass: 'finance',
     desc: { en: 'Exchange rates, currency converter, and crypto prices.', zh: '汇率查询、币种换算、加密货币行情。' },
@@ -23,20 +86,6 @@ export const PROJECTS = [
   {
     name: 'Sky Brief', nameZh: '天气简报', type: 'geo', typeClass: 'geo',
     desc: { en: 'Weather, air quality, 7-day forecast, and city comparison.', zh: '天气、空气质量、7 天预报、城市对比。' },
-  },
-  {
-    name: 'Space Hub', nameZh: '太空中心', slug: 'space-hub', type: 'space', typeClass: 'space',
-    desc: {
-      en: 'ISS tracking, Mars weather, aurora forecast, and rocket launches — all in one place.',
-      zh: '空间站追踪、火星天气、极光预报、火箭发射日程，一站式查看。',
-    },
-  },
-  {
-    name: 'GitHub Hub', nameZh: 'GitHub 中心', slug: 'github-hub', type: 'data', typeClass: 'data',
-    desc: {
-      en: 'Discover trending repos, analyze any repository, and visualize language networks.',
-      zh: '发现热门仓库、透视任意仓库、可视化语言节点网络。',
-    },
   },
   {
     name: 'Hour Bridge', nameZh: '时区桥梁', type: 'data', typeClass: 'data',
