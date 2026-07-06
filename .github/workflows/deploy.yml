@@ -34,6 +34,10 @@ jobs:
       # 访问任意未匹配路径时 GH Pages 返回 404.html，Vue Router 接管路由。
       - run: cp dist/index.html dist/404.html
 
+      # 禁用 Jekyll：否则以下划线开头的文件（如 Vite 的 _plugin-vue_export-helper-*.js
+      # 共享 chunk）会被 Jekyll 静默丢弃，导致动态 import 404。
+      - run: touch dist/.nojekyll
+
       # 推送到 gh-pages 分支（GitHub Pages 从该分支部署）
       - uses: peaceiris/actions-gh-pages@v4
         with:
