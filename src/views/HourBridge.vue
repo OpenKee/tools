@@ -38,7 +38,7 @@ const copy = {
   },
   zh: {
     eyebrow: '跨时区会议规划',
-    title: 'Hour Bridge',
+    title: '时区桥梁',
     lead: '选城市，看谁醒着，找最公平的开会时间。',
     custom: '自定义',
     add: '添加',

@@ -65,7 +65,7 @@ const copy = {
   },
   zh: {
     eyebrow: '二维码工具',
-    title: 'QR Forge',
+    title: '二维码工坊',
     lead: '为文本、网址、WiFi、邮箱、电话生成并自定义二维码 — 实时预览，支持下载 PNG。',
     typeLabel: '内容类型',
     typeText: '文本',

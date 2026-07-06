@@ -34,7 +34,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'TheCocktailDB · 调酒配方',
-    title: '鸡尾酒酒吧',
+    title: '鸡尾酒吧',
     lead: '搜索数百款鸡尾酒配方。按分类浏览、按名称查找，或者随机来一杯。',
     searchPlaceholder: '搜索鸡尾酒…',
     search: '搜索',

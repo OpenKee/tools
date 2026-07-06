@@ -43,7 +43,7 @@ const copy = {
   },
   zh: {
     eyebrow: '图书发现',
-    title: 'Book Finder',
+    title: '找书助手',
     lead: '在 Open Library 海量目录中按书名、作者或 ISBN 搜索图书。',
     search: '搜索',
     searchPlaceholder: '按书名、作者、ISBN 搜索…',

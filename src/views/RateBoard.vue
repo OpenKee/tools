@@ -43,7 +43,7 @@ const copy = {
   },
   zh: {
     eyebrow: '汇率工具',
-    title: 'Rate Board',
+    title: '汇率看板',
     lead: '换算汇率、对比币种、规划预算。无需注册，不追踪。',
     crossRates: '交叉汇率',
     crossDesc: '货币之间的直接汇率（无需基准货币）。',

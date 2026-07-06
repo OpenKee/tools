@@ -43,7 +43,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'Hacker News 阅读器',
-    title: 'HN Reader',
+    title: 'HN 阅读器',
     lead: '紧凑呈现 Hacker News 此刻正在阅读的内容。',
     top: '热门',
     best: '最佳',

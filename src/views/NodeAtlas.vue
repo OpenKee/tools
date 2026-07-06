@@ -32,7 +32,7 @@ const copy = {
     issued: 'Issued', expires: 'Expires', issuer: 'Issuer',
   },
   zh: {
-    eyebrow: '网络情报', title: 'Node Atlas',
+    eyebrow: '网络情报', title: '节点地图',
     lead: '查询 IP 和域名 — DNS、地理位置、HTTP 头、SSL、延迟。',
     scan: '扫描', geolocation: '地理位置', dnsRecords: 'DNS 记录',
     latency: '延迟', httpHeaders: 'HTTP 响应', sslCerts: 'SSL 证书',

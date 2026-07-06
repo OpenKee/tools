@@ -54,7 +54,7 @@ const copy = {
   },
   zh: {
     eyebrow: '电影发现',
-    title: 'Movie Quest',
+    title: '影视搜索',
     lead: '搜索电影和电视剧，浏览热门影片，点开任意条目查看评分、剧情与演职人员。',
     search: '搜索',
     searchPlaceholder: '搜索电影或电视剧…',

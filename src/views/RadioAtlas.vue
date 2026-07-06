@@ -23,7 +23,7 @@ const copy = {
     removeFav: 'Remove', addFav: 'Save'
   },
   zh: {
-    eyebrow: '全球电台探索器', title: 'Radio Atlas',
+    eyebrow: '全球电台探索器', title: '全球电台',
     lead: '收听世界各地的在线直播电台。',
     search: '搜索', random: '🎲 随机', favorites: '⭐ 收藏',
     votes: '票', clicks: '点击', bitrate: 'kbps',
@@ -290,7 +290,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="radio-atlas">
-    <AppHeader title="Radio Atlas" :show-lang-toggle="true" />
+    <AppHeader :title="{ en: 'Radio Atlas', zh: '全球电台' }" :show-lang-toggle="true" />
 
     <main class="shell">
       <header class="masthead">

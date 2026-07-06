@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="earthquake-app">
     <!-- 顶栏：标题 + 语言切换（语言切换由 AppHeader 内部处理） -->
-    <AppHeader title="Earthquake" :show-lang-toggle="true" />
+    <AppHeader :title="{ en: 'Earthquake', zh: '地震监测' }" :show-lang-toggle="true" />
 
     <div class="app-body">
       <!-- 地图容器 -->

@@ -58,7 +58,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'Markdown 编辑器',
-    title: 'Markdown Studio',
+    title: 'Markdown 工作室',
     lead: '实时预览的 Markdown 编辑器，带格式化工具栏、字数统计、导入导出与同步滚动。',
     editor: '编辑器',
     preview: '预览',

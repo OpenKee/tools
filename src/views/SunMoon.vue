@@ -53,7 +53,7 @@ const copy = {
     phaseDay: 'Day'
   },
   zh: {
-    title: '日月',
+    title: '日出日落',
     eyebrow: '日出 · 日落 · 曙暮光',
     lead: '查询任意城市、任意日期的日出、日落、太阳正午及各阶段曙暮光，时间按所选城市时区显示。',
     searchPlaceholder: '搜索城市…',

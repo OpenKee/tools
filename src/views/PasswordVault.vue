@@ -72,7 +72,7 @@ const copy = {
   },
   zh: {
     eyebrow: '安全工具',
-    title: 'Password Vault',
+    title: '密码保险箱',
     lead: '生成加密安全的随机密码，提供实时强度分析、熵值估算与破解时间预测。',
     lengthLabel: '长度',
     optionsLabel: '字符类型',

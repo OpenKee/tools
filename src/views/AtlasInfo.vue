@@ -31,7 +31,7 @@ const copy = {
   },
   zh: {
     eyebrow: '国家百科',
-    title: 'Atlas Info',
+    title: '国家百科',
     lead: '搜索任意国家。国旗、人口、语言、货币、边境 — 通过 World Bank + jsDelivr。',
     search: '搜索',
     capital: '首都',

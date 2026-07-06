@@ -111,7 +111,7 @@ const copy = {
   },
   zh: {
     back: '← OpenKee Tools',
-    title: 'Word Forge',
+    title: '单词工坊',
     eyebrow: '单词学习',
     lead: '翻转卡片、拼写、选择——通过自我评估巩固词汇。',
     statToday: '今日', statMastered: '已掌握', statAccuracy: '正确率', statStreak: '连对', statTotal: '总练习',

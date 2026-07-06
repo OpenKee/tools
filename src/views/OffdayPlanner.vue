@@ -36,7 +36,7 @@ const copy = {
   },
   zh: {
     eyebrow: '假期 & 请假优化器',
-    title: 'Offday Planner',
+    title: '假期规划',
     lead: '一目了然看假期，找长周末，算出最聪明的请假方案。',
     totalHolidays: '假期数',
     longWeekends: '长周末',

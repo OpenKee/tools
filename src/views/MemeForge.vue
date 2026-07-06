@@ -35,7 +35,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'Meme API · 随机梗图',
-    title: 'Meme Forge',
+    title: '梗图工坊',
     lead: '随机获取一张梗图，或指定 subreddit 浏览最新帖子。',
     load: '加载',
     random: '随机',

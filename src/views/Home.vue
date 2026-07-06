@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { RouterLink } from 'vue-router'
 import { PROJECTS, slugify } from '../data/projects.js'
 import { i18nState, toggleLang, useT } from '../i18n.js'
@@ -57,16 +57,22 @@ const categoryCount = computed(() => {
   return set.size
 })
 
-// 为每个项目预计算 Vue 路由路径
+// 为每个项目预计算 Vue 路由路径 + 按当前语言显示的名称
 const projects = computed(() =>
   PROJECTS.map((p) => {
     const slug = p.slug || slugify(p.name)
     return {
       ...p,
       vuePath: `/apps/${slug}`,
+      displayName: i18nState.lang === 'zh' && p.nameZh ? p.nameZh : p.name,
     }
   }),
 )
+
+// 文档标题随语言切换
+watchEffect(() => {
+  document.title = i18nState.lang === 'zh' ? 'OpenKee 工具集 — API 驱动的实用工具' : 'OpenKee Tools — API Utilities'
+})
 </script>
 
 <template>
@@ -105,7 +111,7 @@ const projects = computed(() =>
       <!-- 所有应用都已迁移到 Vue，用 RouterLink（SPA 导航） -->
       <div v-for="p in projects" :key="p.name" class="card">
         <span :class="['card-tag', p.typeClass]">{{ t(p.typeClass) }}</span>
-        <div class="card-name">{{ p.name }}</div>
+        <div class="card-name">{{ p.displayName }}</div>
         <div class="card-desc">{{ p.desc[i18nState.lang] }}</div>
         <div class="card-links">
           <RouterLink class="card-link" :to="p.vuePath">{{ t('open') }}</RouterLink>

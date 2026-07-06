@@ -36,7 +36,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'TheMealDB · 全球食谱',
-    title: '美食地图',
+    title: '美食图谱',
     lead: '探索来自世界各地的食谱。按名称搜索、按分类或菜系筛选，或者随机来一道菜。',
     searchPlaceholder: '搜索食谱…',
     search: '搜索',

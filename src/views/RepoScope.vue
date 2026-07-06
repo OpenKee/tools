@@ -40,7 +40,7 @@ const copy = {
     homepage: 'Homepage',
   },
   zh: {
-    eyebrow: 'GitHub 分析工具', title: 'Repo Scope',
+    eyebrow: 'GitHub 分析工具', title: '仓库透视',
     lead: '分析任意 GitHub 用户 — 仓库、语言、活跃度评分、健康度一目了然。',
     analyze: '分析', tokenToggle: '可选：GitHub token', tokenSave: '保存', tokenClear: '清除',
     openProfile: '打开主页 →', activityScore: '活跃度评分',
@@ -447,7 +447,7 @@ onMounted(() => {
 
 <template>
   <div class="repo-scope-app">
-    <AppHeader title="Repo Scope" :show-lang-toggle="true" />
+    <AppHeader :title="{ en: 'Repo Scope', zh: '仓库透视' }" :show-lang-toggle="true" />
 
     <main class="shell">
       <header class="masthead">

@@ -36,7 +36,7 @@ const copy = {
   },
   zh: {
     eyebrow: 'GitHub 热门探索',
-    title: 'Trending Atlas',
+    title: '热门趋势',
     lead: '发现开源世界正在构建什么。',
     daily: '今天',
     weekly: '本周',

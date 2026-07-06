@@ -42,7 +42,7 @@ const copy = {
   },
   zh: {
     eyebrow: '太空追踪',
-    title: 'ISS 追踪器',
+    title: '空间站追踪',
     lead: '实时追踪国际空间站，以每小时 27,600 公里的速度环绕地球。',
     live: '实时',
     coords: '坐标',

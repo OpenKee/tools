@@ -52,7 +52,7 @@ const copy = {
   },
   zh: {
     eyebrow: '实时加密货币行情',
-    title: 'Crypto Pulse',
+    title: '加密行情',
     lead: '追踪市值前列的加密货币：实时价格、24h/7d 涨跌、收藏与详细数据。数据由 CoinGecko 提供。',
     updated: '更新于',
     refreshing: '刷新中…',

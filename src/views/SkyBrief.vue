@@ -25,7 +25,7 @@ const copy = {
     aqiGood: 'Good', aqiFair: 'Fair', aqiModerate: 'Moderate', aqiPoor: 'Poor', aqiVpoor: 'Very poor',
   },
   zh: {
-    eyebrow: '天气 & 空气质量', title: 'Sky Brief',
+    eyebrow: '天气 & 空气质量', title: '天气简报',
     search: '搜索', locate: '📍 我的位置', compare: '⇄ 对比', airQuality: '空气质量',
     hourly: '未来 12 小时', daily: '7 天预报',
     feelsLike: '体感', wind: '风速', humidity: '湿度',
