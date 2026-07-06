@@ -1,8 +1,6 @@
 /* ============================================================
    应用元数据：首页卡片列表。
-   - vue: true 表示已迁移到 Vue SPA，用 <router-link> 跳转。
-   - vue: false 表示尚未迁移，用 <a href> 跳转到旧路径（整页刷新）。
-   迁移完成后此标记可移除。
+   全部应用已迁移到 Vue SPA，用 RouterLink 跳转。
    ============================================================ */
 
 export const PROJECTS = [
@@ -59,7 +57,7 @@ export const PROJECTS = [
     desc: { en: 'Search millions of books from Open Library.', zh: '搜索 Open Library 海量图书。' },
   },
   {
-    name: 'QR Forge', slug: 'qr-forge', vue: true, type: 'data', typeClass: 'data',
+    name: 'QR Forge', type: 'data', typeClass: 'data',
     desc: { en: 'Generate custom QR codes with live preview.', zh: '生成自定义二维码，实时预览。' },
   },
   {
@@ -107,11 +105,11 @@ export const PROJECTS = [
     desc: { en: 'Browse Hacker News top stories, Ask HN, Show HN, and jobs.', zh: '浏览 Hacker News 热门文章、Ask HN、Show HN 和招聘。' },
   },
   {
-    name: 'Sun & Moon', slug: 'sun-moon', vue: true, type: 'geo', typeClass: 'geo',
+    name: 'Sun & Moon', slug: 'sun-moon', type: 'geo', typeClass: 'geo',
     desc: { en: 'Sunrise, sunset, and twilight times for any city and date.', zh: '任意城市和日期的日出、日落和曙暮光时间。' },
   },
   {
-    name: 'Crypto Pulse', slug: 'crypto-pulse', vue: true, type: 'finance', typeClass: 'finance',
+    name: 'Crypto Pulse', slug: 'crypto-pulse', type: 'finance', typeClass: 'finance',
     desc: { en: 'Real-time cryptocurrency prices with 7d trends and market cap.', zh: '实时加密货币价格，含 7 天趋势和市值。' },
   },
   {
@@ -120,7 +118,7 @@ export const PROJECTS = [
   },
 ]
 
-/** 生成应用的 URL slug（用于旧版目录路径）。 */
+/** 生成应用的 URL slug（用于 Vue 路由路径）。 */
 export function slugify(name) {
   return name
     .normalize('NFD')

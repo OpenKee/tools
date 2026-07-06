@@ -57,16 +57,13 @@ const categoryCount = computed(() => {
   return set.size
 })
 
-// 为每个项目预计算路径：已迁移用 Vue 路由路径，未迁移用旧目录路径
+// 为每个项目预计算 Vue 路由路径
 const projects = computed(() =>
   PROJECTS.map((p) => {
     const slug = p.slug || slugify(p.name)
     return {
       ...p,
-      // Vue 路由路径（已迁移）
       vuePath: `/apps/${slug}`,
-      // 旧版目录路径（未迁移，需带末尾斜杠）
-      legacyPath: `apps/${slug}/`,
     }
   }),
 )
@@ -105,14 +102,13 @@ const projects = computed(() =>
     </section>
 
     <section class="grid">
-      <!-- 已迁移到 Vue 的应用：用 RouterLink（SPA 导航） -->
+      <!-- 所有应用都已迁移到 Vue，用 RouterLink（SPA 导航） -->
       <div v-for="p in projects" :key="p.name" class="card">
         <span :class="['card-tag', p.typeClass]">{{ t(p.typeClass) }}</span>
         <div class="card-name">{{ p.name }}</div>
         <div class="card-desc">{{ p.desc[i18nState.lang] }}</div>
         <div class="card-links">
-          <RouterLink v-if="p.vue" class="card-link" :to="p.vuePath">{{ t('open') }}</RouterLink>
-          <a v-else class="card-link" :href="p.legacyPath">{{ t('open') }}</a>
+          <RouterLink class="card-link" :to="p.vuePath">{{ t('open') }}</RouterLink>
         </div>
       </div>
     </section>

@@ -34,14 +34,6 @@ jobs:
       # 访问任意未匹配路径时 GH Pages 返回 404.html，Vue Router 接管路由。
       - run: cp dist/index.html dist/404.html
 
-      # 未迁移的旧应用仍需可访问：复制 apps/ 到 dist/。
-      # 排除已迁移到 Vue 的 3 个目录（它们走 SPA 路由，旧 HTML 不再需要）。
-      # 同时复制 shared.js / shared.css（旧应用通过 ../../shared.js 引用）。
-      - run: |
-          cp -r apps dist/apps
-          rm -rf dist/apps/qr-forge dist/apps/sun-moon dist/apps/crypto-pulse
-          cp shared.js shared.css dist/
-
       # 推送到 gh-pages 分支（GitHub Pages 从该分支部署）
       - uses: peaceiris/actions-gh-pages@v4
         with:
