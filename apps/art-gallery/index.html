@@ -14,186 +14,22 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../../shared.css"/>
-<style>
-:root{--bg:#f5f2eb;--sf:#fff;--ink:#1a1a1a;--mt:#6b5d4f;--dm:#9c8e7c;--rule:#d4c9b8;--blue:#1a3a5c;
-/* 共享组件主题映射 */
---ok-bg:var(--bg);--ok-panel:var(--sf);--ok-line:var(--rule);--ok-text:var(--ink);--ok-muted:var(--mt);--ok-accent:var(--blue);--ok-footer-line:var(--rule);--ok-footer-text:var(--dm);--ok-footer-link:var(--blue);--ok-topbar-line:var(--rule)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Source Sans 3","Noto Sans SC",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
-a{color:var(--ink);text-decoration:none}
-.nav{padding:1rem 1.5rem;border-bottom:3px double var(--rule);display:flex;align-items:baseline;gap:.5rem;font-size:.85rem}
-.nav b{font-weight:700}.nav .sep{color:var(--dm)}.nav .tag{font-size:.68rem;color:var(--dm);margin-left:auto;font-style:italic}
-.header{text-align:center;padding:2.5rem 1.5rem 1.5rem;border-bottom:1px solid var(--rule)}
-.header h1{font-family:"Playfair Display",serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800}
-.header .sub{color:var(--mt);font-size:.88rem;margin-top:.3rem;font-style:italic;font-family:"Playfair Display",serif}
-.search{max-width:500px;margin:1.5rem auto;padding:0 1.5rem}
-.search form{display:flex;border:1.5px solid var(--ink);overflow:hidden}
-.search input{flex:1;height:2.8rem;padding:0 1rem;border:none;background:transparent;font:inherit;font-size:.88rem;color:var(--ink);outline:none}
-.search input::placeholder{color:var(--dm);font-style:italic}
-.search button{height:2.8rem;padding:0 1.5rem;background:var(--ink);color:var(--bg);border:none;font:inherit;font-weight:600;font-size:.78rem;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
-.search button:disabled{opacity:.4}
-.random{display:block;margin:.8rem auto 0;background:none;border:none;color:var(--blue);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.loading{text-align:center;padding:2rem;color:var(--mt);font-style:italic;display:none}.loading.on{display:block}
-.gallery{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
-.art{cursor:pointer;transition:transform .3s}.art:hover{transform:translateY(-3px)}
-.art .frame{aspect-ratio:3/4;background:var(--rule);border:8px solid #fff;box-shadow:2px 3px 12px rgba(0,0,0,.08);overflow:hidden}
-.art .frame img{width:100%;height:100%;object-fit:cover;display:block}
-.art .frame .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--dm)}
-.art .label{padding:.6rem .2rem 0}
-.art .label .title{font-family:"Playfair Display",serif;font-size:.92rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.art .label .meta{font-size:.78rem;color:var(--mt);margin-top:.1rem}
-.art .label .date{font-size:.72rem;color:var(--dm);font-style:italic}
-.more{text-align:center;padding:1.5rem}
-.more button{background:none;border:1px solid var(--ink);color:var(--ink);font:inherit;font-size:.82rem;padding:.5rem 1.5rem;cursor:pointer;transition:all .15s}
-.more button:hover{background:var(--ink);color:var(--bg)}
-.more button:disabled{opacity:.4}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;overflow-y:auto;padding:2rem}
-.overlay.on{display:block}
-.modal{max-width:900px;margin:0 auto;background:var(--bg);border:1px solid var(--rule);position:relative}
-.modal .close{position:absolute;top:.5rem;right:.5rem;z-index:10;background:var(--bg);border:1px solid var(--rule);width:2rem;height:2rem;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
-.modal .top{display:flex;gap:2rem;padding:2rem;border-bottom:1px solid var(--rule)}
-.modal .img-wrap{flex:1;max-width:500px}
-.modal .img-wrap img{width:100%;display:block;border:4px solid #fff;box-shadow:2px 3px 12px rgba(0,0,0,.08)}
-.modal .info{flex:1;min-width:0}
-.modal .info h2{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
-.modal .info .artist{font-size:.95rem;color:var(--mt);margin-bottom:1rem}
-.modal table{width:100%;border-collapse:collapse;font-size:.82rem}
-.modal tr{border-bottom:1px solid #e8dfd2}
-.modal td{padding:.4rem 0;vertical-align:top}
-.modal td:first-child{color:var(--dm);width:5.5rem;font-size:.75rem;font-weight:500}
-@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);gap:1rem}.modal .top{flex-direction:column}.modal .img-wrap{max-width:100%}}
-</style>
+<link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-<div class="nav"><a href="../../index.html" class="ok-topbar-link" style="font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span><button id="langToggle" class="ok-lang-toggle" type="button" style="margin-left:auto">中文</button></div>
+<nav class="ok-topbar"><a href="../../index.html" class="ok-topbar-link" style="font-size:0.75rem">← Tools</a><span class="sep" style="margin-left:0.5rem">/</span><b>openkee</b><span class="sep">/</span>art-gallery<span class="tag">The Metropolitan Museum of Art</span><button id="langToggle" class="ok-lang-toggle" type="button" style="margin-left:auto">中文</button></nav>
 <div class="header"><h1>🏛 Art Gallery</h1><div class="sub" data-ok-i18n="sub">Explore 400,000+ artworks from The Met</div></div>
 <div class="search">
-<form onsubmit="search();return false"><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off"/><button type="submit" id="btn" data-ok-i18n="search">Search</button></form>
-<button class="random" onclick="randomArt()" data-ok-i18n="random">✦ Random artwork</button>
+<form><input type="text" id="inp" placeholder="Search… Monet, Van Gogh, Samurai…" autocomplete="off" aria-label="Search artworks"/><button type="submit" id="btn" data-ok-i18n="search">Search</button></form>
+<button class="random" data-ok-i18n="random">✦ Random artwork</button>
 </div>
 <div class="loading" id="ld" data-ok-i18n="loading">Loading…</div>
 <div class="gallery" id="out"></div>
-<div class="more"><button id="moreBtn" onclick="loadMore()" style="display:none" data-ok-i18n="loadMore">Load more</button></div>
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()"><div class="modal" id="modal"></div></div>
+<div class="more"><button id="moreBtn" style="display:none" data-ok-i18n="loadMore">Load more</button></div>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 
 <script src="../../shared.js"></script>
-<script>
-const copy={
-en:{sub:'Explore 400,000+ artworks from The Met',search:'Search',random:'✦ Random artwork',loading:'Loading…',loadMore:'Load more',loadingMore:'Loading...',untitled:'Untitled',unknown:'Unknown',unknownArtist:'Unknown artist',noResults:'No results',date:'Date',medium:'Medium',dimensions:'Dimensions',department:'Department',period:'Period',culture:'Culture',type:'Type',credit:'Credit',close:'Close'},
-zh:{sub:'探索大都会艺术博物馆 40 万+ 件藏品',search:'搜索',random:'✦ 随机作品',loading:'加载中…',loadMore:'加载更多',loadingMore:'加载中...',untitled:'无题',unknown:'佚名',unknownArtist:'未知艺术家',noResults:'无结果',date:'年代',medium:'材质',dimensions:'尺寸',department:'部门',period:'时期',culture:'文化',type:'类型',credit:'来源',close:'关闭'}
-};
-let lang=OK.lang;
-function t(k){return copy[lang][k]||k}
-function applyLang(){lang=OK.lang;OK.applyI18n(copy);document.getElementById('inp').placeholder=lang==='en'?'Search… Monet, Van Gogh, Samurai…':'搜索… 莫奈、梵高、武士…';const mb=document.getElementById('moreBtn');if(mb&&!mb.disabled)mb.textContent=t('loadMore')}
-OK.initLangToggle(document.getElementById('langToggle'),copy,applyLang);
-
-const API='https://collectionapi.metmuseum.org/public/collection/v1';
-let allIds=[];
-let shown=0;
-const batch=24;
-
-function search(){
-  const q=document.getElementById('inp').value.trim();if(!q)return;
-  let btn=document.getElementById('btn');btn.disabled=true;
-  document.getElementById('out').innerHTML='';
-  document.getElementById('moreBtn').style.display='none';
-  document.getElementById('ld').classList.add('on');
-  shown=0;
-  fetch(API+'/search?q='+encodeURIComponent(q)+'&hasImages=true')
-    .then(function(r){return r.json()})
-    .then(function(d){
-      allIds=d.objectIDs||[];
-      if(!allIds.length)throw Error(t('noResults'));
-      return loadBatch();
-    })
-    .catch(function(e){
-      document.getElementById('ld').classList.remove('on');
-      document.getElementById('out').innerHTML='<div style="text-align:center;padding:2rem;color:var(--mt)">'+e.message+'</div>';
-    })
-    .finally(function(){btn.disabled=false});
-}
-
-function randomArt(){
-  document.getElementById('out').innerHTML='';
-  document.getElementById('moreBtn').style.display='none';
-  document.getElementById('ld').classList.add('on');
-  shown=0;
-  // Random search term
-  const terms=['painting','sculpture','portrait','landscape','vase','jewelry','armor','photograph','drawing','ceramic','tapestry','furniture','mosaic','statue','bust'];
-  const term=terms[Math.floor(Math.random()*terms.length)];
-  fetch(API+'/search?q='+term+'&hasImages=true')
-    .then(function(r){return r.json()})
-    .then(function(d){
-      allIds=d.objectIDs||[];
-      // Shuffle
-      for(let i=allIds.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=allIds[i];allIds[i]=allIds[j];allIds[j]=t;}
-      return loadBatch();
-    })
-    .catch(function(){document.getElementById('ld').classList.remove('on')});
-}
-
-function loadBatch(){
-  const ids=allIds.slice(shown,shown+batch);
-  shown+=ids.length;
-  return Promise.all(ids.map(function(id){
-    return fetch(API+'/objects/'+id).then(function(r){return r.json()}).catch(function(){return null});
-  })).then(function(arts){
-    document.getElementById('ld').classList.remove('on');
-    appendGrid(arts.filter(function(a){return a&&a.primaryImageSmall}));
-    document.getElementById('moreBtn').style.display=shown<allIds.length?'inline-block':'none';
-  });
-}
-
-function loadMore(){
-  let btn=document.getElementById('moreBtn');
-  btn.textContent=t('loadingMore');btn.disabled=true;
-  loadBatch().then(function(){
-    btn.textContent=t('loadMore');btn.disabled=false;
-  });
-}
-
-function appendGrid(arts){
-  let grid=document.getElementById('out').querySelector('.grid');
-  if(!grid){document.getElementById('out').innerHTML='<div class="grid"></div>';grid=document.getElementById('out').querySelector('.grid')}
-  arts.forEach(function(a){
-    const img=a.primaryImageSmall||'';
-    const imgH=img?'<img src="'+img+'" alt="'+(a.title||'')+'" loading="lazy">':'<div class="no-img">🖼</div>';
-    const div=document.createElement('div');
-    div.className='art';
-    div.innerHTML='<div class="frame">'+imgH+'</div><div class="label"><div class="title">'+(a.title||t('untitled'))+'</div><div class="meta">'+(a.artistDisplayName||t('unknown'))+'</div><div class="date">'+(a.objectDate||'')+'</div></div>';
-    div.onclick=function(){showDetail(a.objectID)};
-    grid.appendChild(div);
-  });
-}
-
-function showDetail(id){
-  fetch(API+'/objects/'+id)
-    .then(function(r){return r.json()})
-    .then(function(a){
-      const img=a.primaryImage||a.primaryImageSmall||'';
-      const t1=a.title||t('untitled');const imgH=img?'<img src="'+img+'" alt="'+t1+'">':'<div class="no-img">🖼</div>';
-      const rows=[];
-      if(a.objectDate)rows.push([t('date'),a.objectDate]);
-      if(a.medium)rows.push([t('medium'),a.medium]);
-      if(a.dimensions)rows.push([t('dimensions'),a.dimensions]);
-      if(a.department)rows.push([t('department'),a.department]);
-      if(a.period)rows.push([t('period'),a.period]);
-      if(a.culture)rows.push([t('culture'),a.culture]);
-      if(a.classification)rows.push([t('type'),a.classification]);
-      if(a.creditLine)rows.push([t('credit'),a.creditLine]);
-      const table=rows.map(function(r){return'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('');
-      document.getElementById('modal').innerHTML='<button class="close" onclick="closeDetail()" aria-label="'+t('close')+'">✕</button><div class="top"><div class="img-wrap">'+imgH+'</div><div class="info"><h2>'+(a.title||t('untitled'))+'</h2><div class="artist">'+(a.artistDisplayName||t('unknownArtist'))+'</div><table>'+table+'</table></div></div>';
-      document.getElementById('overlay').classList.add('on');
-    });
-}
-
-function closeDetail(){document.getElementById('overlay').classList.remove('on')}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
-
-applyLang();
-randomArt();
-</script>
+<script src="script.js"></script>
 <footer class="ok-footer">
   OpenKee · 2026 · <a href="https://github.com/OpenKee" target="_blank" rel="noreferrer">GitHub</a> · Powered by The Met API
 </footer>

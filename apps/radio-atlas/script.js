@@ -118,20 +118,24 @@ async function loadMeta() {
     getJson(`${API}/countries`),
     getJson(`${API}/tags`),
   ]);
-  countryList.innerHTML = countries.slice(0, 200).map(c => `<option value="${c.name}">`).join('');
-  tagList.innerHTML = tags.slice(0, 200).map(t => `<option value="${t.name}">`).join('');
+  // 国家/标签名来自外部 API，拼入属性前必须转义防止注入
+  countryList.innerHTML = countries.slice(0, 200).map(c => `<option value="${OK.escape(c.name)}">`).join('');
+  tagList.innerHTML = tags.slice(0, 200).map(t => `<option value="${OK.escape(t.name)}">`).join('');
 }
 
 function renderCard(s) {
   const playingCls = playing?.stationuuid === s.stationuuid ? ' playing' : '';
   const favCls = isFav(s.stationuuid) ? ' active' : '';
-  const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${tag.trim()}</span>`).join('');
+  // 标签文本来自外部 API，转义后拼入 innerHTML
+  const tags = (s.tags||'').split(',').filter(Boolean).slice(0, 3).map(tag => `<span class="card-tag">${OK.escape(tag.trim())}</span>`).join('');
+  // favicon URL 拼入属性前转义；加载失败改由外部绑定 onerror 处理（见 bindCards）
+  const faviconUrl = (s.favicon||'').replace('http://','https://');
   return `<div class="station-card${playingCls}" data-id="${s.stationuuid}">
     <div class="card-top">
-      <img class="card-favicon" data-src="${(s.favicon||'').replace('http://','https://')}" src="${renderFavicon(s.favicon)}" alt="" onerror="this.style.display='none'" loading="lazy" />
+      <img class="card-favicon" data-src="${OK.escape(faviconUrl)}" src="${renderFavicon(s.favicon)}" alt="" loading="lazy" />
       <div class="card-info">
-        <div class="card-name">${s.name}</div>
-        <div class="card-sub">${s.country||''}${s.language ? ' · '+s.language : ''}</div>
+        <div class="card-name">${OK.escape(s.name)}</div>
+        <div class="card-sub">${OK.escape(s.country||'')}${s.language ? ' · '+OK.escape(s.language) : ''}</div>
       </div>
     </div>
     ${tags ? `<div class="card-tags">${tags}</div>` : ''}
@@ -148,6 +152,10 @@ function renderCard(s) {
 }
 
 function bindCards() {
+  // 替代内联 onerror：电台图标加载失败时隐藏该 img
+  stationGrid.querySelectorAll('.card-favicon').forEach(img => {
+    img.onerror = function () { this.style.display = 'none'; };
+  });
   stationGrid.querySelectorAll('[data-play]').forEach(btn => {
     btn.addEventListener('click', () => {
       const s = stations.find(st => st.stationuuid === btn.dataset.play);

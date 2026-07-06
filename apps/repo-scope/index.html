@@ -35,14 +35,14 @@
       <!-- Search -->
       <section class="search-bar">
         <form id="userForm">
-          <input id="usernameInput" type="text" placeholder="torvalds" autocomplete="off" />
+          <input id="usernameInput" type="text" placeholder="torvalds" autocomplete="off" aria-label="GitHub username" />
           <button type="submit" data-ok-i18n="analyze">Analyze</button>
         </form>
         <p class="token-hint" data-ok-i18n="tokenRecommended">Tip: GitHub limits unauthenticated requests to 60/hr. Add a token below for reliable analysis.</p>
         <details class="token-toggle">
           <summary data-ok-i18n="tokenToggle">Optional: GitHub token</summary>
           <div class="token-row">
-            <input id="tokenInput" type="password" placeholder="ghp_xxxx" autocomplete="off" />
+            <input id="tokenInput" type="password" placeholder="ghp_xxxx" autocomplete="off" aria-label="GitHub personal access token" />
             <button id="tokenSave" type="button" data-ok-i18n="tokenSave">Save</button>
             <button id="tokenClear" type="button" class="btn-ghost" data-ok-i18n="tokenClear">Clear</button>
           </div>
@@ -92,7 +92,7 @@
                 <option value="forks" data-ok-i18n="byForks">By forks</option>
                 <option value="name" data-ok-i18n="byName">By name</option>
               </select>
-              <input id="repoSearch" type="text" placeholder="Filter\u2026" />
+              <input id="repoSearch" type="text" placeholder="Filter\u2026" aria-label="Filter repositories" />
             </div>
           </div>
           <div id="repoGrid" class="repo-grid"></div>

@@ -289,7 +289,8 @@ async function loadCrypto() {
       '<div class="stat"><div class="s-label">' + (lang === 'zh' ? '24h 跌' : '24h Losers') + '</div><div class="s-val" style="color:#ef4444">' + (coins.length - gainers) + '</div></div>';
     cryptoList.innerHTML = '<div class="crypto-thead"><span>' + ct.cryptoRank + '</span><span>' + ct.cryptoName + '</span><span>' + ct.cryptoPrice + '</span><span>' + ct.crypto24h + '</span><span>' + ct.crypto7d + '</span><span>' + ct.cryptoMcap + '</span></div>' +
       coins.map(function(c, i) {
-        return '<div class="crypto-row"><span class="crypto-rank">' + (i + 1) + '</span><div class="crypto-coin"><img class="crypto-icon" src="' + c.image + '" alt=""><div><div class="crypto-name">' + c.name + '</div><div class="crypto-symbol">' + c.symbol.toUpperCase() + '</div></div></div><span class="crypto-price">' + cryptoFmt(c.current_price) + '</span>' + cryptoPct(c.price_change_percentage_24h) + cryptoPct(c.price_change_percentage_7d_in_currency) + '<span class="crypto-mcap">' + cryptoFmt(c.market_cap) + '</span></div>';
+        // CoinGecko 返回的图标/名称/符号均需转义，防止 XSS
+        return '<div class="crypto-row"><span class="crypto-rank">' + (i + 1) + '</span><div class="crypto-coin"><img class="crypto-icon" src="' + OK.escape(c.image) + '" alt=""><div><div class="crypto-name">' + OK.escape(c.name) + '</div><div class="crypto-symbol">' + OK.escape(c.symbol.toUpperCase()) + '</div></div></div><span class="crypto-price">' + cryptoFmt(c.current_price) + '</span>' + cryptoPct(c.price_change_percentage_24h) + cryptoPct(c.price_change_percentage_7d_in_currency) + '<span class="crypto-mcap">' + cryptoFmt(c.market_cap) + '</span></div>';
       }).join('');
   } catch(e) {
     cryptoList.innerHTML = '<div class="loading">' + (CRYPTO_I18N[lang]?.cryptoError || 'Error') + '</div>';

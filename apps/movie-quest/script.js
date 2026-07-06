@@ -375,7 +375,7 @@ function renderCard(item, rating) {
   var type = item.Type || 'movie';
   var poster = valid(item.Poster) ? item.Poster : '';
   var imgHtml = poster
-    ? '<img src="' + esc(poster) + '" alt="' + title + '" loading="lazy" onerror="this.remove()" />'
+    ? '<img src="' + esc(poster) + '" alt="' + title + '" loading="lazy" data-fallback="remove" />'
     : '';
 
   /* 评分徽章：已知则直接显示，未知则占位等待懒加载 */
@@ -460,6 +460,10 @@ function bindCards(container) {
       }
     });
   });
+  // 图片加载失败时移除（替代内联 onerror）
+  container.querySelectorAll('img[data-fallback="remove"]').forEach(function (img) {
+    img.onerror = function () { this.remove(); };
+  });
 }
 
 /* 懒加载某张卡片的评分并回填徽章 */
@@ -492,6 +496,7 @@ function openDetail(imdbID) {
   /* 命中缓存则先渲染，再后台刷新完整剧情 */
   if (detailCache[imdbID]) {
     detailBody.innerHTML = renderDetail(detailCache[imdbID]);
+    bindDetailImages();
   }
 
   OK.fetchJSON(API + '?i=' + imdbID + '&apikey=' + API_KEY + '&plot=full')
@@ -499,6 +504,7 @@ function openDetail(imdbID) {
       if (d && d.Response !== 'False') {
         detailCache[imdbID] = d;
         detailBody.innerHTML = renderDetail(d);
+        bindDetailImages();
       } else {
         detailBody.innerHTML = '<p class="detail-plot muted">' + esc(t('noPlot')) + '</p>';
       }
@@ -506,6 +512,13 @@ function openDetail(imdbID) {
     .catch(function () {
       detailBody.innerHTML = '<p class="detail-plot muted">' + esc(t('error')) + '</p>';
     });
+}
+
+/* 详情面板图片加载失败时移除 */
+function bindDetailImages() {
+  detailBody.querySelectorAll('img[data-fallback="remove"]').forEach(function (img) {
+    img.onerror = function () { this.remove(); };
+  });
 }
 
 /* 详情加载骨架 */
@@ -519,7 +532,7 @@ function renderDetail(d) {
   var year = esc(d.Year || '');
   var poster = valid(d.Poster) ? d.Poster : '';
   var imgHtml = poster
-    ? '<img src="' + esc(poster) + '" alt="' + title + '" onerror="this.remove()" />'
+    ? '<img src="' + esc(poster) + '" alt="' + title + '" data-fallback="remove" />'
     : '';
 
   /* 评分 */

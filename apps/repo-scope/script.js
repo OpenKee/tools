@@ -27,13 +27,8 @@ const detailName = document.getElementById('detailName');
 const detailBody = document.getElementById('detailBody');
 const detailClose = document.getElementById('detailClose');
 
-const LANG_COLORS = {
-  JavaScript:'#f1e05a', TypeScript:'#3178c6', Python:'#3572A5', Java:'#b07219',
-  Go:'#00ADD8', Rust:'#dea584', 'C++':'#f34b7d', C:'#555555', 'C#':'#178600',
-  Ruby:'#701516', PHP:'#4F5D95', Swift:'#F05138', Kotlin:'#A97BFF', Dart:'#00B4AB',
-  Shell:'#89e051', HTML:'#e34c26', CSS:'#563d7c', Vue:'#41b883', Lua:'#000080',
-  Zig:'#ec915c', Scala:'#c22d40', R:'#198CE7', 'Jupyter Notebook':'#DA5B0B',
-};
+// 复用共享设计系统中的语言颜色映射，避免重复定义
+const LANG_COLORS = OK.githubLangColors;
 
 const copy = {
   en: {
@@ -187,9 +182,9 @@ function renderProfile(profile) {
   profileBio.textContent = profile.bio || '';
   profileLink.href = profile.html_url;
   profileMeta.innerHTML = [
-    profile.company ? `<span class="meta-item">🏢 ${profile.company}</span>` : '',
-    profile.location ? `<span class="meta-item">📍 ${profile.location}</span>` : '',
-    profile.blog ? `<span class="meta-item">🔗 <a href="${profile.blog.startsWith('http')?profile.blog:'https://'+profile.blog}" target="_blank">${profile.blog}</a></span>` : '',
+    profile.company ? `<span class="meta-item">🏢 ${OK.escape(profile.company)}</span>` : '',
+    profile.location ? `<span class="meta-item">📍 ${OK.escape(profile.location)}</span>` : '',
+    profile.blog ? `<span class="meta-item">🔗 <a href="${OK.escape(profile.blog.startsWith('http')?profile.blog:'https://'+profile.blog)}" target="_blank">${OK.escape(profile.blog)}</a></span>` : '',
     `<span class="meta-item">📅 ${new Date(profile.created_at).toLocaleDateString(lang==='en'?'en-US':'zh-CN')}</span>`,
   ].filter(Boolean).join('');
 }
@@ -221,7 +216,7 @@ function renderLanguages(repos) {
   const max = ranked[0]?.[1] || 1;
   langBars.innerHTML = ranked.map(([name,count]) => `
     <div class="lang-bar-row">
-      <span class="lang-bar-name"><span class="lang-dot" style="background:${langColor(name)}"></span> ${name}</span>
+      <span class="lang-bar-name"><span class="lang-dot" style="background:${langColor(name)}"></span> ${OK.escape(name)}</span>
       <div class="lang-bar-track"><div class="lang-bar-fill" style="width:${(count/max*100).toFixed(1)}%;background:${langColor(name)}"></div></div>
       <span class="lang-bar-pct">${num(count)}</span>
     </div>
@@ -241,10 +236,10 @@ function renderRepoPage() {
   const page = filteredRepos.slice(start, start+PER_PAGE);
   repoGrid.innerHTML = page.map(r => {
     const tags = repoTags(r).map(tag => `<span class="repo-tag ${tag.cls}">${tag.text}</span>`).join('');
-    return `<div class="repo-card" data-repo="${r.full_name}">
-      <span class="repo-card-name">${r.name}</span>
+    return `<div class="repo-card" data-repo="${OK.escape(r.full_name)}">
+      <span class="repo-card-name">${OK.escape(r.name)}</span>
       <span class="repo-card-stats">\u2605 ${num(r.stargazers_count)} · \u0192 ${num(r.forks_count)}${r.language ? ` · <span class="lang-dot" style="background:${langColor(r.language)}"></span>` : ''}</span>
-      ${r.description ? `<p class="repo-card-desc">${r.description}</p>` : ''}
+      ${r.description ? `<p class="repo-card-desc">${OK.escape(r.description)}</p>` : ''}
       ${tags ? `<div class="repo-card-tags">${tags}</div>` : ''}
     </div>`;
   }).join('') || `<div class="loading">${t('noRepos')}</div>`;
@@ -278,18 +273,18 @@ async function loadDetail(fullName) {
       <div class="detail-item"><div class="d-label">${t('forks')}</div><div class="d-value">${num(r.forks_count)}</div></div>
       <div class="detail-item"><div class="d-label">${t('issues')}</div><div class="d-value">${num(r.open_issues_count)}</div></div>
       <div class="detail-item"><div class="d-label">${t('watchers')}</div><div class="d-value">${num(r.subscribers_count??r.watchers_count)}</div></div>
-      <div class="detail-item"><div class="d-label">${t('language')}</div><div class="d-value">${r.language||'\u2014'}</div></div>
-      <div class="detail-item"><div class="d-label">${t('license')}</div><div class="d-value">${r.license?.spdx_id||'\u2014'}</div></div>
+      <div class="detail-item"><div class="d-label">${t('language')}</div><div class="d-value">${OK.escape(r.language||'\u2014')}</div></div>
+      <div class="detail-item"><div class="d-label">${t('license')}</div><div class="d-value">${OK.escape(r.license?.spdx_id||'\u2014')}</div></div>
       <div class="detail-item"><div class="d-label">${t('size')}</div><div class="d-value">${num(r.size)} KB</div></div>
-      <div class="detail-item"><div class="d-label">${t('defaultBranch')}</div><div class="d-value">${r.default_branch}</div></div>
+      <div class="detail-item"><div class="d-label">${t('defaultBranch')}</div><div class="d-value">${OK.escape(r.default_branch)}</div></div>
       <div class="detail-item"><div class="d-label">${t('created')}</div><div class="d-value">${new Date(r.created_at).toLocaleDateString(lang==='en'?'en-US':'zh-CN')}</div></div>
       <div class="detail-item"><div class="d-label">${t('pushed')}</div><div class="d-value">${new Date(r.pushed_at).toLocaleDateString(lang==='en'?'en-US':'zh-CN')}</div></div>
-      ${r.homepage ? `<div class="detail-item"><div class="d-label">${t('homepage')}</div><div class="d-value"><a href="${r.homepage}" target="_blank">${r.homepage}</a></div></div>` : ''}
-      ${r.topics?.length ? `<div class="detail-item" style="grid-column:1/-1"><div class="d-label">${t('topics')}</div><div class="d-value">${r.topics.map(tp=>`<span class="repo-tag">${tp}</span>`).join(' ')}</div></div>` : ''}
-      <div style="grid-column:1/-1;margin-top:0.3rem">${tags}<a href="${r.html_url}" target="_blank" style="margin-left:0.5rem;font-size:0.78rem">GitHub →</a></div>
+      ${r.homepage ? `<div class="detail-item"><div class="d-label">${t('homepage')}</div><div class="d-value"><a href="${OK.escape(r.homepage)}" target="_blank">${OK.escape(r.homepage)}</a></div></div>` : ''}
+      ${r.topics?.length ? `<div class="detail-item" style="grid-column:1/-1"><div class="d-label">${t('topics')}</div><div class="d-value">${r.topics.map(tp=>`<span class="repo-tag">${OK.escape(tp)}</span>`).join(' ')}</div></div>` : ''}
+      <div style="grid-column:1/-1;margin-top:0.3rem">${tags}<a href="${OK.escape(r.html_url)}" target="_blank" style="margin-left:0.5rem;font-size:0.78rem">GitHub →</a></div>
     `;
   } catch(e) {
-    detailBody.innerHTML = `<p class="error-msg">${e.message}</p>`;
+    detailBody.innerHTML = `<p class="error-msg">${OK.escape(e.message)}</p>`;
   }
 }
 
@@ -335,7 +330,7 @@ async function analyzeUser(username) {
     } else if (e.message==='not_found') {
       msg = t('errorNotFound');
     } else {
-      msg = t('errorGeneric').replace('{msg}',e.message);
+      msg = t('errorGeneric').replace('{msg}', OK.escape(e.message));
     }
     repoGrid.innerHTML = `<p class="error-msg">${msg}</p>`;
   }

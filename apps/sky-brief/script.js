@@ -110,7 +110,7 @@ function setSaved(items) { localStorage.setItem('sky-brief-saved', JSON.stringif
 
 function renderSaved() {
   const items = getSaved();
-  savedStrip.innerHTML = items.map(i => `<button class="saved-chip" data-q="${i.query}">${i.label}</button>`).join('');
+  savedStrip.innerHTML = items.map(i => `<button class="saved-chip" data-q="${OK.escape(i.query)}">${OK.escape(i.label)}</button>`).join('');
   savedStrip.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => search(b.dataset.q)));
 }
 
@@ -285,9 +285,9 @@ async function loadCompare() {
     const wmoIcons = {'0':'☀️','1':'🌤','2':'⛅','3':'☁️','45':'🌫','48':'🌫','51':'🌦','53':'🌦','55':'🌦','56':'🌧','57':'🌧','61':'🌧','63':'🌧','65':'🌧','71':'🌨','73':'🌨','75':'🌨','80':'🌦','81':'🌧','82':'⛈','85':'🌨','86':'🌨','95':'⛈','96':'⛈','99':'⛈'};
     const icon = wmoIcons[String(c.weather_code)] || '🌤';
     const tempDiff = Math.round(c.temperature_2m - (currentCityData.temp || 0));
-    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + place.name + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + (lang === 'zh' ? '湿度' : 'Humidity') + ': ' + c.relative_humidity_2m + '% &middot; ' + (lang === 'zh' ? '风速' : 'Wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
+    compareResult.innerHTML = '<div class="compare-cards"><div class="compare-card"><div class="compare-icon">' + icon + '</div><div class="compare-city">' + OK.escape(place.name) + '</div><div class="compare-temp">' + Math.round(c.temperature_2m) + '°C</div><div class="compare-detail">' + (lang === 'zh' ? '湿度' : 'Humidity') + ': ' + c.relative_humidity_2m + '% &middot; ' + (lang === 'zh' ? '风速' : 'Wind') + ': ' + Math.round(c.wind_speed_10m) + ' km/h</div><div class="compare-range">' + Math.round(d.temperature_2m_min[0]) + '° ~ ' + Math.round(d.temperature_2m_max[0]) + '°</div></div><div class="compare-diff"><div class="diff-value ' + (tempDiff > 0 ? 'up' : 'down') + '">' + (tempDiff > 0 ? '+' : '') + tempDiff + '°C</div><div class="diff-label">' + (lang === 'zh' ? '温差' : 'Temp diff') + '</div></div></div>';
   } catch(e) {
-    compareResult.innerHTML = '<p class="error-msg">Error: ' + e.message + '</p>';
+    compareResult.innerHTML = '<p class="error-msg">Error: ' + OK.escape(e.message) + '</p>';
   }
 }
 

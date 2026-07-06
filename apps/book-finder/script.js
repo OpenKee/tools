@@ -265,7 +265,7 @@ function renderCard(book) {
   var year = book.first_publish_year ? esc(book.first_publish_year) : '';
   var cover = coverUrl(book.cover_i, 'M');
   var coverHtml = cover
-    ? '<img src="' + cover + '" alt="' + title + '" loading="lazy" onerror="this.remove()" />'
+    ? '<img src="' + esc(cover) + '" alt="' + title + '" loading="lazy" />'
     : '';
 
   return '<article class="card" data-key="' + esc(book.key || '') +
@@ -329,6 +329,10 @@ function bindCards() {
       }
     });
   });
+  /* 图片加载失败时移除元素（替代原内联 onerror） */
+  results.querySelectorAll('img').forEach(function (img) {
+    img.onerror = function () { this.remove(); };
+  });
 }
 
 /* 更新结果计数 */
@@ -342,6 +346,10 @@ function openDetail(key) {
   /* 从已保存结果中查找该书 */
   var book = (lastResults || []).find(function (b) { return b.key === key; }) || null;
   detailBody.innerHTML = renderDetailShell(book);
+  /* 图片加载失败时移除元素（替代原内联 onerror） */
+  detailBody.querySelectorAll('img').forEach(function (img) {
+    img.onerror = function () { this.remove(); };
+  });
   openDrawer();
 
   if (!book) return;
@@ -379,7 +387,7 @@ function renderDetailShell(book) {
   var year = book.first_publish_year ? esc(book.first_publish_year) : t('unknownYear');
   var cover = coverUrl(book.cover_i, 'L');
   var coverHtml = cover
-    ? '<img src="' + cover + '" alt="' + title + '" onerror="this.remove()" />'
+    ? '<img src="' + esc(cover) + '" alt="' + title + '" />'
     : '';
 
   var publishers = (book.publisher && book.publisher.slice(0, 3).join(', ')) || '';
@@ -390,7 +398,7 @@ function renderDetailShell(book) {
   var authorKey = (book.author_key && book.author_key[0]) || '';
   var authorPhoto = authorKey ? 'https://covers.openlibrary.org/a/olid/' + authorKey + '-M.jpg' : '';
   var authorPhotoHtml = authorPhoto
-    ? '<img class="author-photo" src="' + authorPhoto + '" alt="" onerror="this.remove()" />'
+    ? '<img class="author-photo" src="' + esc(authorPhoto) + '" alt="" />'
     : '';
   var openLink = book.key ? 'https://openlibrary.org' + book.key : '';
 
