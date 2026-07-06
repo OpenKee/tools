@@ -5,19 +5,16 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# 允许 GITHUB_TOKEN 有部署权限
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # 同一时间只跑一个部署，避免冲突
 concurrency:
-  group: pages
+  group: deploy-pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +34,7 @@ jobs:
       # 访问任意未匹配路径时 GH Pages 返回 404.html，Vue Router 接管路由。
       - run: cp dist/index.html dist/404.html
 
-      # 未迁移的 25 个旧应用仍需可访问：复制 apps/ 到 dist/。
+      # 未迁移的旧应用仍需可访问：复制 apps/ 到 dist/。
       # 排除已迁移到 Vue 的 3 个目录（它们走 SPA 路由，旧 HTML 不再需要）。
       # 同时复制 shared.js / shared.css（旧应用通过 ../../shared.js 引用）。
       - run: |
@@ -45,16 +42,9 @@ jobs:
           rm -rf dist/apps/qr-forge dist/apps/sun-moon dist/apps/crypto-pulse
           cp shared.js shared.css dist/
 
-      - uses: actions/upload-pages-artifact@v3
+      # 推送到 gh-pages 分支（GitHub Pages 从该分支部署）
+      - uses: peaceiris/actions-gh-pages@v4
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          force_orphan: true
