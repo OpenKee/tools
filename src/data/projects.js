@@ -4,6 +4,7 @@
    - nameZh：中文名，中文模式下首页卡片显示
    - slug：可选，手动指定 URL slug（少数特殊名字需要）
    全部应用已迁移到 Vue SPA，用 RouterLink 跳转。
+   太空类 4 个应用聚合为 Space Hub，GitHub 类 3 个应用聚合为 GitHub Hub。
    ============================================================ */
 
 export const PROJECTS = [
@@ -24,16 +25,18 @@ export const PROJECTS = [
     desc: { en: 'Weather, air quality, 7-day forecast, and city comparison.', zh: '天气、空气质量、7 天预报、城市对比。' },
   },
   {
-    name: 'Trending Atlas', nameZh: '热门趋势', type: 'data', typeClass: 'data',
-    desc: { en: 'Discover trending GitHub repos by day, week, or month.', zh: '按日 / 周 / 月发现 GitHub 热门仓库。' },
+    name: 'Space Hub', nameZh: '太空中心', slug: 'space-hub', type: 'space', typeClass: 'space',
+    desc: {
+      en: 'ISS tracking, Mars weather, aurora forecast, and rocket launches — all in one place.',
+      zh: '空间站追踪、火星天气、极光预报、火箭发射日程，一站式查看。',
+    },
   },
   {
-    name: 'Repo Scope', nameZh: '仓库透视', type: 'data', typeClass: 'data',
-    desc: { en: 'GitHub repo analysis and scope overview tool.', zh: 'GitHub 仓库分析与概览工具。' },
-  },
-  {
-    name: 'Node Atlas', nameZh: '节点地图', type: 'data', typeClass: 'data',
-    desc: { en: 'Explore and visualize node/network data.', zh: '节点与网络数据的探索与可视化。' },
+    name: 'GitHub Hub', nameZh: 'GitHub 中心', slug: 'github-hub', type: 'data', typeClass: 'data',
+    desc: {
+      en: 'Discover trending repos, analyze any repository, and visualize language networks.',
+      zh: '发现热门仓库、透视任意仓库、可视化语言节点网络。',
+    },
   },
   {
     name: 'Hour Bridge', nameZh: '时区桥梁', type: 'data', typeClass: 'data',
@@ -52,10 +55,6 @@ export const PROJECTS = [
     desc: { en: 'Holiday and off-day planner tool.', zh: '假期与休息日规划工具。' },
   },
   {
-    name: 'ISS Tracker', nameZh: '空间站追踪', type: 'space', typeClass: 'space',
-    desc: { en: 'Real-time ISS position tracking with astronaut roster.', zh: '国际空间站实时位置追踪与宇航员名单。' },
-  },
-  {
     name: 'Book Finder', nameZh: '找书助手', type: 'media', typeClass: 'media',
     desc: { en: 'Search millions of books from Open Library.', zh: '搜索 Open Library 海量图书。' },
   },
@@ -68,24 +67,12 @@ export const PROJECTS = [
     desc: { en: 'Search movies and TV shows, view ratings and details.', zh: '搜索电影和电视剧，查看评分和详情。' },
   },
   {
-    name: 'Mars Weather', nameZh: '火星天气', type: 'space', typeClass: 'space',
-    desc: { en: 'Weather data from NASA InSight Mars lander.', zh: 'NASA 洞察号火星天气数据。' },
-  },
-  {
     name: 'Password Vault', nameZh: '密码保险箱', type: 'data', typeClass: 'data',
     desc: { en: 'Secure password generator with strength analysis.', zh: '安全密码生成器，含强度分析。' },
   },
   {
     name: 'Markdown Studio', nameZh: 'Markdown 工作室', type: 'data', typeClass: 'data',
     desc: { en: 'Markdown editor with live preview and export.', zh: 'Markdown 编辑器，实时预览与导出。' },
-  },
-  {
-    name: 'Aurora Forecast', nameZh: '极光预报', type: 'space', typeClass: 'space',
-    desc: { en: 'NOAA-based aurora forecast with Kp index and visibility map.', zh: '基于 NOAA 的极光预报，含 Kp 指数与可见范围图。' },
-  },
-  {
-    name: 'Launch Board', nameZh: '发射日程', type: 'space', typeClass: 'space',
-    desc: { en: 'Upcoming rocket launches with live countdown.', zh: '即将发射的火箭日程，含实时倒计时。' },
   },
   {
     name: 'Word Forge', nameZh: '单词工坊', type: 'data', typeClass: 'data',
