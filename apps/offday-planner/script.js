@@ -219,7 +219,7 @@ function renderSummary(holidays, longWeekends) {
     </div>
     <div class="summary-card">
       <div class="label">${t('nextHoliday')}</div>
-      <div class="value">${nh ? nh.localName : '—'}</div>
+      <div class="value">${nh ? OK.escape(nh.localName) : '—'}</div>
       <div class="sub">${nh ? (nh.daysUntil === 0 ? t('today') : `${nh.daysUntil} ${t('daysUntil')}`) : ''}</div>
     </div>
   `;
@@ -231,7 +231,7 @@ function renderCountdown(holidays) {
   countdownCard.innerHTML = `
     <span class="countdown-days">${nh.daysUntil}</span>
     <div class="countdown-info">
-      <strong>${nh.localName}</strong> · ${nh.date} · ${nh.daysUntil === 0 ? t('today') : `${nh.daysUntil} ${t('daysFromNow')}`}
+      <strong>${OK.escape(nh.localName)}</strong> · ${OK.escape(nh.date)} · ${nh.daysUntil === 0 ? t('today') : `${nh.daysUntil} ${t('daysFromNow')}`}
     </div>
   `;
 }
@@ -271,7 +271,7 @@ function renderYearCalendar(holidays) {
           cls += ' holiday-single';
         }
       }
-      const titleText = hInfo ? (hInfo.spanTotal > 1 ? `${hol} (${hInfo.spanDay}/${hInfo.spanTotal})` : hol) : '';
+      const titleText = hInfo ? (hInfo.spanTotal > 1 ? `${OK.escape(hol)} (${hInfo.spanDay}/${hInfo.spanTotal})` : OK.escape(hol)) : '';
       cells += `<div class="${cls}" title="${titleText}">${d}</div>`;
     }
     return `<div class="month-card">
@@ -289,9 +289,9 @@ function renderOptimizer(longWeekends) {
     const leaveDates = w.leaveDates || (w.leaveDate ? [w.leaveDate] : []);
     const ratio = `${w.leaveNeeded}→${w.days}`;
     return `<div class="optimize-card">
-      <div class="opt-title">${w.name}</div>
+      <div class="opt-title">${OK.escape(w.name)}</div>
       <div class="opt-break">${t('takeDays').replace('{n}', w.leaveNeeded)} → ${t('getDays').replace('{n}', w.days)}</div>
-      <div class="opt-detail">${w.date} (${w.type})</div>
+      <div class="opt-detail">${OK.escape(w.date)} (${w.type})</div>
       <div class="opt-days">${leaveDates.map(d => `<span class="opt-tag">${d}</span>`).join('')}</div>
     </div>`;
   }).join('');
@@ -336,8 +336,8 @@ function renderHolidayList(holidays) {
         <div class="day-strip">${dayStrip}</div>
       </div>
       <div class="holiday-mid">
-        <div class="holiday-name">${g.localName}</div>
-        ${g.localName !== g.name ? `<div class="holiday-local">${g.name}</div>` : ''}
+        <div class="holiday-name">${OK.escape(g.localName)}</div>
+        ${g.localName !== g.name ? `<div class="holiday-local">${OK.escape(g.name)}</div>` : ''}
       </div>
       <span class="holiday-badge${g.days > 1 ? ' weekend-badge' : ''}">${g.days}d</span>
     </div>`;

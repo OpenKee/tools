@@ -56,7 +56,8 @@ function applyLanguage() {
 function isIp(v) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()); }
 
 function renderHistory() {
-  historyStrip.innerHTML = history.slice(0,8).map(h => `<button class="history-chip" data-t="${h}">${h}</button>`).join('');
+  // 历史记录为用户输入，拼入属性与文本前必须转义
+  historyStrip.innerHTML = history.slice(0,8).map(h => `<button class="history-chip" data-t="${OK.escape(h)}">${OK.escape(h)}</button>`).join('');
   historyStrip.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { targetInput.value = b.dataset.t; lookupForm.requestSubmit(); }));
 }
 
@@ -137,14 +138,15 @@ function renderGeo(geo) {
     geoGrid.innerHTML = `<p style="color:var(--muted)">${t('noData')}</p>`;
     return;
   }
+  // 地理位置 API 返回的字段均需转义后拼入 innerHTML
   geoGrid.innerHTML = `
-    <div class="geo-item"><div class="g-label">${t('ip')}</div><div class="g-value">${geo.ip}</div></div>
-    <div class="geo-item"><div class="g-label">${t('country')}</div><div class="g-value">${geo.country||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('region')}</div><div class="g-value">${geo.region||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('city')}</div><div class="g-value">${geo.city||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('isp')}</div><div class="g-value">${geo.isp||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('org')}</div><div class="g-value">${geo.org||'—'}</div></div>
-    <div class="geo-item"><div class="g-label">${t('timezone')}</div><div class="g-value">${geo.tz||'—'}</div></div>
+    <div class="geo-item"><div class="g-label">${t('ip')}</div><div class="g-value">${OK.escape(geo.ip)}</div></div>
+    <div class="geo-item"><div class="g-label">${t('country')}</div><div class="g-value">${OK.escape(geo.country||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('region')}</div><div class="g-value">${OK.escape(geo.region||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('city')}</div><div class="g-value">${OK.escape(geo.city||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('isp')}</div><div class="g-value">${OK.escape(geo.isp||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('org')}</div><div class="g-value">${OK.escape(geo.org||'—')}</div></div>
+    <div class="geo-item"><div class="g-label">${t('timezone')}</div><div class="g-value">${OK.escape(geo.tz||'—')}</div></div>
     <div class="geo-item"><div class="g-label">${t('coords')}</div><div class="g-value">${geo.lat!=null?`${geo.lat}, ${geo.lon}`:'—'} ${geo.lat!=null?`<a href="https://www.openstreetmap.org/?mlat=${geo.lat}&mlon=${geo.lon}#map=10/${geo.lat}/${geo.lon}" target="_blank">${t('mapLink')}</a>`:''}</div></div>
   `;
 }
@@ -153,7 +155,7 @@ function renderDNS(records) {
   dnsGrid.innerHTML = records.map(r => `
     <div class="dns-row">
       <span class="dns-type">${r.type}</span>
-      <div class="dns-values">${r.values.map(v => `<span class="dns-val">${v}</span>`).join('')}</div>
+      <div class="dns-values">${r.values.map(v => `<span class="dns-val">${OK.escape(v)}</span>`).join('')}</div>
     </div>
   `).join('') || `<p style="color:var(--muted)">${t('noData')}</p>`;
 }
@@ -170,22 +172,24 @@ function renderLatency(dnsMs, httpMs, sslMs, totalMs) {
 function renderHeaders(info) {
   if (!info || info.error) { headersCard.style.display = 'none'; return; }
   headersCard.style.display = '';
+  // HTTP 响应信息拼入 innerHTML 前转义
   headersBody.innerHTML = `
-    <div class="kv-row"><span class="kv-key">status</span><span class="kv-val">${info.status}</span></div>
-    <div class="kv-row"><span class="kv-key">type</span><span class="kv-val">${info.type}</span></div>
-    <div class="kv-row"><span class="kv-key">response time</span><span class="kv-val">${info.ms} ms</span></div>
+    <div class="kv-row"><span class="kv-key">status</span><span class="kv-val">${OK.escape(info.status)}</span></div>
+    <div class="kv-row"><span class="kv-key">type</span><span class="kv-val">${OK.escape(info.type)}</span></div>
+    <div class="kv-row"><span class="kv-key">response time</span><span class="kv-val">${OK.escape(info.ms)} ms</span></div>
   `;
 }
 
 function renderSSL(certs) {
   if (!certs.length) { sslCard.style.display = 'none'; return; }
   sslCard.style.display = '';
+  // 证书字段来自 crt.sh，拼入 innerHTML 前转义
   sslBody.innerHTML = certs.map(c => `
     <div class="ssl-item">
-      <div class="ssl-name">${c.name}</div>
+      <div class="ssl-name">${OK.escape(c.name)}</div>
       <div class="ssl-meta">
-        ${t('issuer')}: ${c.issuer?.split('CN=')[1] || c.issuer || '—'}<br>
-        ${t('issued')}: ${c.issued?.slice(0,10) || '—'} · ${t('expires')}: ${c.expires?.slice(0,10) || '—'}
+        ${t('issuer')}: ${OK.escape(c.issuer?.split('CN=')[1] || c.issuer || '—')}<br>
+        ${t('issued')}: ${OK.escape(c.issued?.slice(0,10) || '—')} · ${t('expires')}: ${OK.escape(c.expires?.slice(0,10) || '—')}
       </div>
     </div>
   `).join('');

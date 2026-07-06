@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="shared.css" />
     <style>
       :root { --bg:#000; --panel:#0a0a0a; --text:#f5f5f3; --muted:#9f9f99; --border:rgba(255,255,255,0.08); }
       * { box-sizing:border-box; }
@@ -69,30 +70,31 @@
       <header class="masthead">
         <div>
           <p class="eyebrow">OpenKee · Tools</p>
-          <h1 data-i18n="title">API-powered tools and utilities.</h1>
-          <p class="lead" data-i18n="lead">Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more — all powered by public APIs.</p>
+          <h1 data-ok-i18n="title">API-powered tools and utilities.</h1>
+          <p class="lead" data-ok-i18n="lead">Currency rates, weather briefs, crypto trackers, radio streams, geocoding, and more — all powered by public APIs.</p>
         </div>
         <div class="header-right">
           <a href="https://github.com/OpenKee/tools" target="_blank" class="gh-link">GitHub ↗</a>
-          <a href="https://openkee.github.io/" class="gh-link" data-i18n="allProjects">All projects ↗</a>
+          <a href="https://openkee.github.io/" class="gh-link" data-ok-i18n="allProjects">All projects ↗</a>
           <button id="langToggle" class="lang-toggle" type="button">中文</button>
         </div>
       </header>
 
       <section class="stats">
-        <div class="stat-item"><div class="stat-label" data-i18n="tools">Tools</div><div class="stat-value">29</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="categories">Categories</div><div class="stat-value">9</div></div>
-        <div class="stat-item"><div class="stat-label" data-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-i18n="active">Active</div></div>
+        <div class="stat-item"><div class="stat-label" data-ok-i18n="tools">Tools</div><div class="stat-value">29</div></div>
+        <div class="stat-item"><div class="stat-label" data-ok-i18n="categories">Categories</div><div class="stat-value">9</div></div>
+        <div class="stat-item"><div class="stat-label" data-ok-i18n="status">Status</div><div class="stat-value" style="font-size:1rem;margin-top:0.5rem" data-ok-i18n="active">Active</div></div>
       </section>
 
       <section class="grid" id="projectGrid"></section>
 
       <footer class="footer">
         <span>Built by <a href="https://github.com/OpenKee" target="_blank">OpenKee</a></span>
-        <span><a href="https://openkee.github.io/" data-i18n="back">← All projects</a></span>
+        <span><a href="https://openkee.github.io/" data-ok-i18n="back">← All projects</a></span>
       </footer>
     </main>
 
+    <script src="shared.js"></script>
     <script>
       const PROJECTS = [
         {
@@ -228,47 +230,26 @@
         },
       };
 
-      function safeGetLang() {
-        try { return localStorage.getItem('openkee-lang') || 'en'; } catch (e) { return 'en'; }
-      }
-      function safeSetLang(value) {
-        try { localStorage.setItem('openkee-lang', value); } catch (e) {}
-      }
-
-      let lang = safeGetLang();
       const langToggle = document.getElementById('langToggle');
       const projectGrid = document.getElementById('projectGrid');
-
-      function t(k) { return copy[lang][k] || k; }
-
-      function applyLanguage() {
-        document.documentElement.lang = lang;
-        langToggle.textContent = lang === 'en' ? '中文' : 'EN';
-        document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
-        render();
-      }
 
       function render() {
         const folder = name => 'apps/' + name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-') + '/';
         projectGrid.innerHTML = PROJECTS.map(p => `
           <div class="card">
-            <span class="card-tag ${p.typeClass}">${t(p.typeClass)}</span>
+            <span class="card-tag ${p.typeClass}">${OK.t(p.typeClass, copy)}</span>
             <div class="card-name">${p.name}</div>
-            <div class="card-desc">${p.desc[lang]}</div>
+            <div class="card-desc">${p.desc[OK.lang]}</div>
             <div class="card-links">
-              <a class="card-link" href="${folder(p.name)}">${t('open')}</a>
+              <a class="card-link" href="${folder(p.name)}">${OK.t('open', copy)}</a>
             </div>
           </div>
         `).join('');
       }
 
-      langToggle.addEventListener('click', () => {
-        lang = lang === 'en' ? 'zh' : 'en';
-        safeSetLang(lang);
-        applyLanguage();
-      });
-
-      applyLanguage();
+      OK.applyI18n(copy);
+      OK.initLangToggle(langToggle, copy, render);
+      render();
     </script>
   </body>
 </html>

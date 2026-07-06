@@ -5,15 +5,8 @@ const repoGrid = document.getElementById('repoGrid');
 const paginationEl = document.getElementById('pagination');
 const rangeButtons = document.querySelectorAll('.range-btn');
 
-const LANG_COLORS = {
-  JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5',
-  Java: '#b07219', Go: '#00ADD8', Rust: '#dea584', 'C++': '#f34b7d',
-  C: '#555555', 'C#': '#178600', Ruby: '#701516', PHP: '#4F5D95',
-  Swift: '#F05138', Kotlin: '#A97BFF', Dart: '#00B4AB', Shell: '#89e051',
-  HTML: '#e34c26', CSS: '#563d7c', Vue: '#41b883', Lua: '#000080',
-  Zig: '#ec915c', Elixir: '#6e4a7e', Scala: '#c22d40', R: '#198CE7',
-  'Jupyter Notebook': '#DA5B0B',
-};
+// 复用共享设计系统中的语言颜色映射，避免重复定义
+const LANG_COLORS = OK.githubLangColors;
 
 const copy = {
   en: {
@@ -121,21 +114,21 @@ function renderCard(repo, rank, range) {
   return `
     <article class="repo-card">
       <div class="card-head">
-        <a class="card-name" href="${repo.html_url}" target="_blank" rel="noreferrer">${repo.full_name}</a>
+        <a class="card-name" href="${OK.escape(repo.html_url)}" target="_blank" rel="noreferrer">${OK.escape(repo.full_name)}</a>
         <span class="card-rank">#${rank}</span>
       </div>
-      <p class="card-desc">${repo.description || ''}</p>
+      <p class="card-desc">${OK.escape(repo.description || '')}</p>
       <div class="card-meta">
         <span class="meta-item">\u2605 ${number(repo.stargazers_count)}</span>
         <span class="meta-item">\u0192 ${number(repo.forks_count)}</span>
-        ${repo.language ? `<span class="meta-item"><span class="lang-dot" style="background:${langColor(repo.language)}"></span>${repo.language}</span>` : ''}
+        ${repo.language ? `<span class="meta-item"><span class="lang-dot" style="background:${langColor(repo.language)}"></span>${OK.escape(repo.language)}</span>` : ''}
       </div>
       <div class="card-tags">
         ${hot ? `<span class="tag hot">${t('hot')}</span>` : ''}
         ${repo.open_issues_count > 0 ? `<span class="tag">${number(repo.open_issues_count)} issues</span>` : ''}
       </div>
       <div class="card-footer">
-        <a class="card-link" href="${repo.html_url}" target="_blank" rel="noreferrer">${t('openRepo')} \u2192</a>
+        <a class="card-link" href="${OK.escape(repo.html_url)}" target="_blank" rel="noreferrer">${t('openRepo')} \u2192</a>
         <span class="card-created">${t('created')} ${formatDate(repo.created_at)}</span>
       </div>
     </article>

@@ -120,7 +120,7 @@ function statusLabel(s) {
 
 function renderChips() {
   cityChips.innerHTML = cities.map((c, i) => `
-    <span class="chip">${c.name} <span class="chip-remove" data-rm="${i}">${t('remove')}</span></span>
+    <span class="chip">${OK.escape(c.name)} <span class="chip-remove" data-rm="${i}">${t('remove')}</span></span>
   `).join('');
   cityChips.querySelectorAll('[data-rm]').forEach(el => {
     el.addEventListener('click', () => {
@@ -174,9 +174,9 @@ function renderTimeline() {
       const lt = localTime(c.tz, uh);
       const s = hourStatus(lh);
       const sel = selectedSlot !== null && uh >= selectedSlot && uh < selectedSlot + Math.ceil(duration / 60);
-      return `<div class="tl-slot ${s} ${sel ? (uh === selectedSlot ? 'selected' : 'in-range') : ''}" data-utc="${uh}" title="${c.name}: ${lt} (${statusLabel(s)})">${lt.slice(0, 2)}</div>`;
+      return `<div class="tl-slot ${s} ${sel ? (uh === selectedSlot ? 'selected' : 'in-range') : ''}" data-utc="${uh}" title="${OK.escape(c.name)}: ${lt} (${statusLabel(s)})">${lt.slice(0, 2)}</div>`;
     }).join('');
-    return `<div class="tl-row"><div class="tl-city">${c.name}<small>${c.tz.split('/').pop().replace(/_/g, ' ')}</small></div><div class="tl-bar">${slots}</div></div>`;
+    return `<div class="tl-row"><div class="tl-city">${OK.escape(c.name)}<small>${OK.escape(c.tz.split('/').pop().replace(/_/g, ' '))}</small></div><div class="tl-bar">${slots}</div></div>`;
   }).join('');
 
   // Hour axis
@@ -208,7 +208,7 @@ function renderResult() {
     const lh = localHour(c.tz, selectedSlot);
     const s = hourStatus(lh);
     return `<div class="result-item">
-      <div class="city-name">${c.name}</div>
+      <div class="city-name">${OK.escape(c.name)}</div>
       <div class="city-time">${lt}</div>
       <div class="city-status ${s}">${statusLabel(s)}</div>
     </div>`;
@@ -229,7 +229,7 @@ function renderBestSlots() {
     const details = cities.map(c => {
       const lt = localTime(c.tz, s.uh);
       const st = hourStatus(localHour(c.tz, s.uh));
-      return `${c.name} ${lt} (${statusLabel(st)})`;
+      return `${OK.escape(c.name)} ${lt} (${statusLabel(st)})`;
     }).join(' · ');
 
     return `<div class="best-card" data-uh="${s.uh}">
