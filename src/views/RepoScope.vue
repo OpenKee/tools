@@ -173,17 +173,16 @@ function setCache(u, p, rs) {
 
 /* ---------- GitHub API 请求 ---------- */
 
-// 主流程：带细分的限流错误识别
+// 主流程：用响应体 message 文本判断真限流（不能靠 remaining 头，缺失时默认 0 会误判）
 async function ghFetch(url) {
   const h = { Accept: 'application/vnd.github+json' }
   if (ghToken.value) h.Authorization = `Bearer ${ghToken.value}`
   const r = await fetch(url, { headers: h })
-  const limit = parseInt(r.headers.get('x-ratelimit-limit') || '0', 10)
-  const remaining = parseInt(r.headers.get('x-ratelimit-remaining') || '0', 10)
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
-  if (r.status === 403) {
-    // 只有 remaining===0 才是真限流；limit===60 只是未认证默认配额，不代表限流
-    if (remaining === 0) {
+  if (r.status === 403 || r.status === 429) {
+    const body = await r.json().catch(() => ({}))
+    const msg = (body && body.message) || ''
+    if (/rate limit/i.test(msg)) {
       const err = new Error('rate_limit')
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err

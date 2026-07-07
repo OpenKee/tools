@@ -170,19 +170,20 @@ function langColor(name) {
 }
 
 /* ---------- ghFetch：GitHub REST 封装 ---------- */
-// 404 抛 not_found；403 + remaining=0 抛 rate_limit；其他 403 抛 forbidden；
-// 202（stats 计算中）返回 null；其余非 ok 抛原始 message。
+// 404 抛 not_found；真限流（响应体 message 含 "rate limit"）抛 rate_limit；
+// 其他 403 抛 forbidden；202（stats 计算中）返回 null；其余非 ok 抛原始 message。
+// 注意：不能用 remaining===0 判断——响应缺失该头时默认值也是 0，会误判。
 async function ghFetch(url) {
   const headers = { Accept: 'application/vnd.github+json' }
   if (ghToken.value) headers.Authorization = `Bearer ${ghToken.value}`
   const r = await fetch(url, { headers })
-  const limit = parseInt(r.headers.get('x-ratelimit-limit') || '0', 10)
-  const remaining = parseInt(r.headers.get('x-ratelimit-remaining') || '0', 10)
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
   if (r.status === 404) throw new Error('not_found')
-  if (r.status === 403) {
-    // 只有 remaining===0 才是真限流；limit===60 只是未认证默认配额，不代表限流
-    if (remaining === 0) {
+  if (r.status === 403 || r.status === 429) {
+    // 读响应体，用 message 文本判断是否真限流（GitHub 真限流 message 一定含 "rate limit"）
+    const body = await r.json().catch(() => ({}))
+    const msg = (body && body.message) || ''
+    if (/rate limit/i.test(msg)) {
       const err = new Error('rate_limit')
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err
