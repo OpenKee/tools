@@ -28,7 +28,8 @@ const copy = {
     tokenConfigured: 'Configured',
     tokenNotConfigured: 'Not configured',
     errorNotFound: 'Repository not found.',
-    errorRateLimit: 'GitHub API rate limit reached. Add a personal access token to raise the limit to 5000/hr.',
+    errorRateLimit: 'GitHub API rate limit reached.',
+    errorRateLimitHint: 'Unauthenticated requests are capped at 60/hr and shared by IP. Add a personal access token to raise to 5000/hr.',
     errorRateLimitReset: 'Resets at {time}.',
     errorForbidden: 'Access forbidden.',
     errorGeneric: 'Error: {msg}',
@@ -73,7 +74,8 @@ const copy = {
     tokenConfigured: '已配置',
     tokenNotConfigured: '未配置',
     errorNotFound: '仓库不存在。',
-    errorRateLimit: 'GitHub API 限流，请配置 token 以提升到 5000 次/小时。',
+    errorRateLimit: 'GitHub API 请求次数已达上限。',
+    errorRateLimitHint: '未认证配额为 60 次/小时且按 IP 共享（与他人共用网络时易耗尽）。添加 Personal Access Token 可提升到 5000 次/小时。',
     errorRateLimitReset: '重置时间：{time}',
     errorForbidden: '访问被拒绝。',
     errorGeneric: '出错：{msg}',
@@ -205,8 +207,11 @@ function formatError(e) {
   if (e.message === 'rate_limit') {
     tokenToggleOpen.value = true
     let msg = t.value('errorRateLimit')
+    // 未配 token 时给出 IP 共享配额的解释，避免用户误以为是自己的请求导致的
+    if (!ghToken.value) {
+      msg += ' ' + t.value('errorRateLimitHint')
+    }
     if (e.resetAt) {
-      // 显示完整本地日期时间，避免只看时分秒不知是何时
       const timeStr = e.resetAt.toLocaleString(locale(), {
         month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
       })

@@ -24,7 +24,8 @@ const copy = {
     byStars: 'By stars', byUpdated: 'By updated', byForks: 'By forks', byName: 'By name',
     followers: 'Followers', publicRepos: 'Public repos', totalStars: 'Total stars', repos: 'repos',
     loading: 'Loading…',
-    errorRateLimit: 'GitHub API rate limit exceeded. Add a personal access token to raise limit to 5000/hr.',
+    errorRateLimit: 'GitHub API rate limit exceeded.',
+    errorRateLimitHint: 'Unauthenticated requests are capped at 60/hr and shared by IP. Add a personal access token to raise to 5000/hr.',
     errorRateLimitReset: 'Resets at {time}.',
     errorForbidden: 'Access forbidden. The user may be suspended or a token is required.',
     errorNotFound: 'User not found.', errorGeneric: 'Error: {msg}',
@@ -48,7 +49,8 @@ const copy = {
     byStars: '按星标', byUpdated: '按更新', byForks: '按 Fork', byName: '按名称',
     followers: '关注者', publicRepos: '公开仓库', totalStars: '累计星标', repos: '个仓库',
     loading: '加载中…',
-    errorRateLimit: 'GitHub API 请求次数已达上限。添加 Personal Access Token 可提升到 5000 次/小时。',
+    errorRateLimit: 'GitHub API 请求次数已达上限。',
+    errorRateLimitHint: '未认证配额为 60 次/小时且按 IP 共享（与他人共用网络时易耗尽）。添加 Personal Access Token 可提升到 5000 次/小时。',
     errorRateLimitReset: '重置时间：{time}',
     errorForbidden: '访问被拒绝。该用户可能已被冻结，或需要提供 token。',
     errorNotFound: '用户不存在。', errorGeneric: '出错：{msg}',
@@ -368,6 +370,10 @@ async function analyzeUser(u) {
     let msg
     if (e.message === 'rate_limit') {
       msg = t.value('errorRateLimit')
+      // 未配 token 时给出 IP 共享配额的解释，避免用户误以为是自己的请求导致的
+      if (!ghToken.value) {
+        msg += ' ' + t.value('errorRateLimitHint')
+      }
       if (e.resetAt) {
         const timeStr = e.resetAt.toLocaleString(locale(), {
           month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
