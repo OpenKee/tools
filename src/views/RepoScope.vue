@@ -182,8 +182,8 @@ async function ghFetch(url) {
   const remaining = parseInt(r.headers.get('x-ratelimit-remaining') || '0', 10)
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
   if (r.status === 403) {
-    // 403 可能是限流，也可能是其他禁止访问场景；结合 remaining 判断
-    if (remaining === 0 || limit === 60) {
+    // 只有 remaining===0 才是真限流；limit===60 只是未认证默认配额，不代表限流
+    if (remaining === 0) {
       const err = new Error('rate_limit')
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err
@@ -370,7 +370,10 @@ async function analyzeUser(u) {
     if (e.message === 'rate_limit') {
       msg = t.value('errorRateLimit')
       if (e.resetAt) {
-        msg += ' ' + t.value('errorRateLimitReset').replace('{time}', e.resetAt.toLocaleTimeString(locale()))
+        const timeStr = e.resetAt.toLocaleString(locale(), {
+          month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+        })
+        msg += ' ' + t.value('errorRateLimitReset').replace('{time}', timeStr)
       }
       // 自动展开 token 输入区，提醒用户填入
       tokenToggleOpen.value = true

@@ -181,7 +181,8 @@ async function ghFetch(url) {
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
   if (r.status === 404) throw new Error('not_found')
   if (r.status === 403) {
-    if (remaining === 0 || limit === 60) {
+    // 只有 remaining===0 才是真限流；limit===60 只是未认证默认配额，不代表限流
+    if (remaining === 0) {
       const err = new Error('rate_limit')
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err
@@ -204,7 +205,11 @@ function formatError(e) {
     tokenToggleOpen.value = true
     let msg = t.value('errorRateLimit')
     if (e.resetAt) {
-      msg += ' ' + t.value('errorRateLimitReset').replace('{time}', e.resetAt.toLocaleTimeString(locale()))
+      // 显示完整本地日期时间，避免只看时分秒不知是何时
+      const timeStr = e.resetAt.toLocaleString(locale(), {
+        month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+      })
+      msg += ' ' + t.value('errorRateLimitReset').replace('{time}', timeStr)
     }
     return msg
   }
