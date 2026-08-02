@@ -6,7 +6,7 @@
    - 共享工具：fetchJSON（来自 ../ok.js）
    - 共享组件：AppHeader / AppFooter
    ============================================================ */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '../i18n.js'
 import { fetchJSON } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
@@ -109,7 +109,7 @@ async function fetchMeme(subreddit) {
   } catch (err) {
     loading.value = false
     hasError.value = true
-    console.warn('Meme load failed:', err)
+    if (import.meta.env.DEV) console.warn('Meme load failed:', err)
   }
 }
 
@@ -132,16 +132,22 @@ function goForward() {
 }
 
 // ---------- 复制当前梗图链接到剪贴板 ----------
+let copiedTimer = null
 function copyLink() {
   if (!currentMeme.value || !currentMeme.value.url) return
   const url = currentMeme.value.url
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(function () {
       copied.value = true
-      setTimeout(function () { copied.value = false }, 1500)
+      if (copiedTimer) clearTimeout(copiedTimer)
+      copiedTimer = setTimeout(function () { copied.value = false }, 1500)
     }).catch(function () {})
   }
 }
+
+onBeforeUnmount(() => {
+  if (copiedTimer) { clearTimeout(copiedTimer); copiedTimer = null }
+})
 
 // ---------- 提交 subreddit 表单：重置历史并加载 ----------
 function onSubmit() {

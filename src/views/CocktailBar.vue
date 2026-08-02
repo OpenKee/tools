@@ -120,7 +120,7 @@ async function initCategories() {
     const data = await api('/list.php?c=list')
     categories.value = normalizeCategories(data)
   } catch (err) {
-    console.warn('Failed to load categories:', err)
+    if (import.meta.env.DEV) console.warn('Failed to load categories:', err)
   }
 }
 
@@ -139,7 +139,7 @@ async function loadDrinks(path, fallbackCategory) {
   } catch (err) {
     currentDrinks.value = []
     statusMsg.value = t.value('fetchError')
-    console.warn('Cocktail load failed:', err)
+    if (import.meta.env.DEV) console.warn('Cocktail load failed:', err)
   } finally {
     loading.value = false
   }
@@ -171,7 +171,7 @@ async function randomDrink() {
     }
   } catch (err) {
     statusMsg.value = t.value('fetchError')
-    console.warn('Random drink failed:', err)
+    if (import.meta.env.DEV) console.warn('Random drink failed:', err)
   } finally {
     loading.value = false
   }
@@ -187,7 +187,7 @@ async function loadDetail(id) {
     const drink = drinks.map((d) => normalizeDrink(d, selectedCategory.value)).filter(Boolean)[0]
     if (drink) openModal(drink)
   } catch (err) {
-    console.warn('Drink detail failed:', err)
+    if (import.meta.env.DEV) console.warn('Drink detail failed:', err)
   } finally {
     loading.value = false
   }

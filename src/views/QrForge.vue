@@ -5,13 +5,14 @@
    - 共享工具：locale（来自 ../ok.js）
    - 共享组件：AppHeader / AppFooter
    ============================================================ */
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '../i18n.js'
 import { locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 
 // 语言切换由 AppHeader 内部的 toggleLang 按钮负责，本组件只需 useT 取翻译。
+let downloadRevokeTimer = null
 
 // ---------- i18n 文案字典 ----------
 const copy = {
@@ -345,7 +346,8 @@ async function downloadPng() {
     a.click()
     document.body.removeChild(a)
     // 释放 blob URL
-    setTimeout(function () { URL.revokeObjectURL(blobUrl) }, 1000)
+    if (downloadRevokeTimer) clearTimeout(downloadRevokeTimer)
+    downloadRevokeTimer = setTimeout(function () { URL.revokeObjectURL(blobUrl) }, 1000)
   } catch (e) {
     alert(t.value('downloadError'))
   } finally {
@@ -365,6 +367,10 @@ watch(
 // ---------- 初始化：首次生成 ----------
 onMounted(function () {
   generate()
+})
+
+onBeforeUnmount(() => {
+  if (downloadRevokeTimer) { clearTimeout(downloadRevokeTimer); downloadRevokeTimer = null }
 })
 </script>
 

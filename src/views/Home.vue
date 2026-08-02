@@ -126,7 +126,7 @@ watchEffect(() => {
   </main>
 </template>
 
-<style scoped>
+<style>
 :root {
   --bg: #000;
   --panel: #0a0a0a;
@@ -134,7 +134,9 @@ watchEffect(() => {
   --muted: #9f9f99;
   --border: rgba(255, 255, 255, 0.08);
 }
+</style>
 
+<style scoped>
 .shell {
   width: min(1000px, calc(100% - 2rem));
   margin: 0 auto;

@@ -254,7 +254,7 @@ async function fetchISSPosition() {
     const alt = data.altitude ? parseFloat(data.altitude) : null
     handleNewPosition(lat, lon, ts, speed, alt)
   } catch (err) {
-    console.warn('ISS position fetch failed:', err)
+    if (import.meta.env.DEV) console.warn('ISS position fetch failed:', err)
     // 不打断定时器，下次继续尝试
   }
 }
@@ -328,7 +328,7 @@ async function fetchAstronauts() {
     astrosData.value = data
     astrosState.value = 'loaded'
   } catch (err) {
-    console.warn('Astronauts fetch failed:', err)
+    if (import.meta.env.DEV) console.warn('Astronauts fetch failed:', err)
     astrosState.value = 'error'
   }
 }
@@ -354,7 +354,7 @@ async function fetchPass(lat, lon) {
     })
     passState.value = 'loaded'
   } catch (err) {
-    console.warn('Pass fetch failed:', err)
+    if (import.meta.env.DEV) console.warn('Pass fetch failed:', err)
     passError.value = 'fetchError'
     passState.value = 'error'
   }

@@ -122,7 +122,7 @@ async function initFilters() {
     categories.value = normalizeList(catRes, 'strCategory')
     areas.value = normalizeList(areaRes, 'strArea')
   } catch (err) {
-    console.warn('Failed to load filters:', err)
+    if (import.meta.env.DEV) console.warn('Failed to load filters:', err)
   }
 }
 
@@ -140,7 +140,7 @@ async function loadRecipes(path) {
   } catch (err) {
     loadError.value = true
     statusMsg.value = t.value('fetchError')
-    console.warn('Recipe load failed:', err)
+    if (import.meta.env.DEV) console.warn('Recipe load failed:', err)
   } finally {
     loading.value = false
   }
@@ -170,7 +170,7 @@ async function randomRecipe() {
     if (currentRecipes.value.length) openModal(currentRecipes.value[0])
   } catch (err) {
     statusMsg.value = t.value('fetchError')
-    console.warn('Random recipe failed:', err)
+    if (import.meta.env.DEV) console.warn('Random recipe failed:', err)
   } finally {
     loading.value = false
   }
@@ -185,7 +185,7 @@ async function loadDetail(id) {
     const meal = meals.map(normalizeMeal).filter(Boolean)[0]
     if (meal) openModal(meal)
   } catch (err) {
-    console.warn('Recipe detail failed:', err)
+    if (import.meta.env.DEV) console.warn('Recipe detail failed:', err)
   } finally {
     loading.value = false
   }

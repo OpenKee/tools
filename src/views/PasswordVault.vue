@@ -6,7 +6,7 @@
    - 共享组件：AppHeader / AppFooter
    - 所有随机性均来自 crypto.getRandomValues()，确保密码学安全。
    ============================================================ */
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { i18nState, toggleLang, useT } from '../i18n.js'
 import { lsGet, lsSet, locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
@@ -422,18 +422,26 @@ function fallbackCopy(text) {
 }
 
 // 复制成功后的视觉反馈
+let flashTimer = null
 function flashMain() {
   copiedMain.value = true
-  setTimeout(function () { copiedMain.value = false }, 1200)
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(function () { copiedMain.value = false }, 1200)
 }
 function flashAll() {
   copiedAll.value = true
-  setTimeout(function () { copiedAll.value = false }, 1200)
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(function () { copiedAll.value = false }, 1200)
 }
 function flashBatch(idx) {
   copiedBatchIdx.value = idx
-  setTimeout(function () { copiedBatchIdx.value = -1 }, 1200)
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(function () { copiedBatchIdx.value = -1 }, 1200)
 }
+
+onBeforeUnmount(() => {
+  if (flashTimer) { clearTimeout(flashTimer); flashTimer = null }
+})
 
 function onCopyMain() {
   if (!currentPassword.value) return

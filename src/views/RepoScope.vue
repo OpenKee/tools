@@ -7,7 +7,7 @@
    - 中英文 i18n，共享 i18n.js / ok.js
    ============================================================ */
 
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale, githubLangColors } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
@@ -320,14 +320,20 @@ function closeDetail() {
   detailError.value = ''
 }
 
+let tokenTimer = null
 function saveToken() {
   const v = tokenInput.value.trim()
   if (!v) return
   ghToken.value = v
   lsSet('repo-scope-token', v)
   tokenOk.value = true
-  setTimeout(() => { tokenOk.value = false }, 1500)
+  if (tokenTimer) clearTimeout(tokenTimer)
+  tokenTimer = setTimeout(() => { tokenOk.value = false }, 1500)
 }
+
+onBeforeUnmount(() => {
+  if (tokenTimer) { clearTimeout(tokenTimer); tokenTimer = null }
+})
 
 function clearToken() {
   ghToken.value = ''

@@ -435,7 +435,7 @@ async function fetchWeather() {
     const parsed = parseApiResponse(data)
     if (!parsed) {
       // API 返回但无有效数据，降级
-      console.warn('MAAS2 API returned no usable data, falling back to mock.')
+      if (import.meta.env.DEV) console.warn('MAAS2 API returned no usable data, falling back to mock.')
       useMockData()
       return
     }
@@ -444,7 +444,7 @@ async function fetchWeather() {
     loading.value = false
     refreshUpdated()
   } catch (err) {
-    console.warn('MAAS2 API fetch failed:', err)
+    if (import.meta.env.DEV) console.warn('MAAS2 API fetch failed:', err)
     useMockData()
   }
 }

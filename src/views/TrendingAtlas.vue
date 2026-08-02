@@ -145,7 +145,7 @@ async function loadLanguages() {
     if (!Array.isArray(langs)) return
     languages.value = langs.slice(0, 30).map(l => l.name).sort()
   } catch (e) {
-    console.warn('Language list fetch failed:', e)
+    if (import.meta.env.DEV) console.warn('Language list fetch failed:', e)
   }
 }
 

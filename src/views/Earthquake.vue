@@ -248,7 +248,7 @@ async function togglePlates() {
         L.geoJSON(platesData, { style: { color: '#ef4444', weight: 1.5, opacity: 0.7 } })
           .eachLayer((l) => platesLayer.addLayer(l))
       } catch (e) {
-        console.warn('Plate boundaries load failed:', e)
+        if (import.meta.env.DEV) console.warn('Plate boundaries load failed:', e)
       }
     }
     if (platesLayer && !map.hasLayer(platesLayer)) platesLayer.addTo(map)

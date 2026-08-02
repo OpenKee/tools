@@ -7,7 +7,7 @@
    - 深色 GitHub 主题
    ============================================================ */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, githubLangColors, locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
@@ -119,6 +119,7 @@ const ghToken = ref(lsGet('repo-scope-token') || '')
 const tokenInput = ref(ghToken.value)
 const tokenToggleOpen = ref(false)
 const tokenSaved = ref(false)
+let tokenTimer = null
 
 function saveToken() {
   const v = tokenInput.value.trim()
@@ -126,8 +127,13 @@ function saveToken() {
   ghToken.value = v
   lsSet('repo-scope-token', v)
   tokenSaved.value = true
-  setTimeout(() => { tokenSaved.value = false }, 1500)
+  if (tokenTimer) clearTimeout(tokenTimer)
+  tokenTimer = setTimeout(() => { tokenSaved.value = false }, 1500)
 }
+
+onBeforeUnmount(() => {
+  if (tokenTimer) { clearTimeout(tokenTimer); tokenTimer = null }
+})
 
 function clearToken() {
   ghToken.value = ''
