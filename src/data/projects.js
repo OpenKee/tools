@@ -128,16 +128,12 @@ export const PROJECTS = [
     desc: { en: 'Vocabulary trainer with speech, spelling, and quizzes.', zh: '单词学习，含朗读、拼写、选择题。' },
   },
   {
-    name: 'Taste Atlas', nameZh: '美食图谱', type: 'food', typeClass: 'food',
-    desc: { en: 'Explore recipes from around the world via TheMealDB.', zh: '通过 TheMealDB 探索全球食谱。' },
+    name: 'Food & Drink', nameZh: '美食与饮品', type: 'food', typeClass: 'food',
+    desc: { en: 'Recipes & cocktails: search, browse by category, or roll random from TheMealDB and TheCocktailDB.', zh: '食谱与鸡尾酒：搜索、分类浏览、随机探索，数据来自 TheMealDB 和 TheCocktailDB。' },
   },
   {
     name: 'Meme Forge', nameZh: '梗图工坊', type: 'fun', typeClass: 'fun',
     desc: { en: 'Random memes from Reddit by subreddit or fully random.', zh: 'Reddit 随机梗图，可按 subreddit 或完全随机。' },
-  },
-  {
-    name: 'Cocktail Bar', nameZh: '鸡尾酒吧', type: 'food', typeClass: 'food',
-    desc: { en: 'Search cocktail recipes with ingredients, steps, and glassware.', zh: '鸡尾酒配方搜索：材料、步骤、酒杯。' },
   },
   {
     name: 'HN Reader', nameZh: 'HN 阅读器', slug: 'hn-reader', type: 'data', typeClass: 'data',
