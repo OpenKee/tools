@@ -37,6 +37,12 @@ const routes = [
   { path: '/apps/trending-atlas', name: 'trending-atlas', component: () => import('./views/TrendingAtlas.vue') },
   { path: '/apps/trip-prep', name: 'trip-prep', component: () => import('./views/TripPrep.vue') },
   { path: '/apps/word-forge', name: 'word-forge', component: () => import('./views/WordForge.vue') },
+
+  /* ---------- API 融合应用（第二批） ---------- */
+  { path: '/apps/tech-stack-advisor', name: 'tech-stack-advisor', component: () => import('./views/TechStackAdvisor.vue') },
+  { path: '/apps/trip-weather-advisor', name: 'trip-weather-advisor', component: () => import('./views/TripWeatherAdvisor.vue') },
+  { path: '/apps/asset-snapshot', name: 'asset-snapshot', component: () => import('./views/AssetSnapshot.vue') },
+  { path: '/apps/night-sky-guide', name: 'night-sky-guide', component: () => import('./views/NightSkyGuide.vue') },
   // Space Hub / GitHub Hub 已拆解为独立应用，旧链接重定向到对应的融合应用
   { path: '/apps/space-hub', redirect: '/apps/earth-now' },
   { path: '/apps/github-hub', redirect: '/apps/repo-deep-dive' },

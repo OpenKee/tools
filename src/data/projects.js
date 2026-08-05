@@ -38,6 +38,36 @@ export const PROJECTS = [
     },
   },
 
+  /* ---------- API 融合应用（第二批） ---------- */
+  {
+    name: 'Tech Stack Advisor', nameZh: '技术选型助手', type: 'data', typeClass: 'data',
+    desc: {
+      en: 'Search, compare, and pick the right open-source library. Search GitHub repos, compare metrics side-by-side, and get a recommendation in seconds.',
+      zh: '搜索、对比、选型。输入关键词，对比多个 GitHub 仓库的 Star、Fork、活跃度，秒级推荐最优选。',
+    },
+  },
+  {
+    name: 'Trip Weather Advisor', nameZh: '行程天气顾问', type: 'travel', typeClass: 'travel',
+    desc: {
+      en: 'Plan your trip with weather-aware advice. Enter a city and dates — get daily forecasts, air quality, sunrise times, and tailored suggestions.',
+      zh: '智能出行天气规划。输入目的地和日期，获取逐日天气预报、空气质量、日出日落时间，以及个性化出行建议。',
+    },
+  },
+  {
+    name: 'Asset Snapshot', nameZh: '资产快照', type: 'finance', typeClass: 'finance',
+    desc: {
+      en: 'See your money in every form. Enter any amount and currency — instantly convert to 10 fiat currencies and top 10 cryptocurrencies.',
+      zh: '一屏看清你的钱值多少。输入任意金额和币种，瞬间换算成 10 种法币和 10 种加密货币。',
+    },
+  },
+  {
+    name: 'Night Sky Guide', nameZh: '今晚观天指南', type: 'space', typeClass: 'space',
+    desc: {
+      en: 'What to look for in the sky tonight. ISS passes, aurora visibility, moon phase, and rocket launches — all based on your location.',
+      zh: '今晚抬头看什么？ISS 过境预报、极光可见性、月相、火箭发射——全部基于你的位置。',
+    },
+  },
+
   /* ---------- 太空类 ---------- */
   {
     name: 'ISS Tracker', nameZh: '空间站追踪', type: 'space', typeClass: 'space',
