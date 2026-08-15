@@ -1,20 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { computed, watchEffect } from 'vue'
 import { RouterLink } from 'vue-router'
 import { i18nState, toggleLang } from '../i18n.js'
 
-const props = defineProps({
-  // 是否显示语言切换按钮（首页有自己的布局，可能不需要）
-  showLangToggle: {
-    type: Boolean,
-    default: true,
-  },
-  // 顶栏标题：可传字符串，或 { en, zh } 对象按语言自动切换
-  title: {
-    type: [String, Object],
-    default: '',
-  },
-})
+const props = withDefaults(
+  defineProps<{
+    // 是否显示语言切换按钮（首页有自己的布局，可能不需要）
+    showLangToggle?: boolean
+    // 顶栏标题：可传字符串，或 { en, zh } 对象按语言自动切换
+    title?: string | { en?: string; zh?: string }
+  }>(),
+  { showLangToggle: true, title: '' },
+)
 
 // 按当前语言解析标题
 const displayTitle = computed(() => {

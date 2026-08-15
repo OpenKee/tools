@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Node Atlas — IP & 域名情报（Vue 3 SFC）
    数据源：
@@ -11,7 +11,7 @@
 
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useT } from '../i18n.js'
-import { fetchJSON, lsGet, lsSet } from '../ok.js'
+import { fetchJSON, lsGet, lsSet, type FetchJSONOptions } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 
@@ -49,6 +49,54 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型 ---------- */
+interface GeoData {
+  ip: string
+  country?: string
+  countryCode?: string
+  region?: string
+  city?: string
+  lat?: number
+  lon?: number
+  tz?: string
+  isp?: string
+  org?: string
+}
+interface RawGeoData {
+  location?: {
+    country?: string
+    country_code?: string
+    state?: string
+    city?: string
+    latitude?: number
+    longitude?: number
+    timezone?: string
+  }
+  isp?: { isp?: string; org?: string }
+}
+interface DnsRecord { type: string; values: Array<string | undefined> }
+interface DnsResponse { Answer?: Array<{ data?: string }> }
+interface HttpInfo {
+  status?: string | number
+  type?: ResponseType
+  ms?: number
+  error?: string
+}
+interface SSLCert {
+  id?: number
+  common_name?: string
+  issuer_name?: string
+  not_before?: string
+  not_after?: string
+}
+interface CertInfo {
+  name?: string
+  issuer?: string
+  issued?: string
+  expires?: string
+  id?: number
+}
+
 /* ---------- 常量 ---------- */
 const HISTORY_KEY = 'node-atlas-history'
 const HISTORY_LIMIT = 20
@@ -56,18 +104,18 @@ const HISTORY_VISIBLE = 8
 
 /* ---------- 状态 ---------- */
 const target = ref('')                        // 搜索框输入
-const history = ref(loadHistory())            // 历史记录列表
+const history = ref<string[]>(loadHistory())  // 历史记录列表
 const statusText = ref('')                    // 状态条文本
 const statusClass = ref('')                   // 状态条样式：scanning/done/error/''
 const showResults = ref(false)                // 是否展示结果区域
-const geo = ref(null)                         // 地理位置数据
-const dnsRecords = ref([])                    // DNS 记录数组
+const geo = ref<GeoData | null>(null)         // 地理位置数据
+const dnsRecords = ref<DnsRecord[]>([])       // DNS 记录数组
 const latency = reactive({ dns: 0, http: 0, ssl: 0, total: 0 })  // 延迟统计
-const httpInfo = ref(null)                    // HTTP 响应信息
-const sslCerts = ref([])                      // SSL 证书数组
+const httpInfo = ref<HttpInfo | null>(null)   // HTTP 响应信息
+const sslCerts = ref<CertInfo[]>([])          // SSL 证书数组
 
 /* ---------- 历史记录持久化 ---------- */
-function loadHistory() {
+function loadHistory(): string[] {
   const raw = lsGet(HISTORY_KEY)
   if (!raw) return []
   try {
@@ -82,7 +130,7 @@ function saveHistory() {
   lsSet(HISTORY_KEY, JSON.stringify(history.value))
 }
 
-function addToHistory(value) {
+function addToHistory(value: string) {
   history.value = [value, ...history.value.filter(h => h !== value)].slice(0, HISTORY_LIMIT)
   saveHistory()
 }
@@ -107,33 +155,33 @@ const latencyItems = computed(() => [
 ])
 
 /* ---------- 工具函数 ---------- */
-function isIp(v) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()) }
+function isIp(v: string) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()) }
 
-function latClass(ms) { return ms < 100 ? 'fast' : ms < 500 ? 'mid' : 'slow' }
+function latClass(ms: number) { return ms < 100 ? 'fast' : ms < 500 ? 'mid' : 'slow' }
 
 // 签发者：优先取 CN= 之后的部分，否则用完整 issuer，再否则占位
-function sslIssuer(c) {
+function sslIssuer(c: CertInfo): string {
   return c.issuer?.split('CN=')[1] || c.issuer || '—'
 }
 
 // 日期截取为 YYYY-MM-DD
-function sslDateShort(s) {
+function sslDateShort(s?: string): string {
   return s?.slice(0, 10) || '—'
 }
 
 /* ---------- 网络请求 ----------
    用共享 fetchJSON 包一层 safeFetch：失败/非 2xx 返回 null，
    行为对齐原版 OK 时代的 safeFetch。 */
-async function safeFetch(url, opts = {}) {
+async function safeFetch<T = unknown>(url: string, opts: FetchJSONOptions = {}): Promise<T | null> {
   try {
-    return await fetchJSON(url, opts)
+    return await fetchJSON<T>(url, opts)
   } catch {
     return null
   }
 }
 
-async function geoLookup(ip) {
-  const d = await safeFetch(`https://api.ipquery.io/${ip}`)
+async function geoLookup(ip: string): Promise<GeoData | null> {
+  const d = await safeFetch<RawGeoData>(`https://api.ipquery.io/${ip}`)
   if (!d) return null
   return {
     ip,
@@ -149,16 +197,16 @@ async function geoLookup(ip) {
   }
 }
 
-async function dnsLookup(domain) {
+async function dnsLookup(domain: string): Promise<DnsRecord[]> {
   const types = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA']
   const results = await Promise.all(types.map(async (type) => {
-    const d = await safeFetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`)
+    const d = await safeFetch<DnsResponse>(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`)
     return { type, values: (d?.Answer || []).map((a) => a.data) }
   }))
   return results.filter((r) => r.values.length)
 }
 
-async function fetchHeaders(domain) {
+async function fetchHeaders(domain: string): Promise<HttpInfo> {
   try {
     const start = performance.now()
     // no-cors 模式返回 opaque 响应（res.ok=false），不能复用 fetchJSON，需直接 fetch
@@ -166,13 +214,13 @@ async function fetchHeaders(domain) {
     const ms = Math.round(performance.now() - start)
     return { status: r.status || 'opaque', type: r.type, ms }
   } catch (e) {
-    return { error: e.message }
+    return { error: (e as Error).message }
   }
 }
 
-async function fetchSSL(domain) {
+async function fetchSSL(domain: string): Promise<CertInfo[]> {
   try {
-    const certs = await fetchJSON(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`)
+    const certs = await fetchJSON<SSLCert[]>(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`)
     if (!Array.isArray(certs)) return []
     return certs.slice(0, 5).map((c) => ({
       name: c.common_name,
@@ -187,7 +235,7 @@ async function fetchSSL(domain) {
 }
 
 /* ---------- 主查询流程 ---------- */
-async function lookup(value) {
+async function lookup(value: string) {
   const trimmed = value.trim()
   if (!trimmed) return
   addToHistory(trimmed)
@@ -242,7 +290,7 @@ async function lookup(value) {
     statusText.value = `${t.value('done')} — ${totalMs}ms`
   } catch (e) {
     statusClass.value = 'error'
-    statusText.value = `${t.value('error')}: ${e.message}`
+    statusText.value = `${t.value('error')}: ${(e as Error).message}`
   }
 }
 
@@ -251,7 +299,7 @@ function onSubmit() {
   lookup(target.value)
 }
 
-function onChipClick(value) {
+function onChipClick(value: string) {
   target.value = value
   lookup(value)
 }
@@ -268,7 +316,7 @@ onMounted(() => {
   <div class="node-atlas-app">
     <AppHeader :show-lang-toggle="true" />
 
-    <main class="shell">
+    <main class="ok-shell">
       <header class="masthead">
         <div>
           <p class="eyebrow">{{ t('eyebrow') }}</p>
@@ -502,12 +550,6 @@ onMounted(() => {
 .node-atlas-app small { margin: 0; }
 
 /* ---------- 主容器 ---------- */
-.shell {
-  width: min(1000px, calc(100% - 1.25rem));
-  margin: 0 auto;
-  padding: 1rem 0 3rem;
-}
-
 .masthead {
   display: flex;
   justify-content: space-between;

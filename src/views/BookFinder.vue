@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Book Finder — 图书搜索器（Vue 3 SFC）
    数据源：Open Library Search API
@@ -87,7 +87,7 @@ const SUGGESTIONS = [
 ]
 
 // 建议词的展示文案（中英）
-const SUGGESTION_LABELS = {
+const SUGGESTION_LABELS: Record<string, { en: string; zh: string }> = {
   fantasy: { en: 'Fantasy', zh: '奇幻' },
   'science fiction': { en: 'Science Fiction', zh: '科幻' },
   history: { en: 'History', zh: '历史' },
@@ -101,7 +101,7 @@ const SUGGESTION_LABELS = {
 }
 
 // Open Library 语言代码 → 本地化名称
-const LANG_NAMES = {
+const LANG_NAMES: Record<string, { en: string; zh: string }> = {
   eng: { en: 'English', zh: '英语' },
   zho: { en: 'Chinese', zh: '中文' },
   chi: { en: 'Chinese', zh: '中文' },
@@ -119,12 +119,36 @@ const LANG_NAMES = {
   lat: { en: 'Latin', zh: '拉丁语' },
 }
 
+/* ---------- 类型 ---------- */
+interface Book {
+  key?: string
+  title?: string
+  author_name?: string[]
+  author_key?: string[]
+  cover_i?: number
+  first_publish_year?: number
+  publisher?: string[]
+  number_of_pages_median?: number
+  isbn?: string[]
+  language?: string[]
+  subject?: string[]
+}
+
+interface SearchResponse {
+  numFound?: number
+  docs?: Book[]
+}
+
+interface WorkResponse {
+  description?: string | { value?: string }
+}
+
 // ---------- 状态 ----------
 const query = ref('')                       // 搜索输入
 const currentQuery = ref('')                // 当前实际搜索的查询词
 const currentPage = ref(1)                  // 当前页码
 const totalFound = ref(0)                   // 搜索结果总数
-const lastResults = ref(null)               // 最近一次结果（null 表示尚未搜索）
+const lastResults = ref<Book[] | null>(null)   // 最近一次结果（null 表示尚未搜索）
 const isLoading = ref(false)                // 首次/重置搜索加载中
 const loadingMore = ref(false)              // 加载更多中
 const error = ref(false)                    // 是否出错
@@ -133,53 +157,54 @@ const endReached = ref(false)               // 是否已加载到末尾
 
 // 详情抽屉
 const drawerOpen = ref(false)               // 抽屉是否打开
-const detailBook = ref(null)                // 当前查看的书籍
-const detailDesc = ref(null)                // 详情简介：null=加载中，''=无简介，非空=简介文本
+const detailBook = ref<Book | null>(null)   // 当前查看的书籍
+const detailDesc = ref<string | null>(null) // 详情简介：null=加载中，''=无简介，非空=简介文本
 
-let searchTimer = null                      // 防抖搜索定时器
+let searchTimer: ReturnType<typeof setTimeout> | undefined   // 防抖搜索定时器
 
 // ---------- 工具函数 ----------
 
 // 拼接封面 URL
-function coverUrl(coverI, size) {
+function coverUrl(coverI: number | undefined, size: string) {
   return coverI ? COVER + coverI + '-' + size + '.jpg' : ''
 }
 
 // Open Library 语言代码 → 本地化名称
-function langName(code) {
+function langName(code: string) {
   const e = LANG_NAMES[code]
   return e ? e[i18nState.lang] : code
 }
 
 // 建议词展示文案
-function suggestionLabel(s) {
-  return (SUGGESTION_LABELS[s] && SUGGESTION_LABELS[s][i18nState.lang]) || s
+function suggestionLabel(s: string) {
+  const e = SUGGESTION_LABELS[s]
+  return (e && e[i18nState.lang]) || s
 }
 
 // 卡片 aria-label
-function cardAriaLabel(book) {
+function cardAriaLabel(book: Book) {
   const author = (book.author_name && book.author_name[0]) ? book.author_name[0] : t.value('unknownAuthor')
   return (book.title || '') + ' ' + t.value('by') + ' ' + author
 }
 
 // 详情作者名
-function detailAuthor(b) {
+function detailAuthor(b: Book) {
   return (b.author_name && b.author_name[0]) ? b.author_name[0] : t.value('unknownAuthor')
 }
 
 // 作者照片 URL
-function authorPhoto(b) {
+function authorPhoto(b: Book) {
   const k = (b.author_key && b.author_key[0]) || ''
   return k ? 'https://covers.openlibrary.org/a/olid/' + k + '-M.jpg' : ''
 }
 
 // Open Library 作品页链接
-function openLink(b) {
+function openLink(b: Book) {
   return b.key ? 'https://openlibrary.org' + b.key : ''
 }
 
 // 提取简介文本（Open Library 的 description 可能是字符串或对象）
-function extractDescription(d) {
+function extractDescription(d: string | { value?: string } | undefined) {
   if (!d) return ''
   if (typeof d === 'string') return d
   if (d.value) return d.value
@@ -187,8 +212,8 @@ function extractDescription(d) {
 }
 
 // 图片加载失败时移除元素（替代原内联 onerror）
-function onImgError(e) {
-  e.target.remove()
+function onImgError(e: Event) {
+  ;(e.target as HTMLElement).remove()
 }
 
 // ---------- computed ----------
@@ -234,7 +259,7 @@ const showEndText = computed(
 const detailRows = computed(() => {
   if (!detailBook.value) return []
   const b = detailBook.value
-  const rows = []
+  const rows: Array<{ label: string; value: string | number }> = []
   if (b.first_publish_year) rows.push({ label: t.value('firstPublished'), value: b.first_publish_year })
   const publishers = (b.publisher && b.publisher.slice(0, 3).join(', ')) || ''
   if (publishers) rows.push({ label: t.value('publisher'), value: publishers })
@@ -284,7 +309,7 @@ function doSearch(reset = true) {
 
   const url = API + '?q=' + encodeURIComponent(q) + '&limit=' + PAGE + '&page=' + currentPage.value
 
-  fetchJSON(url)
+  fetchJSON<SearchResponse>(url)
     .then((data) => {
       totalFound.value = data.numFound || 0
       lastResults.value = data.docs || []
@@ -313,7 +338,7 @@ function loadMore() {
     '&page=' +
     currentPage.value
 
-  fetchJSON(url)
+  fetchJSON<SearchResponse>(url)
     .then((data) => {
       const docs = data.docs || []
       if (!docs.length) {
@@ -334,14 +359,14 @@ function loadMore() {
 }
 
 // 点击建议词
-function pickSuggestion(s) {
+function pickSuggestion(s: string) {
   query.value = s
   doSearch(true)
 }
 
 // ---------- 详情面板 ----------
 
-function openDetail(key) {
+function openDetail(key: string | undefined) {
   // 从已保存结果中查找该书
   const book = (lastResults.value || []).find((b) => b.key === key) || null
   detailBook.value = book
@@ -352,7 +377,7 @@ function openDetail(key) {
   if (!book) return
 
   // 异步拉取作品详情（简介等）
-  fetchJSON(WORKS + book.key + '.json')
+  fetchJSON<WorkResponse>(WORKS + book.key + '.json')
     .then((work) => {
       detailDesc.value = extractDescription(work.description) || ''
     })
@@ -367,7 +392,7 @@ function closeDrawer() {
 }
 
 // 卡片键盘事件：Enter / Space 触发详情
-function onCardKeydown(e, key) {
+function onCardKeydown(e: KeyboardEvent, key: string | undefined) {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault()
     openDetail(key)
@@ -375,7 +400,7 @@ function onCardKeydown(e, key) {
 }
 
 // 文档级键盘事件：Escape 关闭抽屉
-function onDocKeydown(e) {
+function onDocKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && drawerOpen.value) closeDrawer()
 }
 

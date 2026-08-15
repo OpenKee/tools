@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Password Vault — 密码生成器（Vue 3 SFC 迁移版）
    - 共享 i18n：i18nState / useT / toggleLang（来自 ../i18n.js）
@@ -131,6 +131,14 @@ const copy = {
 // useT 返回 computed ref，模板中 t('key') 自动 unwrap；脚本中用 t.value('key')
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface HistoryItem {
+  password: string
+  entropy: number
+  level: string
+  timeStr: string
+}
+
 // ---------- 字符集定义 ----------
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const LOWER = 'abcdefghijklmnopqrstuvwxyz'
@@ -151,8 +159,8 @@ const state = reactive({
 })
 
 const currentPassword = ref('')     // 当前展示的密码
-const history = ref([])             // 历史记录列表
-const batchPasswords = ref([])      // 批量生成的密码
+const history = ref<HistoryItem[]>([])    // 历史记录列表
+const batchPasswords = ref<string[]>([])  // 批量生成的密码
 const breachResult = ref('—')       // 泄露检查结果文案
 const breachChecking = ref(false)   // 泄露检查进行中
 
@@ -178,7 +186,7 @@ function saveHistory() {
 
 // ---------- 工具函数 ----------
 // 从字符串中移除相似字符
-function filterSimilar(str) {
+function filterSimilar(str: string): string {
   let result = ''
   for (let i = 0; i < str.length; i++) {
     if (SIMILAR.indexOf(str[i]) === -1) result += str[i]
@@ -198,7 +206,7 @@ function buildSets() {
 }
 
 // 拼接完整字符池
-function buildPool(sets) {
+function buildPool(sets: string[]): string {
   return sets.join('')
 }
 
@@ -206,7 +214,7 @@ function buildPool(sets) {
  * 密码学安全的随机整数 [0, max)。
  * 使用拒绝采样消除取模偏差。
  */
-function secureRandomInt(max) {
+function secureRandomInt(max: number): number {
   if (max <= 0) return 0
   const range = 4294967296 // 2^32
   const limit = range - (range % max) // 最大可接受边界
@@ -223,10 +231,10 @@ function secureRandomInt(max) {
  * 生成密码。
  * 保证每个已选字符集至少出现一次（当长度足够时），再用 Fisher-Yates 洗牌。
  */
-function generatePassword(length, sets) {
+function generatePassword(length: number, sets: string[]): string {
   const pool = buildPool(sets)
   if (!pool || length <= 0) return ''
-  const chars = []
+  const chars: string[] = []
   // 先从每个集合各取一个，保证覆盖
   const ensureCount = Math.min(sets.length, length)
   for (let i = 0; i < ensureCount; i++) {
@@ -247,13 +255,13 @@ function generatePassword(length, sets) {
 }
 
 // 计算熵值（bits）= 长度 * log2(字符池大小)
-function calcEntropy(length, poolSize) {
+function calcEntropy(length: number, poolSize: number): number {
   if (poolSize <= 0 || length <= 0) return 0
   return length * Math.log2(poolSize)
 }
 
 // 根据熵值判定强度等级
-function strengthFromEntropy(entropy) {
+function strengthFromEntropy(entropy: number): string {
   if (entropy < 35) return 'weak'
   if (entropy < 60) return 'medium'
   if (entropy < 120) return 'strong'
@@ -261,7 +269,7 @@ function strengthFromEntropy(entropy) {
 }
 
 // 强度等级文案
-function levelLabel(level) {
+function levelLabel(level: string): string {
   if (level === 'weak') return t.value('levelWeak')
   if (level === 'medium') return t.value('levelMedium')
   if (level === 'strong') return t.value('levelStrong')
@@ -269,7 +277,7 @@ function levelLabel(level) {
 }
 
 // 分析密码字符组成
-function analyzeComposition(pwd) {
+function analyzeComposition(pwd: string): { upper: number; lower: number; digit: number; symbol: number } {
   const counts = { upper: 0, lower: 0, digit: 0, symbol: 0 }
   for (let i = 0; i < pwd.length; i++) {
     const ch = pwd[i]
@@ -282,7 +290,7 @@ function analyzeComposition(pwd) {
 }
 
 // 时间单位单词（处理英文复数）
-function unitWord(n, key) {
+function unitWord(n: number, key: string): string {
   const word = t.value(key)
   if (i18nState.lang === 'en' && n !== 1) return word + 's'
   return word
@@ -292,7 +300,7 @@ function unitWord(n, key) {
  * 估算破解时间。
  * 假设离线快速攻击 1e10 次/秒，平均需要尝试 2^entropy / 2 次。
  */
-function formatCrackTime(entropy) {
+function formatCrackTime(entropy: number): string {
   if (entropy <= 0) return t.value('timeInstant')
   const guesses = Math.pow(2, entropy) / 2
   const seconds = guesses / 1e10
@@ -315,7 +323,7 @@ function formatCrackTime(entropy) {
 }
 
 // ---------- 泄露检查（Have I Been Pwned k-Anonymity） ----------
-function bufferToHex(buffer) {
+function bufferToHex(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let hex = ''
   for (let i = 0; i < bytes.length; i++) {
@@ -324,7 +332,7 @@ function bufferToHex(buffer) {
   return hex
 }
 
-async function checkBreach(password) {
+async function checkBreach(password: string) {
   if (!password || password === '—') {
     breachResult.value = t.value('breachError')
     return
@@ -396,7 +404,7 @@ const passwordDisplayText = computed(() => {
 const passwordIsEmpty = computed(() => !currentPassword.value)
 
 // ---------- 复制功能 ----------
-function copyToClipboard(text) {
+function copyToClipboard(text: string): Promise<void> {
   if (!text) return Promise.resolve()
   if (navigator.clipboard && navigator.clipboard.writeText) {
     return navigator.clipboard.writeText(text).catch(function () {
@@ -407,8 +415,8 @@ function copyToClipboard(text) {
 }
 
 // 降级复制方案
-function fallbackCopy(text) {
-  return new Promise(function (resolve) {
+function fallbackCopy(text: string): Promise<void> {
+  return new Promise<void>(function (resolve) {
     const ta = document.createElement('textarea')
     ta.value = text
     ta.style.position = 'fixed'
@@ -430,7 +438,7 @@ function flashAll() {
   copiedAll.value = true
   setTimeout(function () { copiedAll.value = false }, 1200)
 }
-function flashBatch(idx) {
+function flashBatch(idx: number) {
   copiedBatchIdx.value = idx
   setTimeout(function () { copiedBatchIdx.value = -1 }, 1200)
 }
@@ -440,13 +448,13 @@ function onCopyMain() {
   copyToClipboard(currentPassword.value).then(flashMain)
 }
 
-function onCopyHistory(pwd) {
+function onCopyHistory(pwd: string) {
   if (!pwd) return
   // 点击历史项复制该密码，同时闪烁主复制按钮作为反馈
   copyToClipboard(pwd).then(flashMain)
 }
 
-function onCopyBatchItem(idx) {
+function onCopyBatchItem(idx: number) {
   const pwd = batchPasswords.value[idx]
   if (!pwd) return
   copyToClipboard(pwd).then(function () { flashBatch(idx) })
@@ -473,7 +481,7 @@ function generateAndShow() {
 }
 
 // ---------- 历史记录 ----------
-function addToHistory(pwd, poolSz) {
+function addToHistory(pwd: string, poolSz: number): void {
   if (!pwd) return
   // 与最近一条相同则跳过
   if (history.value.length && history.value[0].password === pwd) return
@@ -533,11 +541,11 @@ onMounted(function () {
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
-          <p class="lead">{{ t('lead') }}</p>
+          <p class="ok-lead">{{ t('lead') }}</p>
         </div>
-        <div class="header-right">
+        <div class="ok-header-right">
           <button class="ok-lang-toggle" type="button" @click="toggleLang">
             {{ i18nState.lang === 'en' ? '中文' : 'EN' }}
           </button>
@@ -852,34 +860,12 @@ onMounted(function () {
   gap: 1rem;
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
 h1 {
   margin-top: 0.25rem;
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
   font-weight: 800;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  max-width: 55ch;
-}
-
-.header-right {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
 }
 
 /* ---------- 工作区两栏布局 ---------- */

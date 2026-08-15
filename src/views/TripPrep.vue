@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Trip Prep — 旅行准备台
    7 个 API 围绕"出行准备"场景协作：地理编码（入口）→ 国家百科 +
@@ -8,9 +8,108 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
-import { fetchJSON, geocode, haversineKm, locale } from '../ok.js'
+import { fetchJSON, geocode, haversineKm, locale, type GeoResult } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- 类型定义 ---------- */
+interface City extends GeoResult {
+  locationMode?: boolean
+}
+
+interface WmoInfo {
+  en: string
+  zh: string
+  sym: string
+}
+
+interface AqiInfo {
+  en: string
+  zh: string
+  cls: string
+}
+
+interface Country {
+  locationMode?: boolean
+  cca2?: string
+  flag?: string
+  name?: { common?: string }
+  capital?: string[]
+  population?: number
+  languages?: Record<string, string>
+  region?: string
+  subregion?: string
+  borders?: string[]
+  currencies?: Record<string, { name?: string; symbol?: string }>
+}
+
+interface WeatherCurrent {
+  temperature_2m: number
+  relative_humidity_2m: number
+  apparent_temperature: number
+  precipitation: number
+  weather_code: number
+  wind_speed_10m: number
+}
+
+interface WeatherDaily {
+  time: string[]
+  temperature_2m_max: number[]
+  temperature_2m_min: number[]
+  weather_code: number[]
+  sunrise: string[]
+  sunset: string[]
+}
+
+interface WeatherData {
+  timezone?: string
+  current?: WeatherCurrent
+  daily?: WeatherDaily
+}
+
+interface AirData {
+  us_aqi: number
+  pm2_5: number
+  pm10: number
+  ozone: number
+  nitrogen_dioxide: number
+}
+
+type ExchangeRates = Record<string, number>
+
+interface Quake {
+  time: number
+  mag: number
+  place: string
+  distance: number
+}
+
+interface EarthquakeFeature {
+  geometry: { coordinates: number[] }
+  properties: { time: number; mag: number; place?: string }
+}
+
+interface EarthquakeResponse {
+  features?: EarthquakeFeature[]
+}
+
+type CardKey = 'country' | 'weather' | 'air' | 'exchange' | 'earthquake'
+
+interface CardSlot<T> {
+  loading: boolean
+  error: string
+  data: T | null
+}
+
+type AllCardData = Country | WeatherData | AirData | ExchangeRates | Quake[]
+
+interface CardSlots {
+  country: CardSlot<Country>
+  weather: CardSlot<WeatherData>
+  air: CardSlot<AirData>
+  exchange: CardSlot<ExchangeRates>
+  earthquake: CardSlot<Quake[]>
+}
 
 /* ---------- 文案字典（中英双语） ---------- */
 const copy = {
@@ -117,12 +216,12 @@ const t = useT(copy)
 
 /* ---------- 响应式状态 ---------- */
 const input = ref('')
-const candidates = ref([])
-const selected = ref(null)
+const candidates = ref<City[]>([])
+const selected = ref<City | null>(null)
 const locating = ref(false)
 const geoError = ref('')
 
-const cards = ref({
+const cards = ref<CardSlots>({
   country: { loading: false, error: '', data: null },
   weather: { loading: false, error: '', data: null },
   air: { loading: false, error: '', data: null },
@@ -131,16 +230,16 @@ const cards = ref({
 })
 
 /* ---------- 静态国家列表缓存（world-countries） ---------- */
-let countriesCache = null
-async function loadCountries() {
+let countriesCache: Country[] | null = null
+async function loadCountries(): Promise<Country[]> {
   if (countriesCache) return countriesCache
-  countriesCache = await fetchJSON('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json')
+  countriesCache = await fetchJSON<Country[]>('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json')
   return countriesCache
 }
 
 /* ---------- WMO 天气代码映射（符号为 Unicode 字符，非 emoji） ---------- */
-function wmo(code) {
-  const m = {
+function wmo(code: number): WmoInfo {
+  const m: Record<number, WmoInfo> = {
     0: { en: 'Clear sky', zh: '晴', sym: '☀' },
     1: { en: 'Mainly clear', zh: '大致晴朗', sym: '☀' },
     2: { en: 'Partly cloudy', zh: '局部多云', sym: '☁' },
@@ -174,7 +273,7 @@ function wmo(code) {
 }
 
 /* ---------- AQI 等级 ---------- */
-function aqiLevel(v) {
+function aqiLevel(v: number | null): AqiInfo | null {
   if (v == null) return null
   if (v <= 50) return { en: 'Good', zh: '好', cls: 'good' }
   if (v <= 100) return { en: 'Moderate', zh: '中等', cls: 'moderate' }
@@ -185,31 +284,32 @@ function aqiLevel(v) {
 }
 
 /* ---------- 格式化工具 ---------- */
-function formatNum(v, digits) {
+function formatNum(v: number | null | undefined, digits?: number): string {
   if (v == null || isNaN(v)) return '—'
   const d = digits || 0
   return Number(v).toLocaleString(locale(), { maximumFractionDigits: d, minimumFractionDigits: d })
 }
-function formatPop(v) {
+function formatPop(v: number | null | undefined): string {
   if (v == null) return '—'
   return Number(v).toLocaleString(locale())
 }
-function formatTime(iso, tz) {
+function formatTime(iso: string | null | undefined, tz?: string | null): string {
   if (!iso) return '—'
-  const opts = { hour: '2-digit', minute: '2-digit', hour12: false }
+  const opts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: false }
   if (tz) opts.timeZone = tz
   return new Intl.DateTimeFormat('en-US', opts).format(new Date(iso))
 }
-function formatDateTime(ts, tz) {
+function formatDateTime(ts: number | null | undefined, tz?: string | null): string {
   if (!ts) return '—'
-  const opts = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
+  const opts: Intl.DateTimeFormatOptions = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
   if (tz) opts.timeZone = tz
   return new Intl.DateTimeFormat(locale(), opts).format(new Date(ts))
 }
 
 /* ---------- 搜索 / 候选 / 定位 ---------- */
 function resetCards() {
-  Object.keys(cards.value).forEach((k) => {
+  const keys = Object.keys(cards.value) as CardKey[]
+  keys.forEach((k) => {
     cards.value[k] = { loading: false, error: '', data: null }
   })
 }
@@ -237,7 +337,7 @@ async function search() {
   }
 }
 
-function selectCity(c) {
+function selectCity(c: City) {
   candidates.value = []
   selected.value = c
   loadAll(c)
@@ -278,33 +378,33 @@ function useMyLocation() {
 }
 
 /* ---------- 各 API 加载器 ---------- */
-async function loadCountry(city) {
+async function loadCountry(city: City): Promise<Country | { locationMode: boolean } | null> {
   if (city.locationMode) return { locationMode: true }
   const list = await loadCountries()
   return list.find((x) => x.cca2 === city.countryCode) || null
 }
-async function loadWeather(city) {
+async function loadWeather(city: City): Promise<WeatherData> {
   const url =
     'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
     '&longitude=' + city.lon +
     '&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m' +
     '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max' +
     '&timezone=auto&forecast_days=7'
-  return await fetchJSON(url)
+  return await fetchJSON<WeatherData>(url)
 }
-async function loadAir(city) {
+async function loadAir(city: City): Promise<AirData | null> {
   const url =
     'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + city.lat +
     '&longitude=' + city.lon +
     '&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=auto'
-  const d = await fetchJSON(url)
+  const d = await fetchJSON<{ current: AirData | null }>(url)
   return d.current || null
 }
-async function loadExchange() {
-  const d = await fetchJSON('https://open.er-api.com/v6/latest/USD')
+async function loadExchange(): Promise<ExchangeRates | null> {
+  const d = await fetchJSON<{ rates: ExchangeRates }>('https://open.er-api.com/v6/latest/USD')
   return d.rates || null
 }
-async function loadEarthquake(city) {
+async function loadEarthquake(city: City): Promise<Quake[]> {
   const now = new Date()
   const start = new Date(now.getTime() - 30 * 24 * 3600 * 1000)
   const url =
@@ -313,7 +413,7 @@ async function loadEarthquake(city) {
     '&endtime=' + now.toISOString() +
     '&latitude=' + city.lat + '&longitude=' + city.lon +
     '&maxradiuskm=1000&minmagnitude=4&limit=20&orderby=time'
-  const d = await fetchJSON(url)
+  const d = await fetchJSON<EarthquakeResponse>(url)
   return (d.features || []).map((f) => {
     const c = f.geometry.coordinates
     return {
@@ -326,8 +426,8 @@ async function loadEarthquake(city) {
 }
 
 /* ---------- 并发加载（Promise.allSettled，单卡失败不影响其他） ---------- */
-async function loadAll(city) {
-  const tasks = [
+async function loadAll(city: City): Promise<void> {
+  const tasks: { key: CardKey; fn: () => Promise<AllCardData | null> }[] = [
     { key: 'country', fn: () => loadCountry(city) },
     { key: 'weather', fn: () => loadWeather(city) },
     { key: 'air', fn: () => loadAir(city) },
@@ -444,8 +544,8 @@ const tzDiffLabel = computed(() => {
   const d = tzDiff.value
   if (d == null) return ''
   if (d === 0) return t.value('sameTz')
-  if (d > 0) return t.value('faster').replace('{n}', d)
-  return t.value('slower').replace('{n}', Math.abs(d))
+  if (d > 0) return t.value('faster').replace('{n}', String(d))
+  return t.value('slower').replace('{n}', String(Math.abs(d)))
 })
 
 /* ---------- 派生：空气质量 / 地震 ---------- */
@@ -467,7 +567,7 @@ onMounted(() => {
     <main class="shell">
       <!-- 页头 -->
       <header class="masthead">
-        <p class="eyebrow">{{ t('eyebrow') }}</p>
+        <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
         <h1>{{ t('title') }}</h1>
         <p class="lead">{{ t('lead') }}</p>
       </header>
@@ -673,13 +773,6 @@ onMounted(() => {
 .masthead {
   padding: 0.6rem 0 1.2rem;
   border-bottom: 1px solid var(--ok-line);
-}
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--ok-accent);
 }
 .masthead h1 {
   margin-top: 0.3rem;

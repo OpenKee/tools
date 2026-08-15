@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Trending Atlas — GitHub 热门仓库浏览器（Vue 3 SFC）
    数据源：GitHub Search API（按创建时间 + 星标筛选）
@@ -58,6 +58,28 @@ const copy = {
 
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface Repo {
+  id: number
+  html_url: string
+  full_name: string
+  description: string | null
+  stargazers_count: number
+  forks_count: number
+  language: string | null
+  open_issues_count: number
+  created_at: string
+}
+
+interface SearchResponse {
+  total_count: number
+  items: Repo[]
+}
+
+interface LanguageItem {
+  name: string
+}
+
 // ---------- 常量 ----------
 const PER_PAGE = 24
 
@@ -74,15 +96,15 @@ const currentPage = ref(1)              // 当前页码
 const totalPages = ref(1)               // 总页数
 const totalCount = ref(0)               // 总结果数
 const langFilter = ref('')              // 语言筛选值（v-model 绑定 select）
-const languages = ref([])               // 可选语言列表
-const repos = ref([])                   // 当前页仓库数组
+const languages = ref<string[]>([])     // 可选语言列表
+const repos = ref<Repo[]>([])           // 当前页仓库数组
 const loading = ref(false)              // 加载中
 const error = ref(false)                // 加载失败
 
 // ---------- 工具函数 ----------
 
 // 计算时间范围的起始日期（ISO yyyy-mm-dd）
-function getDateRange(range) {
+function getDateRange(range: string): string {
   const now = new Date()
   let days
   if (range === 'daily') days = 1
@@ -93,17 +115,17 @@ function getDateRange(range) {
 }
 
 // 数字本地化格式化
-function number(v) {
+function number(v: number): string {
   return new Intl.NumberFormat(locale()).format(v || 0)
 }
 
 // 取语言对应的颜色，缺失则返回灰色
-function langColor(name) {
+function langColor(name: string): string {
   return githubLangColors[name] || '#8b8b8b'
 }
 
 // 日期本地化格式化
-function formatDate(dateStr) {
+function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   return d.toLocaleDateString(locale(), {
     year: 'numeric', month: 'short', day: 'numeric',
@@ -111,7 +133,7 @@ function formatDate(dateStr) {
 }
 
 // 判断是否为"热门"仓库（按范围与星标阈值）
-function isHot(repo) {
+function isHot(repo: Repo): boolean {
   const stars = repo.stargazers_count || 0
   if (currentRange.value === 'daily' && stars >= 200) return true
   if (currentRange.value === 'weekly' && stars >= 1000) return true
@@ -141,7 +163,7 @@ const paginationPages = computed(() => {
 // 加载可选语言列表（取 GitHub 语言榜前 30）
 async function loadLanguages() {
   try {
-    const langs = await fetchJSON('https://api.github.com/languages', { timeout: 12000 })
+    const langs = await fetchJSON<LanguageItem[]>('https://api.github.com/languages', { timeout: 12000 })
     if (!Array.isArray(langs)) return
     languages.value = langs.slice(0, 30).map(l => l.name).sort()
   } catch (e) {
@@ -161,11 +183,11 @@ async function loadRepos() {
 
   try {
     const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=${PER_PAGE}&page=${currentPage.value}`
-    const headers = {}
+    const headers: Record<string, string> = {}
     const token = lsGet('repo-scope-token')
     if (token) headers.Authorization = `Bearer ${token}`
 
-    const data = await fetchJSON(url, { headers, timeout: 15000 })
+    const data = await fetchJSON<SearchResponse>(url, { headers, timeout: 15000 })
     totalCount.value = data.total_count
     let tp = Math.ceil(totalCount.value / PER_PAGE)
     if (tp > 1000) tp = Math.ceil(1000 / PER_PAGE)
@@ -182,12 +204,12 @@ async function loadRepos() {
 // ---------- 交互处理 ----------
 
 // 切换时间范围
-function setRange(range) {
+function setRange(range: string) {
   currentRange.value = range
 }
 
 // 跳转分页
-function goToPage(p) {
+function goToPage(p: number) {
   if (p < 1 || p > totalPages.value) return
   currentPage.value = p
   loadRepos()

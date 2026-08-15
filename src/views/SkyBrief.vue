@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { i18nState, toggleLang, useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale } from '../ok.js'
@@ -37,8 +37,61 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型 ---------- */
+interface SavedCity { label: string; query: string }
+interface GeocodePlace {
+  name?: string
+  admin1?: string
+  country?: string
+  latitude?: number
+  longitude?: number
+}
+interface GeocodeResponse { results?: GeocodePlace[] }
+interface ForecastCurrent {
+  temperature_2m: number
+  relative_humidity_2m: number
+  apparent_temperature: number
+  precipitation: number
+  weather_code: number
+  wind_speed_10m: number
+  surface_pressure: number
+}
+interface ForecastData {
+  timezone: string
+  current: ForecastCurrent
+  hourly: {
+    time: string[]
+    temperature_2m: number[]
+    weather_code: number[]
+    precipitation_probability: number[]
+  }
+  daily: {
+    time: string[]
+    weather_code: number[]
+    temperature_2m_max: number[]
+    temperature_2m_min: number[]
+    precipitation_probability_max: (number | null)[]
+    sunrise: string[]
+    sunset: string[]
+    uv_index_max: (number | null)[]
+  }
+}
+interface AirData { current: { us_aqi?: number } }
+interface WeatherData { label: string; forecast: ForecastData; air: AirData }
+interface HeroError { message: string; query: string }
+interface CompareResult {
+  icon: string
+  cityName: string
+  temp: number
+  humidity: number
+  wind: number
+  minTemp: number
+  maxTemp: number
+  tempDiff: number
+}
+
 /* ---------- WMO 天气代码映射（图标 + 文案） ---------- */
-const WMO_ICONS = {
+const WMO_ICONS: Record<number, string> = {
   0: '☀️', 1: '🌤', 2: '⛅', 3: '☁️', 45: '🌫', 48: '🌫',
   51: '🌦', 53: '🌦', 55: '🌦', 56: '🌧', 57: '🌧',
   61: '🌧', 63: '🌧', 65: '🌧', 66: '🌧', 67: '🌧',
@@ -48,7 +101,7 @@ const WMO_ICONS = {
   95: '⛈', 96: '⛈', 99: '⛈',
 }
 
-const WMO_TEXT = {
+const WMO_TEXT: Record<'en' | 'zh', Record<number, string>> = {
   en: {
     0: 'Clear sky', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast',
     45: 'Fog', 48: 'Freezing fog',
@@ -74,32 +127,32 @@ const SAVED_KEY = 'sky-brief-saved'
 /* ---------- 响应式状态 ---------- */
 const query = ref('Shanghai')        // 搜索框输入
 const unit = ref('C')                // 温度单位 C / F
-const lastData = ref(null)           // 最近一次成功加载的数据 { label, forecast, air }
-const heroError = ref(null)          // 搜索失败时的错误 { message, query }
-const saved = ref([])                // 收藏的城市列表
+const lastData = ref<WeatherData | null>(null)           // 最近一次成功加载的数据 { label, forecast, air }
+const heroError = ref<HeroError | null>(null)          // 搜索失败时的错误 { message, query }
+const saved = ref<SavedCity[]>([])                // 收藏的城市列表
 const compareVisible = ref(false)    // 对比面板是否展开
 const compareQuery = ref('')         // 对比城市输入
-const compareResult = ref(null)      // 对比结果
-const compareError = ref(null)       // 对比错误信息
-const currentCityData = ref(null)    // 当前城市温度（供对比计算温差）
-const compareInputRef = ref(null)    // 对比输入框引用
+const compareResult = ref<CompareResult | null>(null)      // 对比结果
+const compareError = ref<string | null>(null)       // 对比错误信息
+const currentCityData = ref<{ temp: number } | null>(null)    // 当前城市温度（供对比计算温差）
+const compareInputRef = ref<HTMLInputElement | null>(null)    // 对比输入框引用
 
 /* ---------- 工具函数 ---------- */
-function weatherIcon(code) { return WMO_ICONS[code] || '🌡' }
-function weatherText(code) { return (WMO_TEXT[i18nState.lang] || WMO_TEXT.en)[code] || `WMO ${code}` }
-function toF(c) { return c * 9 / 5 + 32 }
-function tempV(v) { return unit.value === 'C' ? `${Math.round(v)}°` : `${Math.round(toF(v))}°` }
-function speedV(kmh) { return unit.value === 'C' ? `${Math.round(kmh)} km/h` : `${Math.round(kmh * 0.621)} mph` }
-function fmtTime(iso) { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+function weatherIcon(code: number) { return WMO_ICONS[code] || '🌡' }
+function weatherText(code: number) { return (WMO_TEXT[i18nState.lang] || WMO_TEXT.en)[code] || `WMO ${code}` }
+function toF(c: number) { return c * 9 / 5 + 32 }
+function tempV(v: number) { return unit.value === 'C' ? `${Math.round(v)}°` : `${Math.round(toF(v))}°` }
+function speedV(kmh: number) { return unit.value === 'C' ? `${Math.round(kmh)} km/h` : `${Math.round(kmh * 0.621)} mph` }
+function fmtTime(iso: string) { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
 
-function aqiLabel(v) {
+function aqiLabel(v: number) {
   if (v <= 50) return t.value('aqiGood')
   if (v <= 100) return t.value('aqiFair')
   if (v <= 150) return t.value('aqiModerate')
   if (v <= 200) return t.value('aqiPoor')
   return t.value('aqiVpoor')
 }
-function aqiColor(v) {
+function aqiColor(v: number) {
   if (v <= 50) return 'var(--good)'
   if (v <= 100) return '#8bc34a'
   if (v <= 150) return 'var(--warn)'
@@ -107,30 +160,30 @@ function aqiColor(v) {
 }
 
 /* ---------- 收藏管理（localStorage） ---------- */
-function getSaved() {
+function getSaved(): SavedCity[] {
   try { return JSON.parse(lsGet(SAVED_KEY) || '[]') } catch { return [] }
 }
-function setSavedItems(items) { lsSet(SAVED_KEY, JSON.stringify(items.slice(0, 6))) }
+function setSavedItems(items: SavedCity[]) { lsSet(SAVED_KEY, JSON.stringify(items.slice(0, 6))) }
 function refreshSaved() { saved.value = getSaved() }
 
 /* ---------- 地理编码与天气加载 ---------- */
-async function geocode(q) {
-  const d = await fetchJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`)
+async function geocode(q: string): Promise<GeocodePlace> {
+  const d = await fetchJSON<GeocodeResponse>(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`)
   if (!d.results?.length) throw new Error('No place found')
   return d.results[0]
 }
 
-async function loadForecast(lat, lon, label) {
+async function loadForecast(lat: number, lon: number, label: string) {
   const fUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max&timezone=auto&forecast_days=7`
   const aUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi&timezone=auto`
-  const [f, air] = await Promise.all([fetchJSON(fUrl), fetchJSON(aUrl)])
+  const [f, air] = await Promise.all([fetchJSON<ForecastData>(fUrl), fetchJSON<AirData>(aUrl)])
   heroError.value = null
   lastData.value = { label, forecast: f, air }
   // 记录当前城市温度（摄氏度），供对比功能计算温差
   currentCityData.value = { temp: f.current.temperature_2m }
 }
 
-async function search(q) {
+async function search(q?: string) {
   const trimmed = (q ?? query.value).trim()
   if (!trimmed) return
   // 清空旧数据，隐藏各面板
@@ -139,14 +192,14 @@ async function search(q) {
   try {
     const place = await geocode(trimmed)
     const label = [place.name, place.admin1, place.country].filter(Boolean).join(', ')
-    await loadForecast(place.latitude, place.longitude, label)
+    await loadForecast(place.latitude ?? 0, place.longitude ?? 0, label)
     // 自动收藏（去重后置顶，最多 6 条）
     const items = getSaved().filter(i => i.query.toLowerCase() !== trimmed.toLowerCase())
     items.unshift({ label, query: trimmed })
     setSavedItems(items)
     refreshSaved()
   } catch (e) {
-    heroError.value = { message: e.message, query: trimmed }
+    heroError.value = { message: (e as Error).message, query: trimmed }
   }
 }
 
@@ -175,19 +228,19 @@ async function loadCompare() {
   compareError.value = null
   compareResult.value = null
   try {
-    const geoData = await fetchJSON('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=en&format=json')
+    const geoData = await fetchJSON<GeocodeResponse>('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=en&format=json')
     const place = geoData.results?.[0]
     if (!place) {
       compareError.value = i18nState.lang === 'zh' ? '未找到城市' : 'City not found'
       return
     }
-    const wxData = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + place.latitude + '&longitude=' + place.longitude + '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1')
+    const wxData = await fetchJSON<ForecastData>('https://api.open-meteo.com/v1/forecast?latitude=' + place.latitude + '&longitude=' + place.longitude + '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1')
     const c = wxData.current
     const d = wxData.daily
     const tempDiff = Math.round(c.temperature_2m - (currentCityData.value.temp || 0))
     compareResult.value = {
       icon: weatherIcon(c.weather_code),
-      cityName: place.name,
+      cityName: place.name ?? '',
       temp: Math.round(c.temperature_2m),
       humidity: c.relative_humidity_2m,
       wind: Math.round(c.wind_speed_10m),
@@ -196,7 +249,7 @@ async function loadCompare() {
       tempDiff,
     }
   } catch (e) {
-    compareError.value = 'Error: ' + e.message
+    compareError.value = 'Error: ' + (e as Error).message
   }
 }
 
@@ -331,10 +384,10 @@ onMounted(() => {
       <!-- 页头：标题 + 工具按钮 -->
       <header class="masthead">
         <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
         </div>
-        <div class="header-right">
+        <div class="ok-header-right">
           <button class="btn-ghost" type="button" aria-label="Toggle temperature unit" @click="toggleUnit">{{ unitLabel }}</button>
           <button class="btn-ghost" type="button" aria-label="Use my location" @click="locate">{{ t('locate') }}</button>
           <button class="btn-ghost" type="button" aria-label="Compare cities" @click="toggleCompare">{{ t('compare') }}</button>
@@ -519,22 +572,12 @@ h1, h2, h3, p, strong, span, small { margin: 0; }
   border-bottom: 1px solid var(--line);
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
 h1 {
   margin-top: 0.2rem;
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
 }
-
-.header-right { display: flex; gap: 0.5rem; align-items: center; }
 
 .btn-ghost {
   font: inherit;

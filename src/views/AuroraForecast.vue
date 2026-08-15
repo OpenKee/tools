@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Aurora Forecast — 极光预报（Vue 3 SFC）
    数据源：NOAA SWPC
@@ -91,8 +91,8 @@ const t = useT(copy)
 const KP_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json'
 const KP_FORECAST_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json'
 const AURORA_URL = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'
-const LEVEL_COLORS = { low: '#4ade80', med: '#22d3ee', high: '#a855f7', storm: '#f43f5e' }
-const LEGEND = [
+const LEVEL_COLORS: Record<string, string> = { low: '#4ade80', med: '#22d3ee', high: '#a855f7', storm: '#f43f5e' }
+const LEGEND: Array<{ key: KpLevelName; a: number; b: number }> = [
   { key: 'low', a: 0, b: 3 },
   { key: 'med', a: 4, b: 5 },
   { key: 'high', a: 6, b: 7 },
@@ -110,20 +110,42 @@ const FC_PLOT_H = FC_H - FC_PAD_T - FC_PAD_B
 const FC_GRID = [0, 3, 5, 7, 9]
 
 /* ---------- 响应式状态 ---------- */
+// ---------- 类型 ----------
+type KpLevelName = 'low' | 'med' | 'high' | 'storm'
+
+interface KpRow {
+  time: Date
+  kp: number
+  station: number
+}
+
+interface KpParsed {
+  current: KpRow | null
+  forecast: KpRow[]
+}
+
+interface AuroraData {
+  'Observation Time'?: string
+  'Forecast Time'?: string
+  'Data Format'?: string
+  coordinates?: number[][]
+  'Coordinates'?: number[][]
+}
+
 const userLat = ref(55)             // 用户所选纬度
 const loading = ref(true)           // 加载中
-const kpParsed = ref(null)          // 解析后的 KP 数据 { current, forecast }
-const aurora = ref(null)            // 极光可见性数据
+const kpParsed = ref<KpParsed | null>(null)          // 解析后的 KP 数据 { current, forecast }
+const aurora = ref<AuroraData | null>(null)            // 极光可见性数据
 const usedFallback = ref(false)     // 是否使用了降级数据
 
 /* ---------- Canvas 引用 ---------- */
-const northCanvas = ref(null)
-const southCanvas = ref(null)
+const northCanvas = ref<HTMLCanvasElement | null>(null)
+const southCanvas = ref<HTMLCanvasElement | null>(null)
 
 /* ---------- 工具函数 ---------- */
 
 // KP 值 -> 等级
-function kpLevel(kp) {
+function kpLevel(kp: number): KpLevelName {
   if (kp < 4) return 'low'
   if (kp < 6) return 'med'
   if (kp < 8) return 'high'
@@ -131,36 +153,36 @@ function kpLevel(kp) {
 }
 
 // 等级 -> i18n key
-function levelKey(l) {
+function levelKey(l: KpLevelName): string {
   return { low: 'levelLow', med: 'levelMed', high: 'levelHigh', storm: 'levelStorm' }[l]
 }
 
 // 极光赤道侧可见纬度（地理纬度近似：66 - 2*Kp）
-function visibleLatitude(kp) { return Math.round(66 - 2 * kp) }
+function visibleLatitude(kp: number): number { return Math.round(66 - 2 * kp) }
 
 // 解析 NOAA 时间字符串（视为 UTC）
-function parseTime(s) {
+function parseTime(s: unknown): Date {
   let str = String(s).replace(' ', 'T')
   if (!/[zZ]|[+-]\d\d:?\d\d$/.test(str)) str += 'Z'
   return new Date(str)
 }
 
 // 本地化时间格式化
-function fmtTime(d) {
+function fmtTime(d: Date): string {
   if (!d || isNaN(d.getTime())) return '—'
   const loc = locale()
   return d.toLocaleString(loc, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 // 格式化为 UTC 字符串（用于 mock 数据，匹配 NOAA 格式）
-function fmtUTC(d) {
-  function p(n) { return n < 10 ? '0' + n : '' + n }
+function fmtUTC(d: Date): string {
+  function p(n: number): string { return n < 10 ? '0' + n : '' + n }
   return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) +
     ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds())
 }
 
 // 极光强度 -> 颜色
-function auroraColor(intensity) {
+function auroraColor(intensity: number): string {
   if (intensity > 75) return '#f472b6'
   if (intensity > 50) return '#a855f7'
   if (intensity > 25) return '#22d3ee'
@@ -168,7 +190,7 @@ function auroraColor(intensity) {
 }
 
 // y 坐标：Kp 0 在底部，Kp 9 在顶部
-function fcY(kp) { return FC_PAD_T + FC_PLOT_H - (kp / 9) * FC_PLOT_H }
+function fcY(kp: number): number { return FC_PAD_T + FC_PLOT_H - (kp / 9) * FC_PLOT_H }
 
 /* ---------- 示例数据（API 失败时降级用） ---------- */
 
@@ -225,44 +247,47 @@ function mockAurora() {
 
 // NOAA 当前提供两种格式：对象数组 [{time_tag,Kp,a_running,station_count}]（新）
 // 或嵌套数组 [['time_tag', 'Kp', ...], [...]]（旧）。此处兼容两者。
-function normalizeKpRow(r) {
+function normalizeKpRow(r: unknown): KpRow | null {
   if (!r) return null
   if (Array.isArray(r)) {
     return {
       time: parseTime(r[0]),
-      kp: parseFloat(r[1]),
-      station: parseInt(r[3], 10) || 0
+      kp: parseFloat(String(r[1])),
+      station: parseInt(String(r[3]), 10) || 0
     }
   }
-  const time = r.time_tag || r.TimeTag || r.time
-  const kp = r.Kp || r.kp || r.KP
-  const station = r.station_count || r.StationCount || r.station || 0
+  const o = r as Record<string, unknown>
+  const time = o.time_tag || o.TimeTag || o.time
+  const kp = o.Kp || o.kp || o.KP
+  const station = o.station_count || o.StationCount || o.station || 0
   return {
     time: parseTime(time),
-    kp: parseFloat(kp),
-    station: parseInt(station, 10) || 0
+    kp: parseFloat(String(kp)),
+    station: parseInt(String(station), 10) || 0
   }
 }
 
-function parseKp(rows, forecastRows) {
-  if (!rows || !rows.length) return { current: null, forecast: [] }
+function parseKp(rows: unknown, forecastRows?: unknown): KpParsed {
+  const rowList = Array.isArray(rows) ? rows : []
+  const fcList = Array.isArray(forecastRows) ? forecastRows : []
+  if (!rowList.length) return { current: null, forecast: [] }
 
   const now = Date.now()
-  const data = rows.map(normalizeKpRow).filter((d) => {
-    return d && !isNaN(d.kp) && d.time && !isNaN(d.time.getTime())
+  const data = (rowList as unknown[]).map(normalizeKpRow).filter((d): d is KpRow => {
+    return !!d && !isNaN(d.kp) && !!d.time && !isNaN(d.time.getTime())
   })
 
   const measured = data.filter((d) => d.station > 0)
-  let current = measured.length ? measured[measured.length - 1] : null
+  let current: KpRow | null = measured.length ? measured[measured.length - 1] : null
   if (!current) {
     current = data.filter((d) => d.time.getTime() <= now).pop() || data[0] || null
   }
 
   // 预报优先使用专用 forecast 接口；若不可用，用历史数据兜底
-  let forecast = []
-  if (forecastRows && forecastRows.length) {
-    forecast = forecastRows.map(normalizeKpRow).filter((d) => {
-      return d && !isNaN(d.kp) && d.time && !isNaN(d.time.getTime())
+  let forecast: KpRow[] = []
+  if (fcList.length) {
+    forecast = (fcList as unknown[]).map(normalizeKpRow).filter((d): d is KpRow => {
+      return !!d && !isNaN(d.kp) && !!d.time && !isNaN(d.time.getTime())
     }).filter((d) => d.time.getTime() > now).slice(0, 24)
   }
   if (!forecast.length) {
@@ -292,7 +317,7 @@ const forecastBars = computed(() => {
   if (!n) return []
   const slot = FC_PLOT_W / n
   const barW = slot * 0.62
-  return entries.map((e, i) => {
+  return entries.map((e: KpRow, i: number) => {
     const kp = e.kp
     const x = FC_PAD_L + i * slot + (slot - barW) / 2
     const top = fcY(kp)
@@ -311,9 +336,9 @@ const forecastXLabels = computed(() => {
   if (!n) return []
   const slot = FC_PLOT_W / n
   const loc = locale()
-  const labels = []
-  let lastDay = null
-  entries.forEach((e, i) => {
+  const labels: { x: number; label: string }[] = []
+  let lastDay: string | null = null
+  entries.forEach((e: KpRow, i: number) => {
     const dayKey = e.time.toDateString()
     if (dayKey !== lastDay) {
       lastDay = dayKey
@@ -347,7 +372,7 @@ const legendItems = computed(() => {
     const color = LEVEL_COLORS[it.key]
     const visFrom = visibleLatitude(it.b)
     const visTo = visibleLatitude(it.a)
-    const range = t.value('legendRange').replace('{a}', it.a).replace('{b}', it.b)
+    const range = t.value('legendRange').replace('{a}', String(it.a)).replace('{b}', String(it.b))
     const vis = t.value('legendVis').replace('{lat}', visFrom + '–' + visTo)
     return {
       key: it.key,
@@ -369,7 +394,7 @@ const statusData = computed(() => {
 })
 
 /* ---------- 渲染：极光可见范围（Canvas 极投影） ---------- */
-function drawHemisphere(canvas, coords, hemisphere) {
+function drawHemisphere(canvas: HTMLCanvasElement | null, coords: number[][], hemisphere: string) {
   if (!canvas) return
   const dpr = window.devicePixelRatio || 1
   const size = 300
@@ -378,7 +403,7 @@ function drawHemisphere(canvas, coords, hemisphere) {
     canvas.width = size * dpr
     canvas.height = size * dpr
   }
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d')!
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, size, size)
 
@@ -449,7 +474,7 @@ function drawHemisphere(canvas, coords, hemisphere) {
 }
 
 function renderAurora() {
-  const coords = aurora.value ? (aurora.value.coordinates || aurora.value['Coordinates'] || []) : []
+  const coords = aurora.value ? (aurora.value.coordinates || aurora.value['Coordinates'] || []) as number[][] : []
   drawHemisphere(northCanvas.value, coords, 'north')
   drawHemisphere(southCanvas.value, coords, 'south')
 }
@@ -460,14 +485,14 @@ async function load() {
   let kpFallback = false
   let auroraFallback = false
 
-  const kpP = fetchJSON(KP_URL).catch(() => { kpFallback = true; return mockKp() })
-  const fcP = fetchJSON(KP_FORECAST_URL).catch(() => null)
-  const auP = fetchJSON(AURORA_URL).catch(() => { auroraFallback = true; return mockAurora() })
+  const kpP = fetchJSON<unknown>(KP_URL).catch(() => { kpFallback = true; return mockKp() })
+  const fcP = fetchJSON<unknown>(KP_FORECAST_URL).catch(() => null)
+  const auP = fetchJSON<unknown>(AURORA_URL).catch(() => { auroraFallback = true; return mockAurora() })
 
   try {
     const [kpRes, fcRes, auRes] = await Promise.all([kpP, fcP, auP])
     kpParsed.value = parseKp(kpRes, fcRes)
-    aurora.value = auRes
+    aurora.value = auRes as AuroraData | null
     // 只有核心数据（当前 KP / 极光图）降级才提示；预报接口失败会静默使用历史/模拟数据
     usedFallback.value = kpFallback || auroraFallback
   } catch (e) {
@@ -565,7 +590,7 @@ onMounted(() => {
                 <line
                   :x1="FC_PAD_L" :y1="fcY(kp)" :x2="FC_W - FC_PAD_R" :y2="fcY(kp)"
                   :class="kp === 0 ? 'grid-base' : 'grid-line'"
-                  :stroke-dasharray="kp === 0 ? null : '2 4'"
+                  :stroke-dasharray="kp === 0 ? undefined : '2 4'"
                 />
                 <text :x="FC_PAD_L - 6" :y="fcY(kp) + 3" text-anchor="end" class="axis-label">{{ kp }}</text>
               </template>

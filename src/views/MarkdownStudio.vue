@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Markdown Studio — 实时预览的 Markdown 编辑器（Vue 3 SFC 迁移版）
    - 共享 i18n：useT（来自 ../i18n.js），语言切换由 AppHeader 负责
@@ -216,19 +216,19 @@ const SAMPLE = {
 }
 
 // ---------- DOM 引用 ----------
-const editorRef = ref(null)
-const previewRef = ref(null)
-const fileInputRef = ref(null)
+const editorRef = ref<HTMLTextAreaElement | null>(null)
+const previewRef = ref<HTMLElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // ---------- 应用状态 ----------
 const editorText = ref('')
 const renderedHtml = ref('')
-let renderTimer = null
+let renderTimer: ReturnType<typeof setTimeout> | null = null
 let syncLock = false // 同步滚动防互触锁
 
 // ---------- 工具函数 ----------
 // HTML 转义（防 XSS），用于 Markdown 解析器内部构建安全 HTML
-function escapeHtml(s) {
+function escapeHtml(s: unknown): string {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -238,7 +238,7 @@ function escapeHtml(s) {
 }
 
 // 净化链接地址，禁止 javascript: 等危险协议
-function sanitizeUrl(url) {
+function sanitizeUrl(url: unknown): string {
   const u = String(url == null ? '' : url).trim()
   if (!u) return ''
   // 允许的协议
@@ -254,10 +254,10 @@ function sanitizeUrl(url) {
 // ============================================================
 
 // ---------- 行内元素解析 ----------
-function parseInline(text) {
-  const slots = []
+function parseInline(text: string): string {
+  const slots: string[] = []
   // 占位：把已构造好的 HTML 片段存起来，最后再还原
-  function stash(html) {
+  function stash(html: string): string {
     slots.push(html)
     return '\u0000' + (slots.length - 1) + '\u0000'
   }
@@ -300,17 +300,17 @@ function parseInline(text) {
 }
 
 // ---------- 表格辅助 ----------
-function isTableSeparator(line) {
+function isTableSeparator(line: string): boolean {
   // 形如 | --- | :--: | --: | 的分隔行
   return /^\s*\|?[\s:|-]+\|?\s*$/.test(line) && /\|/.test(line) && /[-:]/.test(line)
 }
 
-function splitTableRow(line) {
+function splitTableRow(line: string): string[] {
   const s = line.trim().replace(/^\|/, '').replace(/\|$/, '')
   return s.split('|').map(function (c) { return c.trim() })
 }
 
-function parseTableAligns(line) {
+function parseTableAligns(line: string): (string | null)[] {
   return splitTableRow(line).map(function (c) {
     if (/^:.*:$/.test(c)) return 'center'
     if (/:$/.test(c)) return 'right'
@@ -319,7 +319,7 @@ function parseTableAligns(line) {
   })
 }
 
-function buildTable(header, aligns, bodyRows) {
+function buildTable(header: string[], aligns: (string | null)[], bodyRows: string[][]): string {
   const th = header.map(function (c, i) {
     const a = aligns[i] ? ' style="text-align:' + aligns[i] + '"' : ''
     return '<th' + a + '>' + parseInline(c) + '</th>'
@@ -335,7 +335,7 @@ function buildTable(header, aligns, bodyRows) {
 }
 
 // ---------- 判断某行是否是块级元素起始 ----------
-function isBlockStart(line) {
+function isBlockStart(line: string): boolean {
   return /^#{1,6}\s/.test(line) ||
     /^```/.test(line) ||
     /^>\s?/.test(line) ||
@@ -345,7 +345,7 @@ function isBlockStart(line) {
 
 // ---------- 列表解析 ----------
 // 返回 { html, next }，next 为下一条待处理行索引
-function parseList(lines, start) {
+function parseList(lines: string[], start: number): { html: string; next: number } {
   const isOrdered = /^\s*\d+\.\s+/.test(lines[start])
   const items = []
   let i = start
@@ -374,7 +374,7 @@ function parseList(lines, start) {
 }
 
 // ---------- 主解析：块级元素 ----------
-function renderMarkdown(src) {
+function renderMarkdown(src: unknown): string {
   const text = String(src == null ? '' : src).replace(/\r\n?/g, '\n')
   const lines = text.split('\n')
   const out = []
@@ -496,8 +496,15 @@ const stats = computed(() => {
 // 工具栏：选区编辑操作
 // ============================================================
 
+// 选区变换函数类型：输入选区与全文，返回新文本与新的选区范围
+type SelectionTransform = (sel: string, val: string, start: number, end: number) => {
+  value: string
+  selStart: number
+  selEnd: number
+}
+
 // 通用：对当前选区执行变换，返回新文本与新选区
-function editSelection(transform) {
+function editSelection(transform: SelectionTransform) {
   const editor = editorRef.value
   if (!editor) return
   const start = editor.selectionStart
@@ -515,7 +522,7 @@ function editSelection(transform) {
 }
 
 // 用前后缀包裹选区（无选区时插入占位文本并选中）
-function wrap(before, after, placeholder) {
+function wrap(before: string, after: string, placeholder: string) {
   editSelection(function (sel, val, start, end) {
     const text = sel.length ? sel : placeholder
     const newVal = val.slice(0, start) + before + text + after + val.slice(end)
@@ -525,7 +532,7 @@ function wrap(before, after, placeholder) {
 }
 
 // 给选区涉及的每一行加前缀（标题、列表、引用）
-function prefixLines(prefix) {
+function prefixLines(prefix: string) {
   editSelection(function (sel, val, start, end) {
     const lineStart = val.lastIndexOf('\n', start - 1) + 1
     let lineEnd = val.indexOf('\n', end)
@@ -538,7 +545,7 @@ function prefixLines(prefix) {
 }
 
 // 在光标处插入文本（无选区）或替换选区
-function insertAtCursor(text) {
+function insertAtCursor(text: string) {
   editSelection(function (sel, val, start, end) {
     const newVal = val.slice(0, start) + text + val.slice(end)
     return { value: newVal, selStart: start, selEnd: start + text.length }
@@ -546,7 +553,7 @@ function insertAtCursor(text) {
 }
 
 // 各动作处理
-function handleAction(action) {
+function handleAction(action: string) {
   switch (action) {
     case 'bold':
       wrap('**', '**', t.value('boldTip').replace(/\s*\(.*\)$/, ''))
@@ -617,7 +624,7 @@ function handleAction(action) {
 // ============================================================
 
 // 触发文件下载（Blob + URL.createObjectURL）
-function downloadFile(filename, content, mime) {
+function downloadFile(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -657,7 +664,7 @@ function exportHtml() {
 }
 
 // 导入 .md 文件
-function importFile(file) {
+function importFile(file: File | null | undefined) {
   if (!file) return
   const reader = new FileReader()
   reader.onload = function () {
@@ -672,7 +679,7 @@ function importFile(file) {
 // ============================================================
 // 同步滚动
 // ============================================================
-function syncScroll(source, target) {
+function syncScroll(source: HTMLElement | null, target: HTMLElement | null) {
   if (syncLock) return
   if (!source || !target) return
   syncLock = true
@@ -690,7 +697,7 @@ function onPreviewScroll() { syncScroll(previewRef.value, editorRef.value) }
 // ============================================================
 // 键盘事件
 // ============================================================
-function onEditorKeydown(e) {
+function onEditorKeydown(e: KeyboardEvent) {
   // Ctrl+B / Ctrl+I / Ctrl+K
   if (e.ctrlKey || e.metaKey) {
     const key = e.key.toLowerCase()
@@ -726,10 +733,11 @@ function onImportClick() {
   if (fileInputRef.value) fileInputRef.value.click()
 }
 
-function onFileChange(e) {
-  const file = e.target.files && e.target.files[0]
+function onFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files && input.files[0]
   importFile(file)
-  e.target.value = '' // 允许重复导入同一文件
+  input.value = '' // 允许重复导入同一文件
 }
 
 // GitHub Markdown API 渲染
@@ -769,7 +777,7 @@ onMounted(() => {
       <!-- 页头 -->
       <header class="masthead">
         <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
           <p class="lead">{{ t('lead') }}</p>
         </div>
@@ -966,14 +974,6 @@ onMounted(() => {
   padding: 0.3rem 0 1.1rem;
   border-bottom: 1px solid var(--line);
   gap: 1rem;
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
 }
 
 .masthead h1 {

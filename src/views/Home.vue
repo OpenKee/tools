@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, watchEffect } from 'vue'
 import { RouterLink } from 'vue-router'
 import { PROJECTS, slugify } from '../data/projects.js'

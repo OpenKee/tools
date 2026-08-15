@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Asset Snapshot — 资产快照：一键换算所有主要法币与顶级加密货币
    数据源：open.er-api.com（汇率）/ CoinGecko（加密货币价格）
@@ -55,10 +55,26 @@ const copy = {
 
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface RatesResponse {
+  result: string
+  rates: Record<string, number>
+  time_last_update_utc: string
+}
+
+interface Coin {
+  id: string
+  symbol: string
+  name: string
+  image: string
+  current_price: number
+  price_change_percentage_7d_in_currency: number | null
+}
+
 // ---------- 常量 ----------
 const FIAT_CODES = ['USD', 'EUR', 'CNY', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'HKD', 'SGD']
 
-const CURRENCY_NAMES = {
+const CURRENCY_NAMES: Record<string, { en: string; zh: string }> = {
   USD: { en: 'US Dollar', zh: '美元' },
   EUR: { en: 'Euro', zh: '欧元' },
   CNY: { en: 'Chinese Yuan', zh: '人民币' },
@@ -75,16 +91,16 @@ const CURRENCY_NAMES = {
 const amountRaw = ref('1000')
 const amount = ref(1000)
 const sourceCurrency = ref('USD')
-const ratesCache = ref(null)
+const ratesCache = ref<RatesResponse | null>(null)
 const ratesLoading = ref(true)
 const ratesError = ref(false)
-const updatedAt = ref(null)
-const cryptoCoins = ref([])
+const updatedAt = ref<Date | null>(null)
+const cryptoCoins = ref<Coin[]>([])
 const cryptoLoading = ref(true)
 const cryptoError = ref(false)
 
 // ---------- debounce ----------
-let debounceTimer = null
+let debounceTimer: ReturnType<typeof setTimeout> | undefined
 watch(amountRaw, (val) => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
@@ -99,16 +115,16 @@ watch(sourceCurrency, () => {
 })
 
 // ---------- 工具函数 ----------
-function cname(code) {
+function cname(code: string) {
   return CURRENCY_NAMES[code]?.[i18nState.lang] || code
 }
 
-function fmtAmount(n) {
+function fmtAmount(n: number) {
   if (n == null || isNaN(n)) return '—'
   return new Intl.NumberFormat(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 }
 
-function fmtCryptoAmount(n) {
+function fmtCryptoAmount(n: number) {
   if (n == null || isNaN(n)) return '—'
   if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   if (n >= 0.01) return n.toFixed(4)
@@ -116,7 +132,7 @@ function fmtCryptoAmount(n) {
   return n.toPrecision(4)
 }
 
-function fmtCryptoPrice(n) {
+function fmtCryptoPrice(n: number) {
   if (n == null || isNaN(n)) return '—'
   if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   if (n >= 0.01) return '$' + n.toFixed(4)
@@ -124,12 +140,12 @@ function fmtCryptoPrice(n) {
   return '$' + n.toPrecision(4)
 }
 
-function pctText(n) {
+function pctText(n: number | null) {
   if (n == null) return '—'
   return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'
 }
 
-function pctCls(n) {
+function pctCls(n: number | null) {
   if (n == null) return ''
   return n >= 0 ? 'up' : 'down'
 }
@@ -141,8 +157,9 @@ const fiatConversions = computed(() => {
   const srcRate = ratesCache.value.rates[source]
   if (!srcRate) return []
   const baseAmount = amount.value / srcRate
+  const rates = ratesCache.value.rates
   return FIAT_CODES.map((code) => {
-    const targetRate = ratesCache.value.rates[code]
+    const targetRate = rates[code]
     if (!targetRate) return { code, name: cname(code), value: null, display: '—' }
     const converted = baseAmount * targetRate
     return {
@@ -184,7 +201,7 @@ const updatedAtText = computed(() => {
 // ---------- 数据加载 ----------
 async function loadRates() {
   try {
-    const data = await fetchJSON('https://open.er-api.com/v6/latest/USD')
+    const data = await fetchJSON<RatesResponse>('https://open.er-api.com/v6/latest/USD')
     if (data.result !== 'success') throw new Error('API error')
     ratesCache.value = data
     updatedAt.value = new Date(data.time_last_update_utc)
@@ -197,7 +214,7 @@ async function loadRates() {
 
 async function loadCrypto() {
   try {
-    const coins = await fetchJSON('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=7d')
+    const coins = await fetchJSON<Coin[]>('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=7d')
     cryptoCoins.value = Array.isArray(coins) ? coins : []
     cryptoLoading.value = false
   } catch (err) {
@@ -220,7 +237,7 @@ onMounted(() => {
     <main class="shell">
       <header class="masthead">
         <div class="masthead-left">
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
           <p class="lead">{{ t('lead') }}</p>
         </div>
@@ -270,8 +287,8 @@ onMounted(() => {
         <div class="section-head">
           <h2>{{ t('fiatTitle') }}</h2>
         </div>
-        <div v-if="ratesLoading" class="loading">
-          <span class="spinner"></span>
+        <div v-if="ratesLoading" class="ok-loading">
+          <span class="ok-spinner"></span>
           <span>{{ t('loading') }}</span>
         </div>
         <div v-else-if="ratesError" class="error-msg">{{ t('error') }}</div>
@@ -294,8 +311,8 @@ onMounted(() => {
         <div class="section-head">
           <h2>{{ t('cryptoTitle') }}</h2>
         </div>
-        <div v-if="cryptoLoading" class="loading">
-          <span class="spinner"></span>
+        <div v-if="cryptoLoading" class="ok-loading">
+          <span class="ok-spinner"></span>
           <span>{{ t('cryptoLoading') }}</span>
         </div>
         <div v-else-if="cryptoError" class="error-msg">{{ t('cryptoError') }}</div>
@@ -392,14 +409,6 @@ onMounted(() => {
 }
 
 .masthead-left { min-width: 0; }
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
 
 .masthead h1 {
   margin-top: 0.25rem;
@@ -618,26 +627,6 @@ onMounted(() => {
 .crypto-change.down { color: var(--down); }
 
 /* Loading / Error / Empty */
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--muted);
-  padding: 1.5rem;
-  font-size: 0.88rem;
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
 .error-msg {
   color: #a33;
   background: var(--down-bg);

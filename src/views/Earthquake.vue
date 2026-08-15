@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Global Earthquake Monitor — 全球地震实时监控（Vue 3 SFC）
    数据来源：USGS FDSN Event API
@@ -78,7 +78,27 @@ const API_URL = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
 const PLATES_URL = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json'
 
 // alert 颜色映射（用于列表徽章和弹窗）
-const ALERT_COLORS = { green: '#4ade80', yellow: '#facc15', orange: '#fb923c', red: '#ef4444' }
+const ALERT_COLORS: Record<string, string> = { green: '#4ade80', yellow: '#facc15', orange: '#fb923c', red: '#ef4444' }
+
+/* ---------- 类型 ---------- */
+interface EarthquakeProperties {
+  mag?: number | null
+  place?: string
+  time: number
+  alert?: string | null
+  felt?: number | null
+  tsunami?: number | null
+}
+
+interface EarthquakeFeature {
+  id?: string
+  properties: EarthquakeProperties
+  geometry: { coordinates: number[] }
+}
+
+interface EarthquakeResponse {
+  features?: EarthquakeFeature[]
+}
 
 /* ---------- 过滤选项 ---------- */
 const timeFilters = [
@@ -96,23 +116,23 @@ const magFilters = [
 /* ---------- 响应式状态 ---------- */
 const period = ref('day')           // 时间范围：day / week / month
 const minMag = ref(0)               // 最小震级
-const data = ref([])                // USGS 返回的地震数组
+const data = ref<EarthquakeFeature[]>([])  // USGS 返回的地震数组
 const loading = ref(false)          // 加载中遮罩
 const hasError = ref(false)         // 加载失败标记
 const updateTime = ref('')          // 顶栏显示的最近更新时间
 const showPlates = ref(false)       // 是否显示板块边界
 
 /* ---------- 地图相关（非响应式，避免 Leaflet 实例被 Vue 代理） ---------- */
-const mapEl = ref(null)             // 地图容器引用
-let map = null                      // Leaflet 地图实例
-let layerGroup = null               // 地震圆圈图层
-let platesLayer = null              // 板块边界图层
-let platesData = null               // 板块边界 GeoJSON 缓存
+const mapEl = ref<HTMLElement | null>(null)  // 地图容器引用
+let map: L.Map | null = null                  // Leaflet 地图实例
+let layerGroup: L.LayerGroup | null = null    // 地震圆圈图层
+let platesLayer: L.LayerGroup | null = null   // 板块边界图层
+let platesData: GeoJSON.FeatureCollection | null = null  // 板块边界 GeoJSON 缓存
 
 /* ---------- 工具函数 ---------- */
 
 // 震级 -> 列表徽章颜色类
-function magClass(m) {
+function magClass(m: number | null | undefined) {
   if (m == null) return 'g'
   if (m < 3) return 'g'
   if (m < 5) return 'y'
@@ -121,7 +141,7 @@ function magClass(m) {
 }
 
 // 震级 -> 圆圈填充色
-function magColor(m) {
+function magColor(m: number | null | undefined) {
   if (m == null) return '#4ade80'
   if (m < 3) return '#4ade80'
   if (m < 5) return '#facc15'
@@ -130,7 +150,7 @@ function magColor(m) {
 }
 
 // 时间戳 -> "X 分钟前 / X 小时前 / X 天前"
-function timeAgo(ts) {
+function timeAgo(ts: number) {
   const d = Math.max(0, Math.round((Date.now() - ts) / 60000))
   if (d < 60) return d + t.value('mago')
   if (d < 1440) return Math.round(d / 60) + t.value('hago')
@@ -138,16 +158,16 @@ function timeAgo(ts) {
 }
 
 // 震级 -> 圆圈半径（米），随地图缩放调整
-function eqRadius(m) {
-  const z = map.getZoom()
+function eqRadius(m: number) {
+  const z = map!.getZoom()
   const base = Math.sqrt(Math.pow(10, 1.02 * m - 4) / Math.PI) * 1000
   const scale = Math.pow(2, 10 - z) * 0.15
   return Math.max(3000, base * scale)
 }
 
 // alert 颜色取值
-function alertColor(a) {
-  return ALERT_COLORS[a] || ''
+function alertColor(a: string | null | undefined) {
+  return (a && ALERT_COLORS[a]) || ''
 }
 
 /* ---------- 派生：列表前 100 条 ---------- */
@@ -161,7 +181,7 @@ const stats = computed(() => {
     const m = e.properties.mag
     const d = e.geometry.coordinates[2]
     if (m != null && m > mx) mx = m
-    if (m >= 5) sg++
+    if (m != null && m >= 5) sg++
     if (d != null) { dp += d; vd++ }
   })
   const av = vd ? Math.round(dp / vd) : 0
@@ -185,7 +205,7 @@ async function loadData() {
     '&endtime=' + e.toISOString() + '&minmagnitude=' + minMag.value +
     '&limit=20000&orderby=time'
   try {
-    const d = await fetchJSON(url)
+    const d = await fetchJSON<EarthquakeResponse>(url)
     data.value = d.features || []
     updateTime.value = new Date().toLocaleTimeString('en', { hour12: false, hour: '2-digit', minute: '2-digit' })
   } catch (err) {
@@ -199,7 +219,8 @@ async function loadData() {
 /* ---------- 渲染地图圆圈标记 ---------- */
 function renderMapMarkers() {
   if (!map || !layerGroup) return
-  layerGroup.clearLayers()
+  const group = layerGroup
+  group.clearLayers()
   const cd = data.value
   cd.forEach((eq) => {
     const p = eq.properties, c = eq.geometry.coordinates
@@ -231,7 +252,7 @@ function renderMapMarkers() {
         radius: r, fillColor: col, color: col, weight: 1, opacity: 0.5, fillOpacity: 0.2
       })
       k.bindPopup(pop)
-      k.addTo(layerGroup)
+      k.addTo(group)
     })
   })
 }
@@ -243,22 +264,23 @@ async function togglePlates() {
     // 首次加载时拉取 GeoJSON 并构建图层
     if (!platesData) {
       try {
-        platesData = await fetchJSON(PLATES_URL)
-        platesLayer = L.layerGroup()
+        platesData = await fetchJSON<GeoJSON.FeatureCollection>(PLATES_URL)
+        const group = L.layerGroup()
+        platesLayer = group
         L.geoJSON(platesData, { style: { color: '#ef4444', weight: 1.5, opacity: 0.7 } })
-          .eachLayer((l) => platesLayer.addLayer(l))
+          .eachLayer((l) => group.addLayer(l))
       } catch (e) {
         console.warn('Plate boundaries load failed:', e)
       }
     }
-    if (platesLayer && !map.hasLayer(platesLayer)) platesLayer.addTo(map)
+    if (platesLayer && map && !map.hasLayer(platesLayer)) platesLayer.addTo(map)
   } else {
-    if (platesLayer && map.hasLayer(platesLayer)) map.removeLayer(platesLayer)
+    if (platesLayer && map && map.hasLayer(platesLayer)) map.removeLayer(platesLayer)
   }
 }
 
 /* ---------- 列表项点击：飞往地震位置 ---------- */
-function onItemClick(eq) {
+function onItemClick(eq: EarthquakeFeature) {
   if (!map) return
   const c = eq.geometry.coordinates
   const m = eq.properties.mag || 0
@@ -266,11 +288,11 @@ function onItemClick(eq) {
 }
 
 /* ---------- 过滤切换 ---------- */
-function setPeriod(p) {
+function setPeriod(p: string) {
   period.value = p
   loadData()
 }
-function setMinMag(m) {
+function setMinMag(m: number) {
   minMag.value = m
   loadData()
 }
@@ -284,7 +306,7 @@ watch(() => i18nState.lang, () => renderMapMarkers())
 /* ---------- 生命周期 ---------- */
 onMounted(() => {
   // 初始化地图：禁用默认 zoomControl、世界循环、Canvas 渲染
-  map = L.map(mapEl.value, {
+  map = L.map(mapEl.value!, {
     zoomControl: false,
     worldCopyJump: true,
     preferCanvas: true,
@@ -351,7 +373,7 @@ onBeforeUnmount(() => {
               :class="{ on: minMag === f.mag }"
               type="button"
               @click="setMinMag(f.mag)"
-            >{{ f.label || t(f.tKey) }}</button>
+            >{{ f.label || t(f.tKey!) }}</button>
           </div>
 
           <!-- 板块边界叠加层 -->

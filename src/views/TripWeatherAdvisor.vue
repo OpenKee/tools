@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, geocode, locale } from '../ok.js'
@@ -93,6 +93,70 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface GeoResult {
+  name: string
+  latitude: number
+  longitude: number
+  country: string
+  admin1: string
+  timezone: string
+}
+
+interface GeoSearchResponse {
+  results?: GeoResult[]
+}
+
+interface SelectedCity {
+  name: string
+  lat: number
+  lon: number
+  country: string
+  admin1: string
+  timezone: string
+}
+
+interface DailyForecast {
+  time: string[]
+  weather_code: number[]
+  temperature_2m_max: number[]
+  temperature_2m_min: number[]
+  precipitation_probability_max: number[]
+  sunrise: string[]
+  sunset: string[]
+  uv_index_max: number[]
+}
+
+interface ForecastResponse {
+  daily: DailyForecast
+}
+
+interface AirQualityCurrent {
+  us_aqi: number
+}
+
+interface AirQualityResponse {
+  current: AirQualityCurrent
+}
+
+interface DayCard {
+  date: string
+  dateLabel: string
+  dateShort: string
+  icon: string
+  hi: number
+  lo: number
+  precip: number | null
+  uv: string | null
+  sunrise: string
+  sunset: string
+  aqi: number | null
+  aqiLabel: string | null
+  aqiColor: string
+  suggestions: string[]
+  isOutdoor: boolean
+}
+
 /* ---------- WMO 天气代码映射（图标） ---------- */
 const WMO = {
   0: '\u2600', 1: '\u2600', 2: '\u26c5', 3: '\u2601', 45: '\ud83c\udf2b', 48: '\ud83c\udf2b',
@@ -103,26 +167,26 @@ const WMO = {
 
 /* ---------- 响应式状态 ---------- */
 const cityQuery = ref('')
-const searchResults = ref([])
+const searchResults = ref<GeoResult[]>([])
 const searchActive = ref(-1)
 const showDropdown = ref(false)
 const searchErrored = ref(false)
-const searchWrapRef = ref(null)
-let searchTimer = null
+const searchWrapRef = ref<HTMLElement | null>(null)
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
-const selectedCity = ref(null)
+const selectedCity = ref<SelectedCity | null>(null)
 const startDate = ref('')
 const endDate = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
-const forecastData = ref(null)
-const airQualityData = ref(null)
+const forecastData = ref<ForecastResponse | null>(null)
+const airQualityData = ref<AirQualityResponse | null>(null)
 const cityLabel = ref('')
 
 /* ---------- 工具函数 ---------- */
-function weatherIcon(code) { return WMO[code] || '\ud83c\udf21' }
+function weatherIcon(code: number): string { return WMO[code as keyof typeof WMO] || '\ud83c\udf21' }
 
-function aqiLevel(v) {
+function aqiLevel(v: number | null): string {
   if (v == null || isNaN(v)) return 'good'
   if (v <= 50) return 'good'
   if (v <= 100) return 'fair'
@@ -131,13 +195,13 @@ function aqiLevel(v) {
   return 'vpoor'
 }
 
-function aqiLabel(v) {
+function aqiLabel(v: number | null): string {
   const level = aqiLevel(v)
-  const map = { good: 'aqiGood', fair: 'aqiFair', moderate: 'aqiModerate', poor: 'aqiPoor', vpoor: 'aqiVpoor' }
+  const map: Record<string, string> = { good: 'aqiGood', fair: 'aqiFair', moderate: 'aqiModerate', poor: 'aqiPoor', vpoor: 'aqiVpoor' }
   return t.value(map[level])
 }
 
-function aqiColor(v) {
+function aqiColor(v: number | null): string {
   if (v == null || isNaN(v)) return 'var(--ok-accent)'
   if (v <= 50) return '#22c55e'
   if (v <= 100) return '#8bc34a'
@@ -146,21 +210,21 @@ function aqiColor(v) {
   return '#ef4444'
 }
 
-function fmtTime(iso) {
+function fmtTime(iso: string): string {
   if (!iso) return '--'
   const d = new Date(iso)
   if (isNaN(d.getTime())) return '--'
   return d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
 }
 
-function fmtDate(iso) {
+function fmtDate(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d.getTime())) return ''
   return d.toLocaleDateString(locale(), { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
-function fmtDateShort(iso) {
+function fmtDateShort(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d.getTime())) return ''
@@ -187,16 +251,16 @@ startDate.value = todayStr
 endDate.value = defaultEnd
 
 /* ---------- 城市搜索 ---------- */
-function resultMeta(r) {
+function resultMeta(r: GeoResult): string {
   const meta = [r.admin1, r.country].filter(Boolean).join(', ')
   if (meta) return meta
   return Number(r.latitude).toFixed(2) + ', ' + Number(r.longitude).toFixed(2)
 }
 
-async function runSearch(query) {
+async function runSearch(query: string) {
   const url = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=5&language=' + (i18nState.lang === 'zh' ? 'zh' : 'en') + '&format=json'
   try {
-    const res = await fetchJSON(url)
+    const res = await fetchJSON<GeoSearchResponse>(url)
     searchResults.value = (res && res.results) ? res.results : []
     searchErrored.value = false
   } catch (e) {
@@ -215,7 +279,7 @@ function hideResults() {
   searchActive.value = -1
 }
 
-function pickResult(r) {
+function pickResult(r: GeoResult) {
   selectedCity.value = {
     name: r.name,
     lat: Number(r.latitude),
@@ -228,7 +292,7 @@ function pickResult(r) {
   hideResults()
 }
 
-function onSearchKeydown(e) {
+function onSearchKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     hideResults()
     return
@@ -247,8 +311,8 @@ function onSearchKeydown(e) {
   }
 }
 
-function onDocClick(e) {
-  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target)) {
+function onDocClick(e: MouseEvent) {
+  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target as Node)) {
     hideResults()
   }
 }
@@ -295,7 +359,7 @@ async function loadWeather() {
     errorMsg.value = 'invalidDate'
     return
   }
-  const diffDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1
+  const diffDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1
   if (diffDays > 7) {
     errorMsg.value = 'dateRangeError'
     return
@@ -314,8 +378,8 @@ async function loadWeather() {
       '&current=us_aqi&timezone=auto'
 
     const [f, air] = await Promise.all([
-      fetchJSON(fUrl),
-      fetchJSON(aUrl),
+      fetchJSON<ForecastResponse>(fUrl),
+      fetchJSON<AirQualityResponse>(aUrl),
     ])
 
     forecastData.value = f
@@ -344,7 +408,7 @@ const dayCards = computed(() => {
   const daily = f.daily
   const aqi = airQualityData.value ? airQualityData.value.current : null
   const aqiVal = aqi ? aqi.us_aqi : null
-  const cards = []
+  const cards: DayCard[] = []
 
   for (let i = 0; i < daily.time.length; i++) {
     const date = daily.time[i]
@@ -357,7 +421,7 @@ const dayCards = computed(() => {
     const uv = daily.uv_index_max[i]
 
     // 生成个性化建议
-    const suggestions = []
+    const suggestions: string[] = []
     if (precip > 50) {
       suggestions.push(t.value('suggestionUmbrella'))
     }
@@ -406,9 +470,9 @@ const dayCards = computed(() => {
 const summary = computed(() => {
   const cards = dayCards.value
   if (!cards.length) return null
-  const outdoorCount = cards.filter(function (c) { return c.isOutdoor }).length
+  const outdoorCount = cards.filter(function (c: DayCard) { return c.isOutdoor }).length
   return {
-    text: t.value('summary').replace('{city}', cityLabel.value).replace('{n}', cards.length).replace('{best}', outdoorCount),
+    text: t.value('summary').replace('{city}', cityLabel.value).replace('{n}', String(cards.length)).replace('{best}', String(outdoorCount)),
     outdoorCount: outdoorCount,
     totalDays: cards.length,
   }

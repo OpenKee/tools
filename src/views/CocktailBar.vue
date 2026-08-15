@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Cocktail Bar — 鸡尾酒配方搜索（Vue 3 SFC）
    数据来源：TheCocktailDB（免费公开 API，无需 key，支持 CORS）
@@ -60,16 +60,52 @@ const t = useT(copy)
 /* ---------- API 地址 ---------- */
 const API_BASE = 'https://www.thecocktaildb.com/api/json/v1/1'
 
+/* ---------- 类型 ---------- */
+interface DrinkIngredient {
+  name: string
+  measure: string
+}
+
+interface Drink {
+  id: string
+  name: string
+  thumb: string
+  category: string
+  alcoholic: string
+  glass: string
+  instructions: string
+  ingredients: DrinkIngredient[]
+}
+
+interface RawDrink {
+  idDrink?: string
+  strDrink?: string
+  strDrinkThumb?: string
+  strCategory?: string
+  strAlcoholic?: string
+  strGlass?: string
+  strInstructions?: string
+  [key: string]: unknown
+}
+
+interface DrinkApiResponse {
+  drinks?: RawDrink[] | null
+}
+
+interface CategoryApiResponse {
+  drinks?: Array<{ strCategory?: string }> | null
+}
+
 /* ---------- 响应式状态 ---------- */
 const searchQuery = ref('')        // 搜索框文本
 const selectedCategory = ref('')   // 选中的分类（兼作 activeCategory，用作 filter.php 结果的 fallback 分类）
-const categories = ref([])         // 分类下拉选项（来自 list.php?c=list）
-const currentDrinks = ref([])      // 当前网格中的鸡尾酒列表
+const categories = ref<string[]>([])         // 分类下拉选项（来自 list.php?c=list）
+const currentDrinks = ref<Drink[]>([])      // 当前网格中的鸡尾酒列表
 const loading = ref(false)         // 加载中标记
 const statusMsg = ref('')          // 状态提示文案（数量 / 错误信息）
-const modalDrink = ref(null)       // 弹窗中展示的鸡尾酒详情
+const modalDrink = ref<Drink | null>(null)       // 弹窗中展示的鸡尾酒详情
 const modalOpen = ref(false)       // 弹窗是否打开
-const modalCloseRef = ref(null)    // 弹窗关闭按钮引用（用于无障碍聚焦）
+const modalCloseRef = ref<HTMLButtonElement | null>(null)    // 弹窗关闭按钮引用（用于无障碍聚焦）
 
 /* ---------- 派生状态 ---------- */
 // 空状态：非加载中且当前无鸡尾酒时显示
@@ -81,26 +117,26 @@ watch(modalOpen, (open) => {
 })
 
 /* ---------- 工具：调用 TheCocktailDB ---------- */
-function api(path) {
-  return fetchJSON(API_BASE + path, { timeout: 15000 })
+function api<T = unknown>(path: string): Promise<T> {
+  return fetchJSON<T>(API_BASE + path, { timeout: 15000 })
 }
 
 /* ---------- 规范化：原始 drink -> 内部结构 ----------
    fallbackCategory 用于 filter.php 结果补全分类（该接口不返回 strCategory） */
-function normalizeDrink(d, fallbackCategory) {
+function normalizeDrink(d: RawDrink, fallbackCategory?: string): Drink | null {
   if (!d) return null
-  const ingredients = []
+  const ingredients: DrinkIngredient[] = []
   for (let i = 1; i <= 15; i++) {
     const ing = d['strIngredient' + i]
     const meas = d['strMeasure' + i]
     if (ing && String(ing).trim()) {
-      ingredients.push({ name: String(ing).trim(), measure: (meas || '').trim() })
+      ingredients.push({ name: String(ing).trim(), measure: (meas == null ? '' : String(meas)).trim() })
     }
   }
   return {
-    id: d.idDrink,
-    name: d.strDrink,
-    thumb: d.strDrinkThumb,
+    id: d.idDrink || '',
+    name: d.strDrink || '',
+    thumb: d.strDrinkThumb || '',
     category: d.strCategory || fallbackCategory || '',
     alcoholic: d.strAlcoholic || '',
     glass: d.strGlass || '',
@@ -109,15 +145,15 @@ function normalizeDrink(d, fallbackCategory) {
   }
 }
 
-function normalizeCategories(data) {
+function normalizeCategories(data: CategoryApiResponse): string[] {
   if (!data || !data.drinks) return []
-  return data.drinks.map((c) => c.strCategory).filter(Boolean).sort()
+  return data.drinks.map((c) => c.strCategory || '').filter(Boolean).sort()
 }
 
 /* ---------- 初始化分类下拉 ---------- */
 async function initCategories() {
   try {
-    const data = await api('/list.php?c=list')
+    const data = await api<CategoryApiResponse>('/list.php?c=list')
     categories.value = normalizeCategories(data)
   } catch (err) {
     console.warn('Failed to load categories:', err)
@@ -125,14 +161,14 @@ async function initCategories() {
 }
 
 /* ---------- 加载鸡尾酒列表 ---------- */
-async function loadDrinks(path, fallbackCategory) {
+async function loadDrinks(path: string, fallbackCategory?: string) {
   loading.value = true
   // 清空网格（原版 drinkGrid.innerHTML = ''）
   currentDrinks.value = []
   try {
-    const data = await api(path)
+    const data = await api<DrinkApiResponse>(path)
     const drinks = (data && data.drinks) || []
-    currentDrinks.value = drinks.map((d) => normalizeDrink(d, fallbackCategory)).filter(Boolean)
+    currentDrinks.value = drinks.map((d) => normalizeDrink(d, fallbackCategory)).filter((dr): dr is Drink => !!dr)
     statusMsg.value = currentDrinks.value.length
       ? currentDrinks.value.length + ' ' + t.value('countUnit')
       : ''
@@ -146,13 +182,13 @@ async function loadDrinks(path, fallbackCategory) {
 }
 
 /* 按名称搜索：空查询时按首字母 a 展示一批，避免空白初始页 */
-function searchByName(q) {
+function searchByName(q: string) {
   if (!q) return loadDrinks('/search.php?f=a')
   loadDrinks('/search.php?s=' + encodeURIComponent(q))
 }
 
 /* 按分类筛选：filter.php 仅返回摘要，用 c 作为 fallback 分类 */
-function filterByCategory(c) {
+function filterByCategory(c: string) {
   loadDrinks('/filter.php?c=' + encodeURIComponent(c), c)
 }
 
@@ -161,9 +197,9 @@ async function randomDrink() {
   loading.value = true
   // 原版不在此处清空列表，保留旧卡片直到新数据到达
   try {
-    const data = await api('/random.php')
+    const data = await api<DrinkApiResponse>('/random.php')
     const drinks = (data && data.drinks) || []
-    const drink = drinks.map((d) => normalizeDrink(d)).filter(Boolean)[0]
+    const drink = drinks.map((d) => normalizeDrink(d)).filter((dr): dr is Drink => !!dr)[0]
     if (drink) {
       currentDrinks.value = [drink]
       statusMsg.value = '1 ' + t.value('countUnit')
@@ -179,12 +215,12 @@ async function randomDrink() {
 
 /* 加载详情：类别筛选结果只有摘要，点击卡片时用 lookup 取完整配方。
    用 selectedCategory 作为 fallback 分类补全。 */
-async function loadDetail(id) {
+async function loadDetail(id: string) {
   loading.value = true
   try {
-    const data = await api('/lookup.php?i=' + encodeURIComponent(id))
+    const data = await api<DrinkApiResponse>('/lookup.php?i=' + encodeURIComponent(id))
     const drinks = (data && data.drinks) || []
-    const drink = drinks.map((d) => normalizeDrink(d, selectedCategory.value)).filter(Boolean)[0]
+    const drink = drinks.map((d) => normalizeDrink(d, selectedCategory.value)).filter((dr): dr is Drink => !!dr)[0]
     if (drink) openModal(drink)
   } catch (err) {
     console.warn('Drink detail failed:', err)
@@ -194,7 +230,7 @@ async function loadDetail(id) {
 }
 
 /* ---------- 弹窗控制 ---------- */
-function openModal(drink) {
+function openModal(drink: Drink) {
   modalDrink.value = drink
   modalOpen.value = true
   // 聚焦关闭按钮（无障碍）
@@ -225,12 +261,12 @@ function onCategoryChange() {
   else searchByName('')
 }
 
-function onCardClick(d) {
+function onCardClick(d: Drink) {
   loadDetail(d.id)
 }
 
 // 卡片键盘操作（Enter / Space 触发详情）
-function onCardKeydown(e, d) {
+function onCardKeydown(e: KeyboardEvent, d: Drink) {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault()
     loadDetail(d.id)
@@ -238,7 +274,7 @@ function onCardKeydown(e, d) {
 }
 
 // Esc 关闭弹窗
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && modalOpen.value) closeModal()
 }
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Dev Tools — 开发者工具集（Vue 3 SFC 迁移版）
    14 个工具：CSS/HTML 压缩、JSON/SQL 格式化、编码/解码、
@@ -243,7 +243,7 @@ const GROUPS = [
 ]
 
 // ---------- 每个工具的统计标签配置 ----------
-const TOOL_STATS = {
+const TOOL_STATS: Record<string, string[]> = {
   css: ['stat.original', 'stat.minified', 'stat.saved', 'stat.time'],
   html: ['stat.original', 'stat.minified', 'stat.saved', 'stat.time'],
   json: ['stat.original', 'stat.formatted', 'stat.lines', 'stat.time'],
@@ -319,6 +319,22 @@ const SAMPLES = {
 // ---------- 响应式状态：当前工具 + 各工具输入/输出 ----------
 const currentTool = ref('css')
 
+// ---------- 类型 ----------
+interface TimestampState {
+  tsInput: string
+  dateInput: string
+  tsDateOut: { iso: string; local: string } | null
+  tsOut: { seconds: number; ms: number } | null
+  tsNow: { iso: string; unix: number } | null
+}
+
+interface HashResult {
+  sha1: string
+  sha256: string
+  sha512: string
+  stats: (string | number)[]
+}
+
 const state = reactive({
   css: { input: '', options: { comments: true, whitespace: true, colors: true, zeros: true } },
   html: { input: '' },
@@ -330,9 +346,9 @@ const state = reactive({
   md: { input: '' },
   regex: { pattern: '', flags: 'g', test: '' },
   diff: { a: '', b: '' },
-  lorem: { output: '', stats: ['—', '—', '—', '—'] },
-  uuid: { output: '', upper: false, stats: ['—', '—', '—', '—'] },
-  timestamp: { tsInput: '', dateInput: '', tsDateOut: null, tsOut: null, tsNow: null },
+  lorem: { output: '', stats: ['—', '—', '—', '—'] as (string | number)[] },
+  uuid: { output: '', upper: false, stats: ['—', '—', '—', '—'] as (string | number)[] },
+  timestamp: { tsInput: '', dateInput: '', tsDateOut: null, tsOut: null, tsNow: null } as TimestampState,
   color: { picker: '#3b82f6', hex: '#3b82f6', hexVal: '—', rgbVal: '—', hslVal: '—' }
 })
 
@@ -341,8 +357,8 @@ const cssDropActive = ref(false)
 
 // ---------- Toast 提示 ----------
 const toast = reactive({ show: false, msg: '' })
-let toastTimer = null
-function showToast(msg) {
+let toastTimer: ReturnType<typeof setTimeout> | undefined
+function showToast(msg: string) {
   toast.msg = msg
   toast.show = true
   if (toastTimer) clearTimeout(toastTimer)
@@ -350,7 +366,7 @@ function showToast(msg) {
 }
 
 // 复制到剪贴板（带降级方案）
-function copyToClipboard(text) {
+function copyToClipboard(text: string) {
   if (!text || text === '—') return
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(
@@ -362,7 +378,7 @@ function copyToClipboard(text) {
   }
 }
 
-function fallbackCopy(text) {
+function fallbackCopy(text: string) {
   const ta = document.createElement('textarea')
   ta.value = text
   ta.style.position = 'fixed'
@@ -374,33 +390,33 @@ function fallbackCopy(text) {
 }
 
 // ---------- 通用工具函数 ----------
-function formatSize(bytes) {
+function formatSize(bytes: number) {
   if (bytes < 1024) return bytes + ' B'
   return (bytes / 1024).toFixed(1) + ' KB'
 }
 
-function escapeHtml(s) {
+function escapeHtml(s: unknown) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
 // UTF-8 安全的 Base64 编解码
-function utf8ToBase64(str) {
+function utf8ToBase64(str: string) {
   const bytes = new TextEncoder().encode(str)
   let binary = ''
   bytes.forEach(b => { binary += String.fromCharCode(b) })
   return btoa(binary)
 }
 
-function base64ToUtf8(b64) {
+function base64ToUtf8(b64: string) {
   const binary = atob(b64)
   const bytes = Uint8Array.from(binary, c => c.charCodeAt(0))
   return new TextDecoder('utf-8').decode(bytes)
 }
 
 // base64url 安全解码（JWT 用）
-function b64urlDecode(s) {
+function b64urlDecode(s: string) {
   let b64 = s.replace(/-/g, '+').replace(/_/g, '/')
   while (b64.length % 4) b64 += '='
   const binary = atob(b64)
@@ -472,7 +488,7 @@ const jsonResult = computed(() => {
     const lines = output.split('\n').length
     return { output, stats: [formatSize(new Blob([v]).size), formatSize(new Blob([output]).size), lines, ms + 'ms'], green: [false, false, false, false], error: false }
   } catch (e) {
-    return { output: t.value('msg.invalidJson') + ': ' + e.message, stats: [formatSize(new Blob([v]).size), '—', '—', '—'], green: [false, false, false, false], error: true }
+    return { output: t.value('msg.invalidJson') + ': ' + (e as Error).message, stats: [formatSize(new Blob([v]).size), '—', '—', '—'], green: [false, false, false, false], error: true }
   }
 })
 
@@ -492,7 +508,7 @@ const sqlResult = computed(() => {
 })
 
 // ---------- 5. 编码转换 ----------
-function encodeDecode(mode) {
+function encodeDecode(mode: string) {
   const input = state.encode.input
   if (!input) { state.encode.output = ''; state.encode.error = false; return }
   let output = ''
@@ -515,7 +531,7 @@ function encodeDecode(mode) {
     state.encode.output = output
     state.encode.error = false
   } catch (e) {
-    state.encode.output = t.value('msg.invalidUrl') + ': ' + e.message
+    state.encode.output = t.value('msg.invalidUrl') + ': ' + (e as Error).message
     state.encode.error = true
   }
 }
@@ -528,7 +544,7 @@ const encodeResult = computed(() => ({
 }))
 
 // ---------- 6. 哈希生成（异步：依赖 crypto.subtle） ----------
-const hashResult = ref({ sha1: '—', sha256: '—', sha512: '—', stats: ['—', '—', '—', '—'] })
+const hashResult = ref<HashResult>({ sha1: '—', sha256: '—', sha512: '—', stats: ['—', '—', '—', '—'] })
 
 async function runHash() {
   const v = state.hash.input
@@ -537,8 +553,10 @@ async function runHash() {
     return
   }
   const enc = new TextEncoder().encode(v)
-  const algs = [['SHA-1', 'sha1'], ['SHA-256', 'sha256'], ['SHA-512', 'sha512']]
-  const out = { sha1: '—', sha256: '—', sha512: '—', stats: [v.length, '—', '—', '—'] }
+  const algs: Array<['SHA-1' | 'SHA-256' | 'SHA-512', 'sha1' | 'sha256' | 'sha512']> = [
+    ['SHA-1', 'sha1'], ['SHA-256', 'sha256'], ['SHA-512', 'sha512']
+  ]
+  const out: HashResult = { sha1: '—', sha256: '—', sha512: '—', stats: [v.length, '—', '—', '—'] }
   for (const [name, key] of algs) {
     try {
       const buf = await crypto.subtle.digest(name, enc)
@@ -568,13 +586,13 @@ const jwtResult = computed(() => {
       stats: [v.length, '—', '—', '—']
     }
   } catch (e) {
-    return { header: t.value('msg.invalidJwt') + ': ' + e.message, payload: '', sig: '', error: true, stats: [v.length, '—', '—', '—'] }
+    return { header: t.value('msg.invalidJwt') + ': ' + (e as Error).message, payload: '', sig: '', error: true, stats: [v.length, '—', '—', '—'] }
   }
 })
 
 // ---------- 8. Markdown 预览 ----------
 // 行内元素解析（转义后替换）
-function parseInline(text) {
+function parseInline(text: string) {
   let s = escapeHtml(text)
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>')
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -685,7 +703,7 @@ const regexResult = computed(() => {
       stats: [p, matches.length, '—', '—']
     }
   } catch (e) {
-    return { matches: [], error: true, errorMsg: t.value('msg.invalidRegex') + ': ' + e.message, noMatches: false, empty: false, stats: [p, '—', '—', '—'] }
+    return { matches: [], error: true, errorMsg: t.value('msg.invalidRegex') + ': ' + (e as Error).message, noMatches: false, empty: false, stats: [p, '—', '—', '—'] }
   }
 })
 
@@ -715,7 +733,7 @@ const diffResult = computed(() => {
 })
 
 // ---------- 11. Lorem Ipsum ----------
-function genLorem(type, n) {
+function genLorem(type: string, n: number) {
   let result = ''
   const randWord = () => LOREM_WORDS[Math.floor(Math.random() * LOREM_WORDS.length)]
   if (type === 'p') {
@@ -755,11 +773,11 @@ const loremResult = computed(() => ({
 }))
 
 // ---------- 12. UUID 生成 ----------
-function genUuid(n) {
+function genUuid(n: number) {
   const upper = state.uuid.upper
   const uuids = []
   for (let i = 0; i < n; i++) {
-    let v = crypto.randomUUID()
+    let v: string = crypto.randomUUID()
     if (upper) v = v.toUpperCase()
     uuids.push(v)
   }
@@ -796,7 +814,7 @@ function setNow() {
 }
 
 // ---------- 14. 颜色工具 ----------
-function updateColor(hex, source) {
+function updateColor(hex: string, source?: string) {
   hex = String(hex || '').trim().replace(/[^#0-9a-fA-F]/g, '')
   if (!hex.startsWith('#')) hex = '#' + hex
   // 3 位简写展开
@@ -826,6 +844,12 @@ function updateColor(hex, source) {
   // 同步另一个输入框
   if (source !== 'picker') state.color.picker = hex
   if (source !== 'hex') state.color.hex = hex
+}
+
+// 颜色输入框事件（source 标记输入来源）
+function onColorInput(e: Event, source: 'picker' | 'hex') {
+  const el = e.target as HTMLInputElement | null
+  if (el) updateColor(el.value, source)
 }
 
 const colorResult = computed(() => ({
@@ -862,17 +886,17 @@ const statLabels = computed(() => {
 // 统计数值
 const statValues = computed(() => currentResult.value.stats || ['—', '—', '—', '—'])
 // 统计高亮（绿色）
-const statGreen = computed(() => currentResult.value.green || [false, false, false, false])
+const statGreen = computed(() => (currentResult.value as { green?: boolean[] }).green || [false, false, false, false])
 
 // ---------- 工具切换 ----------
-function switchTool(toolId) {
+function switchTool(toolId: string) {
   currentTool.value = toolId
   // 切换到时间戳时刷新"当前时间"
   if (toolId === 'timestamp') setNow()
 }
 
 // ---------- 加载示例 ----------
-function loadSample(tool) {
+function loadSample(tool: string) {
   const samples = SAMPLES[i18nState.lang] || SAMPLES.en
   switch (tool) {
     case 'css': state.css.input = samples.css; break
@@ -920,20 +944,20 @@ function copyJwtPayload() {
 }
 
 // ---------- CSS 拖放上传 ----------
-function onCssDragOver(e) {
+function onCssDragOver(e: DragEvent) {
   e.preventDefault()
   cssDropActive.value = true
 }
-function onCssDragLeave(e) {
+function onCssDragLeave(e: DragEvent) {
   if (e.target === e.currentTarget) cssDropActive.value = false
 }
-function onCssDrop(e) {
+function onCssDrop(e: DragEvent) {
   e.preventDefault()
   cssDropActive.value = false
-  const f = e.dataTransfer.files[0]
+  const f = e.dataTransfer?.files[0]
   if (f && (f.type === 'text/css' || f.name.endsWith('.css'))) {
     const r = new FileReader()
-    r.onload = () => { state.css.input = r.result }
+    r.onload = () => { state.css.input = typeof r.result === 'string' ? r.result : '' }
     r.readAsText(f)
   }
 }
@@ -1308,14 +1332,14 @@ onMounted(() => {
                   type="color"
                   class="color-picker"
                   :value="state.color.picker"
-                  @input="updateColor($event.target.value, 'picker')"
+                  @input="onColorInput($event, 'picker')"
                 />
                 <input
                   :value="state.color.hex"
                   class="text-input mono-input"
                   type="text"
                   spellcheck="false"
-                  @input="updateColor($event.target.value, 'hex')"
+                  @input="onColorInput($event, 'hex')"
                 />
               </div>
               <div class="hash-results">

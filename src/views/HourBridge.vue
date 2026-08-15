@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, locale } from '../ok.js'
@@ -61,6 +61,23 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface City {
+  name: string
+  tz: string
+  lat: number
+  lon: number
+}
+
+interface GeocodingResponse {
+  results?: Array<{
+    name: string
+    timezone: string
+    latitude: number
+    longitude: number
+  }>
+}
+
 /* ---------- 常量 ---------- */
 const KNOWN_CITIES = [
   'Shanghai','Beijing','Shenzhen','Guangzhou','Hong Kong','Taipei',
@@ -71,7 +88,7 @@ const KNOWN_CITIES = [
 ]
 
 // 预设城市组合
-const PRESETS = {
+const PRESETS: Record<string, string[]> = {
   apac: ['Shanghai', 'Tokyo', 'Singapore', 'Sydney'],
   'us-eu': ['New York', 'London', 'Berlin'],
   global: ['Shanghai', 'London', 'New York'],
@@ -89,41 +106,41 @@ const utcHours = Array.from({ length: 24 }, (_, i) => i)
 const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 
 /* ---------- 响应式状态 ---------- */
-const cities = ref([])          // 已解析的城市列表
+const cities = ref<City[]>([])    // 已解析的城市列表
 const duration = ref(60)        // 会议时长（分钟）
-const selectedSlot = ref(null)  // 已选起始 UTC 小时
+const selectedSlot = ref<number | null>(null)  // 已选起始 UTC 小时
 const cityInput = ref('')       // 城市输入框
 const presetValue = ref('')     // 预设下拉值
 const now = ref(new Date())     // 实时时钟基准
-let clockTimer = null
+let clockTimer: ReturnType<typeof setInterval> | null = null
 
 /* ---------- 时区换算工具 ---------- */
 // 取今日 UTC 0 点对应的时间戳，加上 utcHour 小时得到目标时刻
-function utcTarget(utcHour) {
+function utcTarget(utcHour: number): Date {
   const base = new Date()
   const today = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()))
   return new Date(today.getTime() + utcHour * 3600000)
 }
 
 // 给定 UTC 整点，返回该时区下的本地小时数（0-23，午夜可能为 24）
-function localHour(tz, utcHour) {
+function localHour(tz: string, utcHour: number): number {
   return Number(new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', hour12: false }).format(utcTarget(utcHour)))
 }
 
 // 给定 UTC 整点，返回该时区下的本地 HH:MM 文本
-function localTime(tz, utcHour) {
+function localTime(tz: string, utcHour: number): string {
   return new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(utcTarget(utcHour))
 }
 
 // 按本地小时判定时段档次
-function hourStatus(h) {
+function hourStatus(h: number): string {
   if (h >= 9 && h <= 18) return 'good'
   if ((h >= 7 && h < 9) || (h > 18 && h <= 21)) return 'fair'
   return 'night'
 }
 
 // 时段对应文案
-function statusLabel(s) {
+function statusLabel(s: string): string {
   return s === 'good' ? t.value('good') : s === 'fair' ? t.value('fair') : t.value('night')
 }
 
@@ -160,7 +177,7 @@ const timelineRows = computed(() => {
     })
     return {
       name: c.name,
-      tzLabel: c.tz.split('/').pop().replace(/_/g, ' '),
+      tzLabel: c.tz.split('/').pop()!.replace(/_/g, ' '),
       slots,
     }
   })
@@ -168,10 +185,11 @@ const timelineRows = computed(() => {
 
 /* ---------- 派生：已选时段详情 ---------- */
 const resultItems = computed(() => {
-  if (selectedSlot.value === null || cities.value.length < 2) return null
+  const sel = selectedSlot.value
+  if (sel === null || cities.value.length < 2) return null
   return cities.value.map(c => {
-    const lt = localTime(c.tz, selectedSlot.value)
-    const lh = localHour(c.tz, selectedSlot.value)
+    const lt = localTime(c.tz, sel)
+    const lh = localHour(c.tz, sel)
     const s = hourStatus(lh)
     return { name: c.name, lt, s, label: statusLabel(s) }
   })
@@ -179,7 +197,7 @@ const resultItems = computed(() => {
 const showResult = computed(() => resultItems.value !== null)
 
 /* ---------- 派生：最佳时段（按得分排序取前 6） ---------- */
-function scoreSlot(utcHour) {
+function scoreSlot(utcHour: number): number {
   let total = 0
   cities.value.forEach(c => {
     const h = localHour(c.tz, utcHour)
@@ -209,15 +227,15 @@ const bestSlots = computed(() => {
 })
 
 /* ---------- 城市增删 ---------- */
-async function resolveCity(name) {
+async function resolveCity(name: string): Promise<City> {
   const url = `${GEO_URL}?name=${encodeURIComponent(name)}&count=1&language=en&format=json`
-  const data = await fetchJSON(url)
+  const data = await fetchJSON<GeocodingResponse>(url)
   const place = data && data.results && data.results[0]
   if (!place) throw new Error(`Not found: ${name}`)
   return { name: place.name, tz: place.timezone, lat: place.latitude, lon: place.longitude }
 }
 
-async function addCity(name) {
+async function addCity(name: string): Promise<void> {
   if (!name || cities.value.find(c => c.name.toLowerCase() === name.toLowerCase())) return
   if (cities.value.length >= 8) return
   try {
@@ -229,7 +247,7 @@ async function addCity(name) {
   }
 }
 
-function removeCity(i) {
+function removeCity(i: number) {
   cities.value.splice(i, 1)
 }
 
@@ -242,15 +260,15 @@ function onAddCity() {
   }
 }
 
-function setDuration(d) {
+function setDuration(d: number) {
   duration.value = d
 }
 
-function selectSlot(uh) {
+function selectSlot(uh: number) {
   selectedSlot.value = selectedSlot.value === uh ? null : uh
 }
 
-function selectBest(uh) {
+function selectBest(uh: number) {
   selectedSlot.value = uh
 }
 

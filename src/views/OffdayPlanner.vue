@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Offday Planner — 假期 & 请假优化器（Vue 3 SFC）
    数据来源：date.nager.at Public Holidays API
@@ -60,9 +60,41 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface Holiday {
+  date: string
+  localName: string
+  name: string
+}
+
+interface ExpandedHoliday extends Holiday {
+  isMainDay: boolean
+  spanDay: number
+  spanTotal: number
+}
+
+interface LongWeekend {
+  date: string
+  type: string
+  name: string
+  days: number
+  leaveNeeded: number
+  leaveDate?: string
+  leaveDates?: string[]
+}
+
+interface HolidayGroup {
+  localName: string
+  name: string
+  startDate: string
+  endDate: string
+  days: number
+  dates: string[]
+}
+
 /* ---------- 常量 ---------- */
 // 国家列表：[代码, { en, zh 名称 }]
-const COUNTRIES = [
+const COUNTRIES: Array<[string, { en: string; zh: string }]> = [
   ['CN', { en: 'China', zh: '中国' }],
   ['US', { en: 'United States', zh: '美国' }],
   ['GB', { en: 'United Kingdom', zh: '英国' }],
@@ -83,7 +115,7 @@ const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'
 const MONTHS_ZH = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 
 // 假期天数映射（仅适用于多天假期常见的国家）
-const HOLIDAY_SPANS = {
+const HOLIDAY_SPANS: Record<string, Record<string, number>> = {
   CN: {
     '元旦': 1, "New Year's Day": 1,
     '春节': 7, 'Chinese New Year (Spring Festival)': 7,
@@ -106,7 +138,7 @@ const currentYear = now.getFullYear()
 const country = ref('CN')                 // 选中国家
 const year = ref(currentYear)             // 选中年份
 const yearOptions = [currentYear - 1, currentYear, currentYear + 1]
-const rawHolidays = ref([])               // API 原始数据
+const rawHolidays = ref<Holiday[]>([])      // API 原始数据
 const loading = ref(false)                // 加载中
 const hasError = ref(false)               // 加载失败
 
@@ -117,24 +149,24 @@ const dowLabels = computed(() => i18nState.lang === 'zh' ? ['日', '一', '二',
 const loc = computed(() => locale())
 
 /* ---------- 日期工具函数 ---------- */
-function dayOfWeek(y, m, d) {
+function dayOfWeek(y: number, m: number, d: number): number {
   return new Date(y, m - 1, d).getDay()
 }
-function isWeekend(y, m, d) {
+function isWeekend(y: number, m: number, d: number): boolean {
   const dow = dayOfWeek(y, m, d)
   return dow === 0 || dow === 6
 }
-function dateStr(y, m, d) {
+function dateStr(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
-function daysInMonth(y, m) {
+function daysInMonth(y: number, m: number): number {
   return new Date(y, m, 0).getDate()
 }
 
 /* ---------- 假期展开：多天假期拆分为单日 ---------- */
-function expandHolidays(holidays, c) {
+function expandHolidays(holidays: Holiday[], c: string): ExpandedHoliday[] {
   const spans = HOLIDAY_SPANS[c] || {}
-  const expanded = new Map()
+  const expanded = new Map<string, ExpandedHoliday>()
   holidays.forEach(h => {
     const span = Math.max(1, spans[h.localName] || spans[h.name] || 1)
     const base = new Date(h.date)
@@ -156,7 +188,7 @@ const expandedHolidays = computed(() => expandHolidays(rawHolidays.value, countr
 const longWeekends = computed(() => {
   const holidays = expandedHolidays.value
   const holiSet = new Set(holidays.map(h => h.date))
-  const results = []
+  const results: LongWeekend[] = []
   const y = year.value
 
   for (let m = 1; m <= 12; m++) {
@@ -206,7 +238,7 @@ const nextHoliday = computed(() => {
   const upcoming = holidays.filter(h => h.date >= today)
   if (!upcoming.length) return null
   const next = upcoming[0]
-  const diff = Math.ceil((new Date(next.date) - new Date(today)) / 86400000)
+  const diff = Math.ceil((new Date(next.date).getTime() - new Date(today).getTime()) / 86400000)
   return { ...next, daysUntil: diff }
 })
 
@@ -220,7 +252,7 @@ const summaryData = computed(() => ({
 const yearMonths = computed(() => {
   const y = year.value
   const holidays = expandedHolidays.value
-  const holiMap = {}
+  const holiMap: Record<string, ExpandedHoliday> = {}
   holidays.forEach(h => { holiMap[h.date] = h })
   const todayStr = new Date().toISOString().slice(0, 10)
 
@@ -263,8 +295,8 @@ const yearMonths = computed(() => {
 
 /* ---------- 派生：假期分组（连续多日假期合并） ---------- */
 const holidayGroups = computed(() => {
-  const groups = []
-  let current = null
+  const groups: HolidayGroup[] = []
+  let current: HolidayGroup | null = null
   expandedHolidays.value.forEach(h => {
     if (current && current.localName === h.localName) {
       current.endDate = h.date
@@ -281,11 +313,11 @@ const holidayGroups = computed(() => {
 
 /* ---------- 模板辅助方法 ---------- */
 // 取请假日期数组（兼容 leaveDate 单值与 leaveDates 数组）
-function leaveDates(w) {
+function leaveDates(w: LongWeekend): string[] {
   return w.leaveDates || (w.leaveDate ? [w.leaveDate] : [])
 }
 // 格式化假期日期范围
-function formatRange(g) {
+function formatRange(g: HolidayGroup): string {
   const start = new Date(g.startDate)
   const end = new Date(g.endDate)
   if (g.days > 1) {
@@ -294,16 +326,16 @@ function formatRange(g) {
   return start.toLocaleDateString(loc.value, { month: 'short', day: 'numeric', weekday: 'short' })
 }
 // 日条标签：日/月
-function dayChipLabel(ds) {
+function dayChipLabel(ds: string): string {
   const dd = new Date(ds)
   return `${dd.getDate()}/${dd.getMonth() + 1}`
 }
 // 日条星期标签
-function dayChipDow(ds) {
+function dayChipDow(ds: string): string {
   return dowLabels.value[new Date(ds).getDay()]
 }
 // 是否周末
-function isWeekendDate(ds) {
+function isWeekendDate(ds: string): boolean {
   const dow = new Date(ds).getDay()
   return dow === 0 || dow === 6
 }
@@ -313,7 +345,7 @@ async function loadHolidays() {
   loading.value = true
   hasError.value = false
   try {
-    const data = await fetchJSON(`https://date.nager.at/api/v3/publicholidays/${year.value}/${country.value}`)
+    const data = await fetchJSON<Holiday[]>(`https://date.nager.at/api/v3/publicholidays/${year.value}/${country.value}`)
     rawHolidays.value = data
   } catch (e) {
     rawHolidays.value = []
@@ -339,7 +371,7 @@ onMounted(() => loadHolidays())
       <!-- 标题区 -->
       <header class="masthead">
         <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
           <p class="lead">{{ t('lead') }}</p>
         </div>
@@ -426,7 +458,7 @@ onMounted(() => loadHolidays())
             <div v-for="(w, i) in leaveOptimizers" :key="i" class="optimize-card">
               <div class="opt-title">{{ w.name }}</div>
               <div class="opt-break">
-                {{ t('takeDays').replace('{n}', w.leaveNeeded) }} → {{ t('getDays').replace('{n}', w.days) }}
+                {{ t('takeDays').replace('{n}', String(w.leaveNeeded)) }} → {{ t('getDays').replace('{n}', String(w.days)) }}
               </div>
               <div class="opt-detail">{{ w.date }} ({{ w.type }})</div>
               <div class="opt-days">
@@ -529,14 +561,6 @@ h1, h2, p, strong, span, small { margin: 0; }
   align-items: end;
   padding: 0.3rem 0 1.2rem;
   border-bottom: 1px solid var(--line);
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
 }
 
 .masthead h1 {

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    QR Forge — 二维码生成器（Vue 3 SFC 迁移版）
    - 共享 i18n：useT（来自 ../i18n.js），语言切换由 AppHeader 负责
@@ -116,6 +116,55 @@ const copy = {
 // useT 返回 computed ref，模板中 t('key') 自动 unwrap；脚本中用 t.value('key')
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface QrOptions {
+  size: number
+  fgColor: string
+  bgColor: string
+  ecc: string
+  margin: number
+}
+
+interface FieldOption {
+  value: string
+  label: string
+}
+
+interface FieldBase {
+  key: string
+  label: string
+}
+
+interface TextField extends FieldBase {
+  kind: 'textarea'
+  placeholder: string
+}
+
+interface InputField extends FieldBase {
+  kind: 'input'
+  inputType: string
+  placeholder: string
+}
+
+interface SelectField extends FieldBase {
+  kind: 'select'
+  options: FieldOption[]
+}
+
+type Field = TextField | InputField | SelectField
+
+interface HistoryItem {
+  signature: string
+  type: string
+  inputs: Record<string, string>
+  options: QrOptions
+  data: string
+  label: string
+  timeStr: string
+}
+
+type PreviewState = 'empty' | 'loading' | 'error' | 'image'
+
 // ---------- 类型 tabs 配置 ----------
 const TYPES = [
   { key: 'text', label: 'typeText' },
@@ -126,7 +175,7 @@ const TYPES = [
 ]
 
 // ---------- 各类型输入字段配置 ----------
-const FIELD_CONFIGS = {
+const FIELD_CONFIGS: Record<string, Field[]> = {
   text: [
     { key: 'text', label: 'labelText', kind: 'textarea', placeholder: 'placeholderText' },
   ],
@@ -151,18 +200,18 @@ const FIELD_CONFIGS = {
 }
 
 // ---------- 响应式状态 ----------
-const state = reactive({
+const state = reactive<{ type: string; inputs: Record<string, string>; options: QrOptions }>({
   type: 'text',
   inputs: { text: '', url: '', ssid: '', password: '', encryption: 'WPA', email: '', phone: '' },
   options: { size: 256, fgColor: '#1a1a2e', bgColor: '#ffffff', ecc: 'M', margin: 4 },
 })
 
-const history = ref([])            // 历史记录列表
-const previewState = ref('empty')  // empty | loading | error | image
+const history = ref<HistoryItem[]>([])   // 历史记录列表
+const previewState = ref<PreviewState>('empty')  // empty | loading | error | image
 const downloading = ref(false)     // 下载中标志
-const qrImgEl = ref(null)          // <img> 模板引用，用于赋值 onload/onerror/src
+const qrImgEl = ref<HTMLImageElement | null>(null)  // <img> 模板引用，用于赋值 onload/onerror/src
 
-let debounceTimer = null           // 防抖定时器
+let debounceTimer: ReturnType<typeof setTimeout> | null = null  // 防抖定时器
 let currentToken = 0               // 当前请求令牌，用于丢弃过期的图片加载回调
 let skipWatch = false              // 从历史恢复时跳过一次 watch 触发，避免覆盖立即生成
 
@@ -176,7 +225,7 @@ const qrAlt = computed(() => t.value('type_' + state.type) + ' QR code')
 
 // ---------- 工具函数 ----------
 // 根据类型与输入拼装二维码数据
-function buildData(type, inputs) {
+function buildData(type: string, inputs: Record<string, string>): string {
   switch (type) {
     case 'text':
       return inputs.text || ''
@@ -199,7 +248,7 @@ function buildData(type, inputs) {
 }
 
 // 构造二维码 API 地址（颜色去掉 # 前缀）
-function buildQrUrl(data, opts) {
+function buildQrUrl(data: string, opts: QrOptions): string {
   const size = opts.size
   const color = (opts.fgColor || '#000000').replace('#', '')
   const bgcolor = (opts.bgColor || '#ffffff').replace('#', '')
@@ -216,7 +265,7 @@ function buildQrUrl(data, opts) {
 }
 
 // 生成历史条目的展示标签（剥除协议前缀，截断超长文本）
-function buildHistoryLabel(type, data) {
+function buildHistoryLabel(type: string, data: string): string {
   const clean = data
     .replace(/^WIFI:T:.*;S:/, '')
     .replace(/;P:.*;;$/, '')
@@ -227,7 +276,7 @@ function buildHistoryLabel(type, data) {
 }
 
 // ---------- 预览状态控制 ----------
-function setPreviewState(name) {
+function setPreviewState(name: PreviewState): void {
   previewState.value = name
 }
 
@@ -273,7 +322,7 @@ function scheduleGenerate() {
 }
 
 // ---------- 历史记录 ----------
-function addToHistory(type, inputs, options, data) {
+function addToHistory(type: string, inputs: Record<string, string>, options: QrOptions, data: string): void {
   // 生成签名用于去重（与最近一条比较）
   const signature = type + '|' + data + '|' + options.size + '|' +
     options.fgColor + '|' + options.bgColor + '|' + options.ecc + '|' + options.margin
@@ -299,7 +348,7 @@ function addToHistory(type, inputs, options, data) {
 }
 
 // 从历史记录恢复并重新生成
-function loadFromHistory(idx) {
+function loadFromHistory(idx: number): void {
   const h = history.value[idx]
   if (!h) return
   // 跳过 watch 触发的防抖生成，由下面的 generate() 立即生成
@@ -316,7 +365,7 @@ function clearHistory() {
 }
 
 // ---------- 类型 tab 切换 ----------
-function selectType(type) {
+function selectType(type: string): void {
   if (type === state.type) return
   state.type = type
   // watch 会触发 scheduleGenerate
@@ -374,9 +423,9 @@ onMounted(function () {
     <!-- 页头 -->
     <header class="masthead">
       <div>
-        <p class="eyebrow">{{ t('eyebrow') }}</p>
+        <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
         <h1>{{ t('title') }}</h1>
-        <p class="lead">{{ t('lead') }}</p>
+        <p class="ok-lead">{{ t('lead') }}</p>
       </div>
     </header>
 
@@ -594,28 +643,12 @@ onMounted(function () {
   gap: 1rem;
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
 h1 {
   margin-top: 0.25rem;
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
   font-weight: 800;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  max-width: 55ch;
 }
 
 /* ---------- 工作区两栏布局 ---------- */

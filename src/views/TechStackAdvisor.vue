@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Tech Stack Advisor — 技术选型助手（Vue 3 SFC）
    通过 GitHub Search API 搜索仓库，对比选中的仓库并给出推荐。
@@ -84,33 +84,52 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface Repo {
+  id: number
+  full_name: string
+  name: string
+  html_url: string
+  description: string | null
+  language: string | null
+  stargazers_count: number
+  forks_count: number
+  open_issues_count: number
+  updated_at: string
+  topics: string[]
+}
+
+interface RepoSearchResponse {
+  items: Repo[]
+}
+
 /* ---------- 响应式状态 ---------- */
 const query = ref('')
-const repos = ref([])
+const repos = ref<Repo[]>([])
 const loading = ref(false)
 const error = ref(false)
-const selected = ref(new Set())
+const selected = ref(new Set<string>())
 
 /* ---------- 工具函数 ---------- */
 
-function number(v) {
+function number(v: number) {
   return new Intl.NumberFormat(locale()).format(v || 0)
 }
 
-function langColor(name) {
+function langColor(name: string) {
   return githubLangColors[name] || '#8b8b8b'
 }
 
-function fmtDate(dateStr) {
+function fmtDate(dateStr: string) {
   const d = new Date(dateStr)
   return d.toLocaleDateString(locale(), { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-function daysSince(dateStr) {
+function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
 }
 
-function agoText(dateStr) {
+function agoText(dateStr: string) {
   const d = daysSince(dateStr)
   return d === 0 ? t.value('today') : d + ' ' + t.value('daysAgo')
 }
@@ -128,7 +147,7 @@ async function searchRepos() {
   try {
     const url = 'https://api.github.com/search/repositories?q=' +
       encodeURIComponent(q) + '&sort=stars&order=desc&per_page=8'
-    const data = await fetchJSON(url, { timeout: 15000 })
+    const data = await fetchJSON<RepoSearchResponse>(url, { timeout: 15000 })
     repos.value = data.items || []
   } catch (e) {
     error.value = true
@@ -139,7 +158,7 @@ async function searchRepos() {
 
 /* ---------- 选中管理 ---------- */
 
-function toggleCompare(fullName) {
+function toggleCompare(fullName: string) {
   const s = new Set(selected.value)
   if (s.has(fullName)) {
     s.delete(fullName)
@@ -149,7 +168,7 @@ function toggleCompare(fullName) {
   selected.value = s
 }
 
-function isSelected(fullName) {
+function isSelected(fullName: string) {
   return selected.value.has(fullName)
 }
 
@@ -178,7 +197,7 @@ const comparisonMetrics = computed(() => {
 })
 
 /* 简单评分：stars * 0.4 + forks * 0.3 + max(0, 500 - issues) / 500 * 100 * 0.2 + 活跃度 * 0.1 */
-function calcScore(repo) {
+function calcScore(repo: Repo) {
   const stars = repo.stargazers_count || 0
   const forks = repo.forks_count || 0
   const issues = repo.open_issues_count || 0
@@ -203,7 +222,7 @@ const recommendation = computed(() => {
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
           <p class="lead">{{ t('lead') }}</p>
         </div>
@@ -224,8 +243,8 @@ const recommendation = computed(() => {
       </section>
 
       <!-- 加载中 -->
-      <div v-if="loading" class="loading">
-        <span class="spinner"></span>
+      <div v-if="loading" class="ok-loading">
+        <span class="ok-spinner"></span>
         <span>{{ t('loading') }}</span>
       </div>
 
@@ -422,14 +441,6 @@ h1, h2, h3, h4, p, strong, span, small {
   border-bottom: 1px solid var(--border);
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
 .masthead h1 {
   margin-top: 0.25rem;
   font-size: clamp(2rem, 5vw, 3rem);
@@ -498,28 +509,6 @@ h1, h2, h3, h4, p, strong, span, small {
 }
 
 /* ---------- 加载/错误/空状态 ---------- */
-
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--muted);
-  padding: 1.5rem;
-  font-size: 0.88rem;
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 .error-msg {
   color: var(--red);

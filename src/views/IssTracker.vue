@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    ISS Tracker — 国际空间站实时位置追踪（Vue 3 SFC）
    数据来源：wheretheiss.at / howmanypeopleareinspacerightnow.com
@@ -71,7 +71,7 @@ const t = useT(copy)
 
 /* ---------- 简化区域判断（粗略经纬度框，中英名称）---------- */
 // [latMin, latMax, lonMin, lonMax, en, zh]
-const CONTINENTS = [
+const CONTINENTS: RegionDef[] = [
   [25, 72, -168, -52, 'North America', '北美洲'],
   [-56, 13, -82, -34, 'South America', '南美洲'],
   [36, 71, -10, 40, 'Europe', '欧洲'],
@@ -81,7 +81,7 @@ const CONTINENTS = [
   [-44, -10, 112, 154, 'Australia', '澳大利亚'],
   [60, 83, -55, -20, 'Greenland', '格陵兰'],
 ]
-const OCEANS = [
+const OCEANS: RegionDef[] = [
   [-60, 60, -180, -130, 'Pacific Ocean', '太平洋'],
   [-60, 60, 120, 180, 'Pacific Ocean', '太平洋'],
   [-60, 60, -70, -15, 'Atlantic Ocean', '大西洋'],
@@ -96,26 +96,36 @@ const ASTROS_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://ww
 
 const TRAIL_MAX = 360 // 轨迹点上限（约 30 分钟）
 
+/* ---------- 类型定义 ---------- */
+type RegionDef = [number, number, number, number, string, string]
+interface TrailPoint { lat: number; lon: number; t: number }
+interface IssPosition extends TrailPoint { speed: number | null; alt: number | null }
+interface Astronaut { name: string; craft: string }
+interface AstrosData { number: number; people: Astronaut[] }
+interface PassItem { risetime: number; duration: number }
+interface IssNowResponse { latitude?: number; longitude?: number; timestamp?: number; velocity?: number; altitude?: number }
+interface PassApiResponse { message: string; response?: PassItem[] }
+
 /* ---------- 响应式状态 ---------- */
-const mapEl = ref(null)              // 地图容器引用
-const lastPos = ref(null)            // 最新位置 { lat, lon, t, speed, alt }
-const lastUpdateTs = ref(null)       // 最近更新时间戳
-const astrosData = ref(null)         // 宇航员数据
-const astrosState = ref('loading')   // loading | error | loaded
-const passLat = ref('')              // 用户输入的纬度
-const passLon = ref('')              // 用户输入的经度
-const passState = ref('idle')        // idle | updating | loaded | empty | error
-const passItems = ref([])            // 过境预测结果 [{ risetime, duration }]
-const passError = ref('')            // 过境错误文案 key
+const mapEl = ref<HTMLElement | null>(null)      // 地图容器引用
+const lastPos = ref<IssPosition | null>(null)    // 最新位置 { lat, lon, t, speed, alt }
+const lastUpdateTs = ref<number | null>(null)    // 最近更新时间戳
+const astrosData = ref<AstrosData | null>(null)  // 宇航员数据
+const astrosState = ref<'loading' | 'error' | 'loaded'>('loading')
+const passLat = ref('')                          // 用户输入的纬度
+const passLon = ref('')                          // 用户输入的经度
+const passState = ref<'idle' | 'updating' | 'loaded' | 'empty' | 'error'>('idle')
+const passItems = ref<PassItem[]>([])            // 过境预测结果 [{ risetime, duration }]
+const passError = ref('')                        // 过境错误文案 key
 
 /* ---------- 非响应式：Leaflet 实例与轨迹数据（避免被 Vue 响应式代理）---------- */
-let map = null
-let issMarker = null
-let footprint = null
-let trailLayer = null
-let trail = []                       // 已采集的轨迹点 [{ lat, lon, t }]
-let prevPos = null                   // 上一次位置（用于速度计算）
-let positionTimer = null             // 位置刷新定时器
+let map: L.Map | null = null
+let issMarker: L.Marker | null = null
+let footprint: L.Circle | null = null
+let trailLayer: L.LayerGroup | null = null
+let trail: TrailPoint[] = []                     // 已采集的轨迹点 [{ lat, lon, t }]
+let prevPos: TrailPoint | null = null            // 上一次位置（用于速度计算）
+let positionTimer: ReturnType<typeof setInterval> | null = null  // 位置刷新定时器
 
 /* ---------- 派生：UI 显示值 ---------- */
 // 纬度显示
@@ -160,7 +170,7 @@ const latPh = computed(() => t.value('latPh'))
 const lonPh = computed(() => t.value('lonPh'))
 
 /* ---------- 区域检测 ---------- */
-function detectRegion(lat, lon) {
+function detectRegion(lat: number, lon: number): { en: string; zh: string } {
   // 极地
   if (lat > 66.5) return { en: 'Arctic region', zh: '北极地区' }
   if (lat < -66.5) return { en: 'Antarctic region', zh: '南极地区' }
@@ -182,15 +192,15 @@ function detectRegion(lat, lon) {
 }
 
 /* ---------- 坐标格式化（带 N/S/E/W）---------- */
-function formatCoord(v, type) {
+function formatCoord(v: number, type: 'lat' | 'lon'): string {
   const dir = type === 'lat' ? (v >= 0 ? 'N' : 'S') : (v >= 0 ? 'E' : 'W')
   return Math.abs(v).toFixed(2) + '° ' + dir
 }
 
 /* ---------- Haversine 距离（公里）---------- */
-function haversine(lat1, lon1, lat2, lon2) {
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371 // 地球半径 km
-  const toRad = function (d) { return d * Math.PI / 180 }
+  const toRad = (d: number) => d * Math.PI / 180
   const dLat = toRad(lat2 - lat1)
   const dLon = toRad(lon2 - lon1)
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -201,7 +211,9 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 /* ---------- 地图初始化 ---------- */
 function initMap() {
-  map = L.map(mapEl.value, {
+  const el = mapEl.value
+  if (!el) return
+  map = L.map(el, {
     zoomControl: true,
     worldCopyJump: true,
     minZoom: 2,
@@ -242,16 +254,16 @@ function initMap() {
 /* ---------- 获取 ISS 位置 ---------- */
 async function fetchISSPosition() {
   try {
-    const data = await fetchJSON(ISS_NOW_URL, { timeout: 20000 })
+    const data = await fetchJSON<IssNowResponse>(ISS_NOW_URL, { timeout: 20000 })
     if (!data || typeof data.latitude === 'undefined') {
       throw new Error('Bad iss-now response')
     }
-    const lat = parseFloat(data.latitude)
-    const lon = parseFloat(data.longitude)
+    const lat = parseFloat(String(data.latitude))
+    const lon = parseFloat(String(data.longitude))
     const ts = data.timestamp ? data.timestamp * 1000 : Date.now()
     // wheretheiss.at 直接返回速度和高度
-    const speed = data.velocity ? parseFloat(data.velocity) : null
-    const alt = data.altitude ? parseFloat(data.altitude) : null
+    const speed = data.velocity ? parseFloat(String(data.velocity)) : null
+    const alt = data.altitude ? parseFloat(String(data.altitude)) : null
     handleNewPosition(lat, lon, ts, speed, alt)
   } catch (err) {
     console.warn('ISS position fetch failed:', err)
@@ -259,8 +271,8 @@ async function fetchISSPosition() {
   }
 }
 
-function handleNewPosition(lat, lon, ts, apiSpeed, apiAlt) {
-  const newPos = { lat: lat, lon: lon, t: ts }
+function handleNewPosition(lat: number, lon: number, ts: number, apiSpeed: number | null, apiAlt: number | null) {
+  const newPos: TrailPoint = { lat: lat, lon: lon, t: ts }
 
   // 优先使用 API 返回的速度；否则根据前后两点计算
   let speed = apiSpeed || null
@@ -274,12 +286,12 @@ function handleNewPosition(lat, lon, ts, apiSpeed, apiAlt) {
   if (trail.length > TRAIL_MAX) trail.shift()
 
   // 更新标记与可见范围
-  issMarker.setLatLng([lat, lon])
-  footprint.setLatLng([lat, lon])
+  issMarker?.setLatLng([lat, lon])
+  footprint?.setLatLng([lat, lon])
 
   // 首次定位时飞到 ISS
   if (trail.length === 1) {
-    map.setView([lat, lon], 4)
+    map?.setView([lat, lon], 4)
   }
 
   redrawTrail()
@@ -290,11 +302,13 @@ function handleNewPosition(lat, lon, ts, apiSpeed, apiAlt) {
 
 /* ---------- 重绘轨迹（处理 ±180° 日期变更线）---------- */
 function redrawTrail() {
-  trailLayer.clearLayers()
+  const layer = trailLayer
+  if (!layer) return
+  layer.clearLayers()
   if (trail.length < 2) return
 
   // 拆分跨越日期变更线的段
-  const segments = [[]]
+  const segments: Array<Array<[number, number]>> = [[]]
   for (let i = 0; i < trail.length; i++) {
     const p = trail[i]
     const seg = segments[segments.length - 1]
@@ -314,7 +328,7 @@ function redrawTrail() {
         weight: 2,
         opacity: 0.5,
         dashArray: '4 4',
-      }).addTo(trailLayer)
+      }).addTo(layer)
     }
   })
 }
@@ -323,7 +337,7 @@ function redrawTrail() {
 async function fetchAstronauts() {
   astrosState.value = 'loading'
   try {
-    const data = await fetchJSON(ASTROS_URL, { timeout: 20000 })
+    const data = await fetchJSON<AstrosData>(ASTROS_URL, { timeout: 20000 })
     if (!data || typeof data.number === 'undefined') throw new Error('Bad astros response')
     astrosData.value = data
     astrosState.value = 'loaded'
@@ -334,15 +348,15 @@ async function fetchAstronauts() {
 }
 
 /* ---------- 下一次经过指定位置 ---------- */
-async function fetchPass(lat, lon) {
+async function fetchPass(lat: number, lon: number) {
   passState.value = 'updating'
   passItems.value = []
   // 通过 CORS 代理请求 Open Notify 过境预测 API
   const targetUrl = 'http://api.open-notify.org/iss-pass.json?lat=' +
-    encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon) + '&n=3'
+    encodeURIComponent(String(lat)) + '&lon=' + encodeURIComponent(String(lon)) + '&n=3'
   const url = 'https://corsproxy.io/?url=' + encodeURIComponent(targetUrl)
   try {
-    const data = await fetchJSON(url)
+    const data = await fetchJSON<PassApiResponse>(url)
     if (!data || data.message !== 'success') throw new Error('Bad pass response')
     const passes = data.response || []
     if (!passes.length) {
@@ -361,7 +375,7 @@ async function fetchPass(lat, lon) {
 }
 
 /* ---------- 过境时间格式化（按当前语言 locale）---------- */
-function formatPassTime(risetime) {
+function formatPassTime(risetime: number): string {
   return new Date(risetime * 1000).toLocaleString(locale(), {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
   })

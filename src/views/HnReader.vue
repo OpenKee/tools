@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    HN Reader — Hacker News 阅读器（Vue 3 SFC）
    数据源：Hacker News Firebase API（公开、免费、支持 CORS）
@@ -71,11 +71,23 @@ const copy = {
 
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface HNItem {
+  id: number
+  title?: string
+  url?: string
+  text?: string
+  by?: string
+  score?: number
+  time: number
+  descendants?: number
+}
+
 // ---------- 常量 ----------
 const API = 'https://hacker-news.firebaseio.com/v0'
 
 // 各标签页对应的 stories 端点
-const ENDPOINTS = {
+const ENDPOINTS: Record<string, string> = {
   top: '/topstories.json',
   best: '/beststories.json',
   new: '/newstories.json',
@@ -98,28 +110,28 @@ const TABS = [
 
 // ---------- 状态 ----------
 const currentTab = ref('top')                       // 当前标签页
-const idsCache = reactive({})                        // 每个标签页的 id 列表缓存
-const loadedItems = ref([])                          // 当前已加载的 item（含 null 占位）
+const idsCache = reactive<Record<string, number[] | undefined>>({})  // 每个标签页的 id 列表缓存
+const loadedItems = ref<(HNItem | null)[]>([])      // 当前已加载的 item（含 null 占位）
 const loading = ref(false)                           // 加载中
 const finished = ref(false)                          // 已加载到末尾
 const error = ref(false)                             // 加载失败
-const expanded = ref(new Set())                      // 已展开的文字帖 id 集合
+const expanded = ref<Set<number>>(new Set())         // 已展开的文字帖 id 集合
 const now = ref(Math.floor(Date.now() / 1000))       // 当前时间（Unix 秒），用于相对时间刷新
 
-const sentinelEl = ref(null)                         // 哨兵元素引用（无限滚动触发点）
-let observer = null                                  // IntersectionObserver 实例
-let scrollHandler = null                             // 降级滚动监听处理函数
-let clockTimer = null                                // 相对时间刷新定时器
+const sentinelEl = ref<HTMLElement | null>(null)     // 哨兵元素引用（无限滚动触发点）
+let observer: IntersectionObserver | null = null     // IntersectionObserver 实例
+let scrollHandler: (() => void) | null = null        // 降级滚动监听处理函数
+let clockTimer: ReturnType<typeof setInterval> | undefined = undefined  // 相对时间刷新定时器
 
 // ---------- 工具函数 ----------
 
 // HN 原帖链接
-function hnUrl(id) {
+function hnUrl(id: number): string {
   return 'https://news.ycombinator.com/item?id=' + id
 }
 
 // 相对时间：time 为 Unix 秒
-function relativeTime(time) {
+function relativeTime(time: number): string {
   const diff = Math.max(0, now.value - (time || 0))
   if (diff < 60) return t.value('justNow')
   if (diff < 3600) return Math.floor(diff / 60) + t.value('minuteAgo')
@@ -129,16 +141,16 @@ function relativeTime(time) {
 }
 
 // 从 url 提取域名（去掉 www. 前缀）
-function domainFrom(url) {
+function domainFrom(url: string | undefined): string {
   try {
-    return new URL(url).hostname.replace(/^www\./, '')
+    return new URL(url || '').hostname.replace(/^www\./, '')
   } catch (e) {
     return ''
   }
 }
 
 // 评论数文案
-function commentsLabel(c) {
+function commentsLabel(c: number | undefined): string {
   if (!c) return t.value('noComments')
   return c + ' ' + (c === 1 ? t.value('comment') : t.value('comments'))
 }
@@ -146,7 +158,7 @@ function commentsLabel(c) {
 // 安全渲染 text 字段（用于 v-html）：
 // 先全量转义杜绝 XSS，再恢复受控的基本标签（p / a / 基本格式）。
 // 链接仅允许 http/https 协议，阻止 javascript:/data: 等危险协议。
-function sanitizeText(html) {
+function sanitizeText(html: string | undefined): string {
   if (!html) return ''
   let s = escapeHtml(html)
   // 恢复段落
@@ -164,10 +176,10 @@ function sanitizeText(html) {
 }
 
 // 文字帖展开 / 折叠
-function isExpanded(id) {
+function isExpanded(id: number): boolean {
   return expanded.value.has(id)
 }
-function toggleExpand(id) {
+function toggleExpand(id: number): void {
   const s = new Set(expanded.value)
   if (s.has(id)) s.delete(id)
   else s.add(id)
@@ -181,7 +193,7 @@ const currentIds = computed(() => idsCache[currentTab.value] || null)
 
 // 可见行：过滤掉 null 占位，保留原始序号作为排名
 const visibleItems = computed(() => {
-  const result = []
+  const result: Array<{ item: HNItem; rank: number }> = []
   loadedItems.value.forEach((item, idx) => {
     if (item) result.push({ item, rank: idx + 1 })
   })
@@ -211,27 +223,29 @@ const showEnd = computed(() => loadedItems.value.length > 0)
 // ---------- 数据加载 ----------
 
 // 获取某个标签页的全部 id（带缓存）
-async function getIds(tab) {
-  if (idsCache[tab]) return idsCache[tab]
-  const ids = await fetchJSON(API + ENDPOINTS[tab])
-  idsCache[tab] = ids || []
-  return idsCache[tab]
+async function getIds(tab: string): Promise<number[]> {
+  const cached = idsCache[tab]
+  if (cached) return cached
+  const ids = await fetchJSON<number[]>(API + ENDPOINTS[tab])
+  const list = ids || []
+  idsCache[tab] = list
+  return list
 }
 
 // 并发拉取一批 item 详情（限制并发数避免瞬时大量请求）
-async function fetchItems(ids) {
+async function fetchItems(ids: number[]): Promise<(HNItem | null)[]> {
   const concurrency = 8
-  const results = new Array(ids.length)
+  const results: Array<HNItem | null> = new Array(ids.length)
   let i = 0
-  function next() {
+  function next(): Promise<void> {
     if (i >= ids.length) return Promise.resolve()
     const idx = i++
-    return fetchJSON(API + '/item/' + ids[idx] + '.json')
+    return fetchJSON<HNItem>(API + '/item/' + ids[idx] + '.json')
       .then((item) => { results[idx] = item })
       .catch(() => { results[idx] = null })
       .then(next)
   }
-  const workers = []
+  const workers: Promise<void>[] = []
   for (let w = 0; w < concurrency; w++) workers.push(next())
   await Promise.all(workers)
   return results
@@ -272,7 +286,7 @@ async function loadNext() {
 }
 
 // 切换标签页
-function switchTab(tab) {
+function switchTab(tab: string): void {
   if (tab === currentTab.value) return
   currentTab.value = tab
   loadedItems.value = []

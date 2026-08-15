@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Meme Forge — 梗图生成器（Vue 3 SFC 迁移版）
    数据来源：Meme API（聚合 Reddit 公开梗图，支持 CORS）
@@ -57,13 +57,23 @@ const copy = {
 // useT 返回 computed ref，模板中 t('key') 自动 unwrap；脚本中用 t.value('key')
 const t = useT(copy)
 
+// ---------- 类型定义 ----------
+interface Meme {
+  postLink: string
+  subreddit: string
+  title: string
+  url: string
+  author: string
+  ups: number
+}
+
 // ---------- API 地址 ----------
 const API_BASE = 'https://meme-api.com/gimme'
 
 // ---------- 响应式状态 ----------
 const subInput = ref('')           // subreddit 输入框
-const currentMeme = ref(null)      // 当前展示的梗图
-const history = ref([])            // 浏览历史
+const currentMeme = ref<Meme | null>(null)   // 当前展示的梗图
+const history = ref<Meme[]>([])    // 浏览历史
 const historyIndex = ref(-1)       // 当前历史指针
 const loading = ref(false)         // 加载中标志
 const hasError = ref(false)        // 加载失败标志
@@ -78,7 +88,7 @@ const nextDisabled = computed(() => historyIndex.value >= history.value.length -
 const copyBtnText = computed(() => (copied.value ? t.value('copied') : t.value('copyLink')))
 
 // ---------- 工具：构造 API 地址 ----------
-function apiUrl(subreddit) {
+function apiUrl(subreddit: string) {
   let url = API_BASE
   if (subreddit) url += '/' + encodeURIComponent(subreddit)
   return url
@@ -90,12 +100,12 @@ function getSubreddit() {
 }
 
 // ---------- 拉取梗图 ----------
-async function fetchMeme(subreddit) {
+async function fetchMeme(subreddit: string) {
   loading.value = true
   currentMeme.value = null
   hasError.value = false
   try {
-    const data = await fetchJSON(apiUrl(subreddit), { timeout: 15000 })
+    const data = await fetchJSON<Meme>(apiUrl(subreddit), { timeout: 15000 })
     loading.value = false
     if (!data || !data.url) {
       hasError.value = true

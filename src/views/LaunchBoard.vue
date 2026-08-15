@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Launch Board — 火箭发射日程（Vue 3 SFC 迁移版）
    数据源：Launch Library 2 API（失败时降级到内嵌 mock 数据）
@@ -129,6 +129,69 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义（Launch Library 2 数据形状） ---------- */
+interface LaunchStatus {
+  id: number
+  name: string
+  abbrev: string
+}
+
+interface LaunchServiceProvider {
+  id: number
+  name: string
+  type: string
+}
+
+interface RocketConfiguration {
+  name: string
+  family: string
+  full_name: string
+  variant: string
+}
+
+interface Rocket {
+  configuration: RocketConfiguration
+}
+
+interface Orbit {
+  name: string
+  abbrev: string
+}
+
+interface Mission {
+  name: string
+  description: string
+  type: string
+  orbit: Orbit
+}
+
+interface PadLocation {
+  name: string
+}
+
+interface Pad {
+  name: string
+  latitude: number
+  longitude: number
+  location: PadLocation
+}
+
+interface Launch {
+  id: string
+  name: string
+  status: LaunchStatus
+  net: string
+  launch_service_provider: LaunchServiceProvider
+  rocket: Rocket
+  mission: Mission
+  pad: Pad
+  vidURLs: string[]
+}
+
+interface LaunchResponse {
+  results: Launch[]
+}
+
 /* ---------- 常量 ---------- */
 const API_URL = 'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=30&ordering=net'
 const ROCKET_EMOJIS = ['🚀', '🛰️', '🛸', '☄️', '🌠']
@@ -136,26 +199,26 @@ const ROCKET_EMOJIS = ['🚀', '🛰️', '🛸', '☄️', '🌠']
 const STATUS_CATS = ['go', 'tbd', 'hold', 'failed', 'inflight']
 
 /* ---------- 响应式状态 ---------- */
-const allLaunches = ref([])        // 全量数据
-const nextLaunch = ref(null)       // 下一次发射（用于 hero）
+const allLaunches = ref<Launch[]>([])    // 全量数据
+const nextLaunch = ref<Launch | null>(null) // 下一次发射（用于 hero）
 const usingFallback = ref(false)   // 是否使用降级数据
 const loading = ref(true)          // 是否正在加载（首屏与刷新）
 const agencyFilter = ref('')       // 机构筛选值
 const statusFilter = ref('')       // 状态筛选值
 const searchQuery = ref('')        // 搜索关键字
-const modalLaunch = ref(null)      // 当前打开的详情弹窗对应发射对象（null=关闭）
+const modalLaunch = ref<Launch | null>(null) // 当前打开的详情弹窗对应发射对象（null=关闭）
 // 倒计时数值；ended=true 表示发射窗口已开启（diff<=0）
 const countdown = ref({ days: 0, hours: 0, mins: 0, secs: 0, ended: false })
 
 // 倒计时定时器（非响应式，避免被 Vue 代理）
-let countdownTimer = null
+let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 /* ---------- 辅助函数 ---------- */
 
 // 状态分类：根据 Launch Library 2 的 status.id 映射到颜色类别
 // API 实测：1=Go for Launch, 2=To Be Determined, 3=TBC, 4=Hold,
 //          5=In Flight, 6=Partial Failure, 7=Failure, 8=To Be Confirmed
-function statusCategory(launch) {
+function statusCategory(launch: Launch): string {
   const id = launch && launch.status && launch.status.id
   if (id === 1) return 'go'
   if (id === 2 || id === 3 || id === 8) return 'tbd'
@@ -166,12 +229,12 @@ function statusCategory(launch) {
 }
 
 // 状态分类对应的 i18n 文案
-function statusLabel(cat) {
+function statusLabel(cat: string): string {
   return t.value('status' + cat.charAt(0).toUpperCase() + cat.slice(1))
 }
 
 // 火箭图标：根据任务名 hash 取一个 emoji 占位
-function rocketIcon(launch) {
+function rocketIcon(launch: Launch): string {
   const name = (launch.name || '') + (launch.id || '')
   let sum = 0
   for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i)
@@ -179,12 +242,12 @@ function rocketIcon(launch) {
 }
 
 // 取发射机构名
-function agencyName(launch) {
+function agencyName(launch: Launch): string {
   return (launch.launch_service_provider && launch.launch_service_provider.name) || t.value('notAvailable')
 }
 
 // 取发射场名（含地区）
-function padName(launch) {
+function padName(launch: Launch): string {
   const pad = launch.pad
   if (!pad) return t.value('notAvailable')
   const loc = pad.location && pad.location.name ? pad.location.name : ''
@@ -192,18 +255,18 @@ function padName(launch) {
 }
 
 // 取火箭配置名
-function rocketName(launch) {
+function rocketName(launch: Launch): string {
   const cfg = launch.rocket && launch.rocket.configuration
   return (cfg && cfg.full_name) || (cfg && cfg.name) || t.value('notAvailable')
 }
 
 // 取任务名
-function missionName(launch) {
+function missionName(launch: Launch): string {
   return (launch.mission && launch.mission.name) || launch.name || t.value('notAvailable')
 }
 
 // 判断是否为 TBD 发射（时间未确定，API 常返回月初 UTC 午夜占位）
-function isTbdLaunch(launch) {
+function isTbdLaunch(launch: Launch): boolean {
   const cat = statusCategory(launch)
   if (cat !== 'tbd') return false
   const d = launch && launch.net ? new Date(launch.net) : null
@@ -213,7 +276,7 @@ function isTbdLaunch(launch) {
 }
 
 // 时间格式化：本地时区 + UTC 标注，使用 Intl.DateTimeFormat
-function formatTime(iso, launch) {
+function formatTime(iso: string, launch?: Launch): { local: string; utc: string } {
   if (!iso) return { local: t.value('notAvailable'), utc: '' }
   // TBD 占位时间不显示具体时刻
   if (launch && isTbdLaunch(launch)) {
@@ -235,7 +298,7 @@ function formatTime(iso, launch) {
 }
 
 // 列表卡片用的紧凑时间
-function formatShort(iso, launch) {
+function formatShort(iso: string, launch?: Launch): string {
   if (!iso) return t.value('notAvailable')
   if (launch && isTbdLaunch(launch)) return t.value('statusTbd')
   const d = new Date(iso)
@@ -247,7 +310,7 @@ function formatShort(iso, launch) {
 }
 
 // 倒时数字补零
-function pad2(v) {
+function pad2(v: number): string {
   return v < 10 ? '0' + v : String(v)
 }
 
@@ -341,7 +404,7 @@ function mockLaunches() {
 
 /* ---------- 派生：机构筛选选项（从数据中提取唯一机构） ---------- */
 const agencyOptions = computed(() => {
-  const set = new Set()
+  const set = new Set<string>()
   allLaunches.value.forEach((l) => {
     const n = agencyName(l)
     if (n && n !== t.value('notAvailable')) set.add(n)
@@ -372,7 +435,10 @@ const filteredLaunches = computed(() => {
 const resultCountText = computed(() => t.value('resultCount').replace('{n}', String(filteredLaunches.value.length)))
 
 /* ---------- 派生：hero 卡片时间 ---------- */
-const heroTime = computed(() => nextLaunch.value ? formatTime(nextLaunch.value.net, nextLaunch.value) : null)
+const heroTime = computed(() => {
+  const nl = nextLaunch.value
+  return nl ? formatTime(nl.net, nl) : { local: t.value('notAvailable'), utc: '' }
+})
 
 /* ---------- 派生：hero 是否为 TBD 发射 ---------- */
 const heroIsTbd = computed(() => nextLaunch.value ? isTbdLaunch(nextLaunch.value) : false)
@@ -383,9 +449,9 @@ const modalData = computed(() => {
   const l = modalLaunch.value
   const cat = statusCategory(l)
   const time = formatTime(l.net, l)
-  const cfg = (l.rocket && l.rocket.configuration) || {}
-  const mission = l.mission || {}
-  const pad = l.pad || {}
+  const cfg = (l.rocket && l.rocket.configuration) || ({} as Partial<RocketConfiguration>)
+  const mission = l.mission || ({} as Partial<Mission>)
+  const pad = l.pad || ({} as Partial<Pad>)
   const orbit = (mission.orbit && mission.orbit.name) || t.value('notAvailable')
   const desc = mission.description || t.value('notAvailable')
   const coords = (pad.latitude != null && pad.longitude != null)
@@ -417,7 +483,7 @@ async function loadData() {
   loading.value = true
   stopCountdown()
   try {
-    const data = await fetchJSON(API_URL, { timeout: 10000 })
+    const data = await fetchJSON<LaunchResponse>(API_URL, { timeout: 10000 })
     const results = (data && data.results) || []
     if (!results.length) {
       // 空结果也降级
@@ -433,7 +499,7 @@ async function loadData() {
   }
 }
 
-function useFallback(data) {
+function useFallback(data: Launch[]) {
   usingFallback.value = true
   allLaunches.value = data
   afterDataLoad()
@@ -496,7 +562,7 @@ function stopCountdown() {
 }
 
 /* ---------- 详情弹窗控制 ---------- */
-function openModal(launch) {
+function openModal(launch: Launch) {
   modalLaunch.value = launch
 }
 
@@ -505,7 +571,7 @@ function closeModal() {
 }
 
 /* ---------- 全局事件处理 ---------- */
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && modalLaunch.value) closeModal()
 }
 

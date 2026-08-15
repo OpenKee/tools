@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale } from '../ok.js'
@@ -100,13 +100,84 @@ const copy = {
 }
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+type AqiLevel = 'good' | 'moderate' | 'usg' | 'unhealthy' | 'veryUnhealthy' | 'hazardous'
+
+interface City {
+  name: string
+  lat: number
+  lng: number
+  country?: string
+  admin1?: string
+}
+
+// 地理编码搜索结果项（Open-Meteo Geocoding API）
+interface GeoItem {
+  name?: string
+  latitude?: number
+  longitude?: number
+  country?: string
+  admin1?: string
+}
+
+interface GeocodingResponse {
+  results?: GeoItem[]
+}
+
+// Open-Meteo Air Quality API 当前值
+interface AirQualityCurrent {
+  time?: string
+  us_aqi?: number | null
+  pm10?: number | null
+  pm2_5?: number | null
+  carbon_monoxide?: number | null
+  nitrogen_dioxide?: number | null
+  sulphur_dioxide?: number | null
+  ozone?: number | null
+  us_aqi_pm2_5?: number | null
+  us_aqi_pm10?: number | null
+  us_aqi_ozone?: number | null
+  us_aqi_nitrogen_dioxide?: number | null
+  us_aqi_sulphur_dioxide?: number | null
+  us_aqi_carbon_monoxide?: number | null
+}
+
+interface AirQualityHourly {
+  time?: string[]
+  us_aqi?: Array<number | null>
+}
+
+interface AirQualityResponse {
+  current?: AirQualityCurrent
+  hourly?: AirQualityHourly
+}
+
+interface Pollutant {
+  key:
+    | 'pm2_5'
+    | 'pm10'
+    | 'ozone'
+    | 'nitrogen_dioxide'
+    | 'sulphur_dioxide'
+    | 'carbon_monoxide'
+  sub:
+    | 'us_aqi_pm2_5'
+    | 'us_aqi_pm10'
+    | 'us_aqi_ozone'
+    | 'us_aqi_nitrogen_dioxide'
+    | 'us_aqi_sulphur_dioxide'
+    | 'us_aqi_carbon_monoxide'
+  chem: string
+  labelKey: string
+}
+
 /* ---------- 常量 ---------- */
 const AQ_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 const CURRENT_FIELDS = 'pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_ozone,us_aqi_nitrogen_dioxide,us_aqi_sulphur_dioxide,us_aqi_carbon_monoxide'
 const HOURLY_FIELDS = 'pm10,pm2_5,us_aqi'
 const FAV_KEY = 'openkee-airquality-favs'
-const DEFAULT_CITY = { name: 'Beijing', lat: 39.9, lng: 116.4, country: 'China', admin1: 'Beijing' }
+const DEFAULT_CITY: City = { name: 'Beijing', lat: 39.9, lng: 116.4, country: 'China', admin1: 'Beijing' }
 
 // AQI 等级颜色（US AQI 标准）
 const LEVEL_COLORS = {
@@ -135,7 +206,7 @@ const ADVICE_ICONS = {
 }
 
 // 污染物配置：API 字段 → 展示信息
-const POLLUTANTS = [
+const POLLUTANTS: Pollutant[] = [
   { key: 'pm2_5', sub: 'us_aqi_pm2_5', chem: 'PM2.5', labelKey: 'pm25' },
   { key: 'pm10', sub: 'us_aqi_pm10', chem: 'PM10', labelKey: 'pm10' },
   { key: 'ozone', sub: 'us_aqi_ozone', chem: 'O₃', labelKey: 'o3' },
@@ -145,7 +216,7 @@ const POLLUTANTS = [
 ]
 
 // 等级刻度条分段（按 AQI 范围宽度加权）
-const SCALE_SEGMENTS = [
+const SCALE_SEGMENTS: Array<{ key: AqiLevel; lo: number; lo2: number; weight: number }> = [
   { key: 'good', lo: 0, lo2: 50, weight: 50 },
   { key: 'moderate', lo: 51, lo2: 100, weight: 50 },
   { key: 'usg', lo: 101, lo2: 150, weight: 50 },
@@ -155,23 +226,24 @@ const SCALE_SEGMENTS = [
 ]
 
 /* ---------- 响应式状态 ---------- */
-const city = ref(null)              // 当前城市
-const data = ref(null)              // 当前空气质量数据
+const city = ref<City | null>(null)              // 当前城市
+const data = ref<AirQualityResponse | null>(null) // 当前空气质量数据
 const errorMsg = ref('')            // 错误文案 key
 const loading = ref(false)
 const searchQuery = ref('')         // 搜索输入
-const searchResults = ref([])       // 搜索结果
+const searchResults = ref<GeoItem[]>([])  // 搜索结果
 const searchActive = ref(-1)        // 键盘导航当前高亮项
 const searchErrored = ref(false)    // 搜索是否失败
 const showDropdown = ref(false)     // 是否展示搜索下拉
-const favorites = ref([])           // 收藏城市列表
-const searchWrapRef = ref(null)     // 搜索框容器引用
-let searchTimer = null
+const favorites = ref<City[]>([])   // 收藏城市列表
+const searchWrapRef = ref<HTMLElement | null>(null) // 搜索框容器引用
+let searchTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 /* ---------- 工具函数 ---------- */
 // US AQI 值 -> 等级 key
-function aqiLevel(aqi) {
-  if (aqi == null || isNaN(aqi)) return 'good'
+function aqiLevel(aqi: number | null | undefined): AqiLevel {
+  if (aqi == null) return 'good'
+  if (isNaN(aqi)) return 'good'
   if (aqi <= 50) return 'good'
   if (aqi <= 100) return 'moderate'
   if (aqi <= 150) return 'usg'
@@ -181,7 +253,7 @@ function aqiLevel(aqi) {
 }
 
 // 等级 key -> i18n 文案 key
-function levelLabelKey(l) {
+function levelLabelKey(l: AqiLevel) {
   return {
     good: 'levelGood', moderate: 'levelModerate', usg: 'levelUsg',
     unhealthy: 'levelUnhealthy', veryUnhealthy: 'levelVeryUnhealthy',
@@ -190,7 +262,7 @@ function levelLabelKey(l) {
 }
 
 // 等级 key -> 健康建议 i18n key
-function adviceKey(l) {
+function adviceKey(l: AqiLevel) {
   return {
     good: 'adviceGood', moderate: 'adviceModerate', usg: 'adviceUsg',
     unhealthy: 'adviceUnhealthy', veryUnhealthy: 'adviceVeryUnhealthy',
@@ -199,15 +271,16 @@ function adviceKey(l) {
 }
 
 // 数值格式化（μg/m³）
-function fmtVal(v) {
-  if (v == null || isNaN(v)) return '—'
+function fmtVal(v: number | null | undefined) {
+  if (v == null) return '—'
+  if (isNaN(v)) return '—'
   if (v < 10) return v.toFixed(2)
   if (v < 100) return v.toFixed(1)
   return Math.round(v).toString()
 }
 
 // 时间格式化（API 因 timezone=auto 返回本地时间字符串）
-function fmtTime(s) {
+function fmtTime(s: string | null | undefined) {
   if (!s) return '—'
   const d = new Date(s)
   if (isNaN(d.getTime())) return '—'
@@ -215,7 +288,7 @@ function fmtTime(s) {
 }
 
 // 小时格式化（用于趋势图 x 轴）
-function fmtHour(s) {
+function fmtHour(s: string | null | undefined) {
   if (!s) return ''
   const d = new Date(s)
   if (isNaN(d.getTime())) return ''
@@ -223,19 +296,22 @@ function fmtHour(s) {
 }
 
 // 找出分指数最高的污染物
-function dominantPollutant(cur) {
-  let best = null
-  POLLUTANTS.forEach((p) => {
+function dominantPollutant(cur: AirQualityCurrent) {
+  let best: { chem: string; sub: number; labelKey: string } | null = null
+  for (const p of POLLUTANTS) {
     const sub = cur[p.sub]
-    if (sub != null && !isNaN(sub) && (!best || sub > best.sub)) {
-      best = { chem: p.chem, sub: sub, labelKey: p.labelKey }
+    if (sub != null && !Number.isNaN(sub)) {
+      const subNum = sub as number
+      if (!best || subNum > best.sub) {
+        best = { chem: p.chem, sub: subNum, labelKey: p.labelKey }
+      }
     }
-  })
+  }
   return best
 }
 
 // 转义 SVG 属性值（v-html 内容不受 Vue 自动转义保护）
-function escapeAttr(s) {
+function escapeAttr(s: unknown) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -256,7 +332,7 @@ function saveFavs() {
   lsSet(FAV_KEY, JSON.stringify(favorites.value))
 }
 // 判断城市是否已收藏（按经纬度匹配，保留 2 位小数）
-function isFav(c) {
+function isFav(c: City | null | undefined) {
   if (!c) return false
   return favorites.value.some((f) => Math.abs(f.lat - c.lat) < 0.01 && Math.abs(f.lng - c.lng) < 0.01)
 }
@@ -271,29 +347,29 @@ function toggleFav() {
   }
   saveFavs()
 }
-function removeFav(idx) {
+function removeFav(idx: number) {
   if (idx >= 0 && idx < favorites.value.length) {
     favorites.value.splice(idx, 1)
     saveFavs()
   }
 }
-function selectFav(f) {
+function selectFav(f: City) {
   selectCity({ name: f.name, lat: f.lat, lng: f.lng, country: f.country, admin1: f.admin1 })
 }
 
 /* ---------- 城市搜索 ---------- */
 // 搜索结果项的副标题：行政区/国家 或 经纬度
-function resultMeta(r) {
+function resultMeta(r: GeoItem) {
   const meta = [r.admin1, r.country].filter(Boolean).join(', ')
   if (meta) return meta
   return Number(r.latitude).toFixed(2) + ', ' + Number(r.longitude).toFixed(2)
 }
 
 // 防抖搜索
-async function runSearch(query) {
+async function runSearch(query: string) {
   const url = GEO_URL + '?name=' + encodeURIComponent(query) + '&count=5&language=' + (i18nState.lang === 'zh' ? 'zh' : 'en') + '&format=json'
   try {
-    const res = await fetchJSON(url)
+    const res = await fetchJSON<GeocodingResponse>(url)
     searchResults.value = (res && res.results) ? res.results : []
     searchErrored.value = false
   } catch (e) {
@@ -313,9 +389,9 @@ function hideResults() {
 }
 
 // 选中搜索结果：构造城市对象并加载
-function pickResult(r) {
-  const c = {
-    name: r.name,
+function pickResult(r: GeoItem) {
+  const c: City = {
+    name: r.name as string,
     lat: Number(r.latitude),
     lng: Number(r.longitude),
     country: r.country || '',
@@ -327,7 +403,7 @@ function pickResult(r) {
 }
 
 // 搜索框键盘导航：上下选择、回车确认、Esc 关闭
-function onSearchKeydown(e) {
+function onSearchKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     hideResults()
     return
@@ -347,19 +423,19 @@ function onSearchKeydown(e) {
 }
 
 // 点击页面外部关闭搜索下拉
-function onDocClick(e) {
-  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target)) {
+function onDocClick(e: MouseEvent) {
+  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target as Node)) {
     hideResults()
   }
 }
 
 /* ---------- 选择城市并加载数据 ---------- */
-function selectCity(c) {
+function selectCity(c: City) {
   city.value = c
   loadAirQuality(c)
 }
 
-async function loadAirQuality(c) {
+async function loadAirQuality(c: City) {
   loading.value = true
   errorMsg.value = ''
   const url = AQ_URL + '?latitude=' + c.lat + '&longitude=' + c.lng +
@@ -367,7 +443,7 @@ async function loadAirQuality(c) {
     '&hourly=' + HOURLY_FIELDS +
     '&timezone=auto&forecast_days=1'
   try {
-    data.value = await fetchJSON(url)
+    data.value = await fetchJSON<AirQualityResponse>(url)
   } catch (e) {
     data.value = null
     errorMsg.value = 'loadError'
@@ -472,7 +548,7 @@ const trendSVG = computed(() => {
   }
   const n = times.length
   // 过滤有效点，保留索引
-  const pts = []
+  const pts: Array<{ i: number; a: number; t: string }> = []
   for (let i = 0; i < n; i++) {
     const a = aqis[i]
     if (a != null && !isNaN(a)) pts.push({ i: i, a: a, t: times[i] })
@@ -489,8 +565,8 @@ const trendSVG = computed(() => {
   let maxScale = Math.ceil(maxAqi / 50) * 50
   if (maxScale > 500) maxScale = 500
 
-  function x(i) { return padL + (plotW * i / (n - 1)) }
-  function y(a) { return padT + plotH - (Math.min(a, maxScale) / maxScale) * plotH }
+  function x(i: number) { return padL + (plotW * i / (n - 1)) }
+  function y(a: number) { return padT + plotH - (Math.min(a, maxScale) / maxScale) * plotH }
 
   const curColor = LEVEL_COLORS[aqiLevel(currentAqi.value)]
   const parts = ['<svg class="trend-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + label + '">']

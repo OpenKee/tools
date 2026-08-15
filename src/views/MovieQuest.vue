@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Movie Quest — 电影/剧集搜索器（Vue 3 SFC）
    数据源：OMDB (Open Movie Database) API，使用公开测试 key
@@ -9,6 +9,54 @@ import { i18nState, useT } from '../i18n.js'
 import { fetchJSON } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- OMDB API 类型 ---------- */
+interface OMDBItem {
+  imdbID: string
+  Title: string
+  Year: string
+  Poster: string
+  Type: string
+  imdbRating?: string
+  Genre?: string
+}
+
+interface OMDBDetail {
+  Response: string
+  imdbID: string
+  Title: string
+  Year: string
+  Poster: string
+  Type: string
+  imdbRating: string
+  imdbVotes: string
+  Metascore: string
+  Genre: string
+  Plot: string
+  Released: string
+  Runtime: string
+  Rated: string
+  totalSeasons: string
+  Director: string
+  Actors: string
+  Country: string
+  Language: string
+  Production: string
+  Awards: string
+}
+
+interface OMDBSearchResponse {
+  Response: string
+  totalResults?: string
+  Search?: OMDBItem[]
+}
+
+interface Genre {
+  key: string
+  en: string
+  zh: string
+  match: RegExp | null
+}
 
 /* ---------- i18n 文案字典 ---------- */
 const copy = {
@@ -117,7 +165,7 @@ const TRENDING_IDS = [
 ]
 
 /* 类型筛选定义（match 用于匹配 OMDB 的 Genre 字段） */
-const GENRES = [
+const GENRES: Genre[] = [
   { key: 'all',       en: 'All',       zh: '全部', match: null },
   { key: 'action',    en: 'Action',    zh: '动作', match: /action/i },
   { key: 'comedy',    en: 'Comedy',    zh: '喜剧', match: /comedy/i },
@@ -135,46 +183,46 @@ const currentQuery = ref('')         // 当前实际搜索词
 const currentPage = ref(1)           // 当前页码
 const currentType = ref('all')       // 搜索媒体类型：all / movie / series
 const totalFound = ref(0)            // 搜索结果总数
-const lastResults = ref(null)        // 最近一次搜索结果（null = 尚未搜索）
+const lastResults = ref<OMDBItem[] | null>(null)  // 最近一次搜索结果（null = 尚未搜索）
 const isLoading = ref(false)         // 搜索加载中（同时充当 loadMore 互斥锁）
 const loadingMore = ref(false)       // 加载更多中
 const error = ref(false)             // 是否出错
 const endReached = ref(false)        // 是否已加载到末尾
 
-const trendingMovies = ref([])       // 热门完整详情列表
+const trendingMovies = ref<OMDBItem[]>([])  // 热门完整详情列表
 const trendingLoading = ref(false)   // 热门加载中
 const activeGenre = ref('all')       // 当前选中的类型筛选
 
-const ratings = reactive({})         // imdbID -> 评分（搜索卡片懒加载）
-const detailCache = {}               // imdbID -> 详情（非响应式缓存）
-const detail = ref(null)             // 当前模态框详情数据
+const ratings = reactive<Record<string, string>>({})  // imdbID -> 评分（搜索卡片懒加载）
+const detailCache: Record<string, OMDBDetail> = {}    // imdbID -> 详情（非响应式缓存）
+const detail = ref<OMDBDetail | null>(null)           // 当前模态框详情数据
 const detailLoading = ref(false)     // 详情加载骨架
 const detailError = ref('')          // 详情错误状态：'' | 'noPlot' | 'error'
 const modalOpen = ref(false)         // 模态框是否打开
 
-let searchTimer = null               // 防抖搜索定时器
+let searchTimer: ReturnType<typeof setTimeout> | undefined  // 防抖搜索定时器
 
 /* ---------- 工具函数 ---------- */
 
 /* 判断字段是否有效（OMDB 大量返回 "N/A"） */
-function valid(v) {
+function valid(v: unknown) {
   return v != null && v !== '' && v !== 'N/A'
 }
 
 /* 媒体类型本地化标签 */
-function typeLabel(type) {
+function typeLabel(type: string) {
   if (type === 'series') return t.value('series')
   if (type === 'episode') return t.value('episode')
   return t.value('movie')
 }
 
 /* 类型筛选标签（按当前语言） */
-function genreLabel(g) {
+function genreLabel(g: Genre) {
   return g[i18nState.lang] || g.en
 }
 
 /* 判断电影是否匹配当前选中的类型 */
-function matchesGenre(movie, genreKey) {
+function matchesGenre(movie: OMDBItem, genreKey: string) {
   if (genreKey === 'all') return true
   const g = GENRES.find((x) => x.key === genreKey)
   if (!g || !g.match) return true
@@ -182,8 +230,8 @@ function matchesGenre(movie, genreKey) {
 }
 
 /* 图片加载失败时移除元素（替代原内联 onerror） */
-function onImgError(e) {
-  e.target.remove()
+function onImgError(e: Event) {
+  (e.target as Element).remove()
 }
 
 /* ---------- 派生状态 ---------- */
@@ -260,17 +308,17 @@ function loadTrending() {
   trendingMovies.value = []
   /* 逐个拉取详情，单个失败不影响整体 */
   const promises = TRENDING_IDS.map((id) =>
-    fetchJSON(API + '?i=' + id + '&apikey=' + API_KEY + '&plot=short')
+    fetchJSON<OMDBDetail>(API + '?i=' + id + '&apikey=' + API_KEY + '&plot=short')
       .then((d) => (d && d.Response !== 'False') ? d : null)
       .catch(() => null)
   )
   Promise.all(promises).then((list) => {
-    trendingMovies.value = list.filter((m) => m)
+    trendingMovies.value = list.filter((m): m is OMDBDetail => !!m)
     trendingLoading.value = false
   })
 }
 
-function setActiveGenre(key) {
+function setActiveGenre(key: string) {
   activeGenre.value = key
 }
 
@@ -312,7 +360,7 @@ function doSearch(reset = true) {
   const url = API + '?s=' + encodeURIComponent(q) + '&apikey=' + API_KEY +
     '&page=' + currentPage.value + typeParam
 
-  fetchJSON(url)
+  fetchJSON<OMDBSearchResponse>(url)
     .then((data) => {
       if (data.Response === 'False') {
         totalFound.value = 0
@@ -349,7 +397,7 @@ function loadMore() {
   const url = API + '?s=' + encodeURIComponent(currentQuery.value) + '&apikey=' + API_KEY +
     '&page=' + currentPage.value + typeParam
 
-  fetchJSON(url)
+  fetchJSON<OMDBSearchResponse>(url)
     .then((data) => {
       if (data.Response === 'False') {
         endReached.value = true
@@ -371,7 +419,7 @@ function loadMore() {
 }
 
 /* 媒体类型切换 */
-function setType(type) {
+function setType(type: string) {
   currentType.value = type
   /* 若当前已有查询，则按新类型重新搜索 */
   if (query.value.trim()) doSearch(true)
@@ -384,9 +432,9 @@ function retry() {
 }
 
 /* ---------- 评分懒加载 ---------- */
-function fetchRatingForCard(imdbID) {
+function fetchRatingForCard(imdbID: string) {
   if (imdbID in ratings) return
-  fetchJSON(API + '?i=' + imdbID + '&apikey=' + API_KEY + '&plot=short')
+  fetchJSON<OMDBDetail>(API + '?i=' + imdbID + '&apikey=' + API_KEY + '&plot=short')
     .then((d) => {
       if (!d || d.Response === 'False') return
       detailCache[imdbID] = d
@@ -396,7 +444,7 @@ function fetchRatingForCard(imdbID) {
 }
 
 /* ---------- 详情模态框 ---------- */
-function openDetail(imdbID) {
+function openDetail(imdbID: string) {
   modalOpen.value = true
   document.body.style.overflow = 'hidden'
   detailError.value = ''
@@ -410,7 +458,7 @@ function openDetail(imdbID) {
     detailLoading.value = true
   }
 
-  fetchJSON(API + '?i=' + imdbID + '&apikey=' + API_KEY + '&plot=full')
+  fetchJSON<OMDBDetail>(API + '?i=' + imdbID + '&apikey=' + API_KEY + '&plot=full')
     .then((d) => {
       if (d && d.Response !== 'False') {
         detailCache[imdbID] = d
@@ -435,7 +483,7 @@ function closeModal() {
 }
 
 /* 卡片键盘事件：Enter / Space 触发详情 */
-function onCardKeydown(e, id) {
+function onCardKeydown(e: KeyboardEvent, id: string) {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault()
     openDetail(id)
@@ -443,7 +491,7 @@ function onCardKeydown(e, id) {
 }
 
 /* 文档级键盘事件：Escape 关闭模态框 */
-function onDocKeydown(e) {
+function onDocKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && modalOpen.value) closeModal()
 }
 

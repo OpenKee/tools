@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Crypto Pulse — 加密货币实时行情看板（Vue 3 SFC）
    数据源：CoinGecko 免费 API（支持 CORS，有限速约 10-30 次/分）
@@ -12,6 +12,28 @@ import { useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+// ---------- 类型定义 ----------
+interface Coin {
+  id: string
+  name: string
+  symbol: string
+  image: string
+  market_cap_rank: number | null
+  current_price: number
+  market_cap: number
+  total_volume: number
+  price_change_percentage_24h: number | null
+  price_change_percentage_7d_in_currency: number | null
+  high_24h: number | null
+  low_24h: number | null
+  ath: number | null
+  atl: number | null
+  ath_change_percentage: number | null
+  circulating_supply: number
+  total_supply: number | null
+  sparkline_in_currency: { price: number[] } | null
+}
 
 // ---------- i18n 文案字典 ----------
 const copy = {
@@ -98,26 +120,26 @@ const CACHE_TTL = 60 * 1000           // 60 秒缓存
 const REFRESH_INTERVAL = 60 * 1000    // 60 秒自动刷新
 
 // ---------- 状态 ----------
-const coins = ref([])                 // 原始币种数组
+const coins = ref<Coin[]>([])                 // 原始币种数组
 const favorites = reactive(loadFavorites())
 const sortKey = ref('rank')           // 默认按市值排名
 const sortDir = ref('asc')
 const query = ref('')
 const refreshing = ref(false)
 const hasError = ref(false)           // 仅在初始无数据时为 true
-const updatedAt = ref(null)           // 最近一次更新时间
+const updatedAt = ref<Date | null>(null)           // 最近一次更新时间
 const showModal = ref(false)
-const selectedCoinId = ref(null)
+const selectedCoinId = ref<string | null>(null)
 
-let refreshTimer = null
+let refreshTimer: ReturnType<typeof setInterval> | undefined
 
 // ---------- 收藏（localStorage 持久化） ----------
-function loadFavorites() {
+function loadFavorites(): Record<string, boolean> {
   const raw = lsGet(FAV_KEY)
   if (!raw) return {}
   try {
     const arr = JSON.parse(raw)
-    const obj = {}
+    const obj: Record<string, boolean> = {}
     for (const id of arr) obj[id] = true
     return obj
   } catch (e) {
@@ -129,13 +151,13 @@ function saveFavorites() {
   lsSet(FAV_KEY, JSON.stringify(Object.keys(favorites)))
 }
 
-function toggleFavorite(id) {
+function toggleFavorite(id: string) {
   if (favorites[id]) delete favorites[id]
   else favorites[id] = true
   saveFavorites()
 }
 
-function isFav(id) {
+function isFav(id: string) {
   return !!favorites[id]
 }
 
@@ -150,12 +172,12 @@ function readCache() {
   return null
 }
 
-function writeCache(data) {
+function writeCache(data: Coin[]) {
   lsSet(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }))
 }
 
 // ---------- 格式化 ----------
-function formatPrice(n) {
+function formatPrice(n: number | null) {
   if (n == null || isNaN(n)) return '—'
   if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   if (n >= 0.01) return '$' + n.toFixed(4)
@@ -163,7 +185,7 @@ function formatPrice(n) {
 }
 
 // 大数字缩写（带 $ 前缀，用于市值/成交量）
-function formatCompactUSD(n) {
+function formatCompactUSD(n: number | null) {
   if (n == null || isNaN(n)) return '—'
   const abs = Math.abs(n)
   if (abs >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T'
@@ -174,7 +196,7 @@ function formatCompactUSD(n) {
 }
 
 // 供应量缩写（无 $ 前缀，附带 symbol）
-function formatSupply(n, symbol) {
+function formatSupply(n: number | null, symbol: string) {
   if (n == null || isNaN(n)) return '—'
   const abs = Math.abs(n)
   let str
@@ -186,23 +208,23 @@ function formatSupply(n, symbol) {
   return str + (symbol ? ' ' + symbol.toUpperCase() : '')
 }
 
-function formatPct(n) {
+function formatPct(n: number | null) {
   if (n == null || isNaN(n)) return '—'
   return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'
 }
 
-function pctClass(n) {
+function pctClass(n: number | null) {
   if (n == null) return ''
   return n >= 0 ? 'up' : 'down'
 }
 
-function pctArrow(n) {
+function pctArrow(n: number | null) {
   if (n == null) return ''
   return n >= 0 ? '▲' : '▼'
 }
 
 // ---------- 排序取值 ----------
-function sortValue(key, c) {
+function sortValue(key: string, c: Coin) {
   switch (key) {
     case 'rank': return c.market_cap_rank != null ? c.market_cap_rank : 9999
     case 'price': return c.current_price || 0
@@ -273,7 +295,7 @@ const updatedAtText = computed(() => {
 })
 
 // ---------- 排序操作 ----------
-function setSort(key) {
+function setSort(key: string) {
   if (sortKey.value === key) {
     sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -300,7 +322,7 @@ function loadSortPref() {
 }
 
 // ---------- 数据加载 ----------
-async function fetchMarkets(force) {
+async function fetchMarkets(force: boolean) {
   if (refreshing.value) return
   refreshing.value = true
 
@@ -334,7 +356,7 @@ const selectedCoin = computed(() => {
   return coins.value.find((c) => c.id === selectedCoinId.value) || null
 })
 
-function openDetail(id) {
+function openDetail(id: string) {
   selectedCoinId.value = id
   showModal.value = true
 }
@@ -344,7 +366,7 @@ function closeModal() {
   selectedCoinId.value = null
 }
 
-function onBackdropClick(e) {
+function onBackdropClick(e: MouseEvent) {
   if (e.target === e.currentTarget) closeModal()
 }
 
@@ -402,7 +424,7 @@ watch(showModal, (val) => {
 })
 
 // ---------- 键盘：Esc 关闭弹窗 ----------
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && showModal.value) closeModal()
 }
 
@@ -437,7 +459,7 @@ onBeforeUnmount(() => {
     <main class="shell">
       <header class="masthead">
         <div class="masthead-left">
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
+          <p class="ok-eyebrow">{{ t('eyebrow') }}</p>
           <h1>{{ t('title') }}</h1>
           <p class="lead">{{ t('lead') }}</p>
         </div>
@@ -765,14 +787,6 @@ onBeforeUnmount(() => {
   padding: 0.4rem 0 1.2rem;
   border-bottom: 1px solid var(--line);
   gap: 1rem;
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
 }
 
 .masthead h1 {

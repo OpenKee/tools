@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    City Dashboard — 城市环境仪表盘（Vue 3 SFC）
    多 API 协作：地理编码 + 天气 + 空气质量 + 地震。
@@ -7,9 +7,81 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
-import { fetchJSON, geocode, haversineKm, locale } from '../ok.js'
+import { fetchJSON, geocode, haversineKm, locale, type GeoResult } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- API 数据类型 ---------- */
+type AqiLevel = 'good' | 'moderate' | 'usg' | 'unhealthy' | 'veryUnhealthy'
+
+interface CityItem {
+  name: string
+  lat: number
+  lon: number
+  country: string
+  admin1: string
+  timezone: string
+}
+
+interface WeatherCurrent {
+  time?: string
+  temperature_2m?: number
+  relative_humidity_2m?: number
+  apparent_temperature?: number
+  precipitation?: number
+  weather_code?: number
+  wind_speed_10m?: number
+  wind_direction_10m?: number
+  surface_pressure?: number
+}
+interface WeatherHourly {
+  time?: string[]
+  temperature_2m?: number[]
+  precipitation_probability?: number[]
+  weather_code?: number[]
+}
+interface WeatherDaily {
+  time?: string[]
+  weather_code?: number[]
+  temperature_2m_max?: number[]
+  temperature_2m_min?: number[]
+  sunrise?: string[]
+  sunset?: string[]
+  uv_index_max?: number[]
+}
+interface WeatherResponse {
+  current?: WeatherCurrent
+  hourly?: WeatherHourly
+  daily?: WeatherDaily
+}
+
+interface AirCurrent {
+  time?: string
+  us_aqi?: number
+  pm2_5?: number
+  pm10?: number
+  carbon_monoxide?: number
+  nitrogen_dioxide?: number
+  sulphur_dioxide?: number
+  ozone?: number
+}
+interface AirHourly {
+  time?: string[]
+  us_aqi?: number[]
+}
+interface AirResponse {
+  current?: AirCurrent
+  hourly?: AirHourly
+}
+
+type PollutantKey = Exclude<keyof AirCurrent, 'time'>
+
+interface QuakeProps { mag?: number; place?: string; time?: number }
+interface QuakeFeature {
+  properties?: QuakeProps
+  geometry?: { coordinates?: number[] }
+}
+interface QuakeResponse { features?: QuakeFeature[] }
 
 /* ---------- 文案字典（中英双语） ---------- */
 const copy = {
@@ -148,7 +220,7 @@ const AQI_LABEL_KEY = {
 }
 
 // 污染物配置
-const POLLUTANTS = [
+const POLLUTANTS: Array<{ key: PollutantKey; chem: string }> = [
   { key: 'pm2_5', chem: 'PM2.5' },
   { key: 'pm10', chem: 'PM10' },
   { key: 'carbon_monoxide', chem: 'CO' },
@@ -163,29 +235,29 @@ const DIR8_ZH = ['北', '东北', '东', '东南', '南', '西南', '西', '西�
 
 /* ---------- 响应式状态 ---------- */
 const query = ref('')
-const inputRef = ref(null)
-const candidates = ref([])        // geocode 多候选
-const city = ref(null)            // 当前选中城市 {name,lat,lon,country,admin1,timezone}
+const inputRef = ref<HTMLInputElement | null>(null)
+const candidates = ref<GeoResult[]>([])   // geocode 多候选
+const city = ref<CityItem | null>(null)   // 当前选中城市
 
 const geoLoading = ref(false)
 const geoError = ref('')          // 文案 key
 const locating = ref(false)       // 浏览器定位中
 
-const weather = ref(null)
+const weather = ref<WeatherResponse | null>(null)
 const weatherLoading = ref(false)
 const weatherError = ref('')
 
-const air = ref(null)
+const air = ref<AirResponse | null>(null)
 const airLoading = ref(false)
 const airError = ref('')
 
-const quakeRaw = ref(null)
+const quakeRaw = ref<QuakeResponse | null>(null)
 const quakeLoading = ref(false)
 const quakeError = ref('')
 
 /* ---------- 工具函数 ---------- */
 // US AQI -> 等级 key
-function aqiLevel(aqi) {
+function aqiLevel(aqi: number | null | undefined): AqiLevel {
   if (aqi == null || isNaN(aqi)) return 'good'
   if (aqi <= 50) return 'good'
   if (aqi <= 100) return 'moderate'
@@ -195,14 +267,14 @@ function aqiLevel(aqi) {
 }
 
 // 风向度数 -> 方位文案（随语言）
-function dirText(deg) {
+function dirText(deg: number | null | undefined) {
   if (deg == null || isNaN(deg)) return ''
   const idx = Math.round(deg / 45) % 8
   return i18nState.lang === 'zh' ? DIR8_ZH[idx] : DIR8_EN[idx]
 }
 
 // weather_code -> { i18n key, theme }
-function weatherInfo(code) {
+function weatherInfo(code: number | null | undefined) {
   const c = code == null ? 0 : code
   if (c === 0) return { key: 'weatherClear', theme: 'clear' }
   if (c === 1) return { key: 'weatherMainlyClear', theme: 'clear' }
@@ -219,7 +291,7 @@ function weatherInfo(code) {
 }
 
 // 污染物数值格式化（μg/m³）
-function fmtVal(v) {
+function fmtVal(v: number | null | undefined) {
   if (v == null || isNaN(v)) return '—'
   if (v < 10) return v.toFixed(1)
   if (v < 100) return v.toFixed(1)
@@ -227,7 +299,7 @@ function fmtVal(v) {
 }
 
 // 震级 -> 徽章颜色类
-function magClass(m) {
+function magClass(m: number | null | undefined) {
   if (m == null || isNaN(m)) return 'g'
   if (m < 3) return 'g'   // 灰
   if (m < 4) return 'gn'  // 绿
@@ -236,27 +308,31 @@ function magClass(m) {
 }
 
 // 解析 "HH:MM" 为分钟数
-function parseHM(s) {
+function parseHM(s: string) {
   if (!s) return null
   const m = /(\d{1,2}):(\d{2})/.exec(s)
   return m ? +m[1] * 60 + +m[2] : null
 }
 // 分钟数 -> "HH:MM"
-function fmtMin(min) {
+function fmtMin(min: number) {
   const h = Math.floor(min / 60) % 24
   const m = Math.round(min % 60)
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
 }
 
 // 从逐小时数组中切片未来 24h（以当前小时为起点）
-function slice24(times, vals, nowHourStr) {
+function slice24(
+  times: string[] | undefined,
+  vals: Array<number | null | undefined> | undefined,
+  nowHourStr: string
+): Array<{ time: string; val: number | null | undefined }> {
   if (!times || !vals) return []
   let start = -1
   for (let i = 0; i < times.length; i++) {
     if (times[i].slice(0, 13) >= nowHourStr) { start = i; break }
   }
   if (start < 0) start = 0
-  const out = []
+  const out: Array<{ time: string; val: number | null | undefined }> = []
   for (let i = 0; i < 24 && start + i < times.length; i++) {
     out.push({ time: times[start + i], val: vals[start + i] })
   }
@@ -286,7 +362,7 @@ async function search() {
   }
 }
 
-function selectCity(r) {
+function selectCity(r: GeoResult) {
   city.value = {
     name: r.name,
     lat: r.lat,
@@ -349,7 +425,7 @@ async function loadWeather() {
     '&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max' +
     '&timezone=auto&forecast_days=3'
   try {
-    weather.value = await fetchJSON(url)
+    weather.value = await fetchJSON<WeatherResponse>(url)
   } catch (e) {
     weather.value = null
     weatherError.value = 'weatherError'
@@ -368,7 +444,7 @@ async function loadAir() {
     '&current=us_aqi,pm2_5,pm10,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone' +
     '&hourly=us_aqi&timezone=auto&forecast_days=1'
   try {
-    air.value = await fetchJSON(url)
+    air.value = await fetchJSON<AirResponse>(url)
   } catch (e) {
     air.value = null
     airError.value = 'airError'
@@ -391,7 +467,7 @@ async function loadQuakes() {
     '&latitude=' + c.lat + '&longitude=' + c.lon +
     '&maxradiuskm=500&minmagnitude=3&limit=15&orderby=time'
   try {
-    quakeRaw.value = await fetchJSON(url)
+    quakeRaw.value = await fetchJSON<QuakeResponse>(url)
   } catch (e) {
     quakeRaw.value = null
     quakeError.value = 'quakeError'
@@ -417,7 +493,7 @@ const coordsText = computed(() => {
   if (!city.value) return ''
   return city.value.lat.toFixed(2) + ', ' + city.value.lon.toFixed(2)
 })
-function resultMeta(r) {
+function resultMeta(r: GeoResult) {
   const meta = [r.admin1, r.country].filter(Boolean).join(', ')
   return meta || (r.lat.toFixed(2) + ', ' + r.lon.toFixed(2))
 }
@@ -453,7 +529,7 @@ const windText = computed(() => {
   const c = currentWeather.value
   if (!c) return '—'
   const sp = c.wind_speed_10m
-  return Math.round(sp) + ' ' + t.value('windUnit') + ' ' + dirText(c.wind_direction_10m)
+  return Math.round(Number(sp)) + ' ' + t.value('windUnit') + ' ' + dirText(c.wind_direction_10m)
 })
 const uvText = computed(() => {
   const v = (weather.value && weather.value.daily && weather.value.daily.uv_index_max) ? weather.value.daily.uv_index_max[0] : null
@@ -495,32 +571,32 @@ const chart = computed(() => {
   const padL = 46, padR = 46, padT = 24, padB = 34
   const plotW = W - padL - padR
   const plotH = H - padT - padB
-  const x = (i) => padL + plotW * i / (n - 1)
+  const x = (i: number) => padL + plotW * i / (n - 1)
 
   // 温度范围
-  const tVals = temps.map((p) => p.val).filter((v) => v != null && !isNaN(v))
-  const aVals = aqis.map((p) => p.val).filter((v) => v != null && !isNaN(v))
+  const tVals = temps.map((p) => p.val).filter((v): v is number => v != null && !isNaN(v))
+  const aVals = aqis.map((p) => p.val).filter((v): v is number => v != null && !isNaN(v))
   if (!tVals.length && !aVals.length) return null
   let tMin = tVals.length ? Math.min.apply(null, tVals) : 0
   let tMax = tVals.length ? Math.max.apply(null, tVals) : 1
   if (tMin === tMax) { tMin -= 2; tMax += 2 }
   const tPad = (tMax - tMin) * 0.15
   tMin -= tPad; tMax += tPad
-  const yT = (v) => padT + plotH - (v - tMin) / (tMax - tMin) * plotH
+  const yT = (v: number) => padT + plotH - (v - tMin) / (tMax - tMin) * plotH
 
   // AQI 范围
   let aMax = 50
   aVals.forEach((v) => { if (v > aMax) aMax = v })
   aMax = Math.ceil(aMax / 50) * 50
   if (aMax > 300) aMax = 300
-  const yA = (v) => padT + plotH - Math.min(v, aMax) / aMax * plotH
+  const yA = (v: number) => padT + plotH - Math.min(v, aMax) / aMax * plotH
 
   // 折线点
-  const tempPts = []
+  const tempPts: Array<{ x: number; y: number; t: string; v: number }> = []
   temps.forEach((p, i) => {
     if (p.val != null && !isNaN(p.val)) tempPts.push({ x: x(i), y: yT(p.val), t: p.time, v: p.val })
   })
-  const aqiPts = []
+  const aqiPts: Array<{ x: number; y: number; t: string; v: number }> = []
   aqis.forEach((p, i) => {
     if (p.val != null && !isNaN(p.val)) aqiPts.push({ x: x(i), y: yA(p.val), t: p.time, v: p.val })
   })
@@ -534,7 +610,7 @@ const chart = computed(() => {
   const aqiLine = aqiPts.map((p, idx) => (idx ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ')
 
   // x 轴时间标签（每 4 小时）
-  const xLabels = []
+  const xLabels: Array<{ x: number; label: string }> = []
   for (let i = 0; i < n; i += 4) {
     xLabels.push({ x: x(i), label: temps[i].time.slice(11, 16) })
   }
@@ -596,7 +672,7 @@ const quakes = computed(() => {
   const clat = city.value.lat
   const clon = city.value.lon
   return quakeRaw.value.features.map((f) => {
-    const p = f.properties || {}
+    const p: QuakeProps = f.properties || {}
     const c = (f.geometry && f.geometry.coordinates) || [0, 0, 0]
     const dist = haversineKm(clat, clon, c[1], c[0])
     return {
@@ -608,7 +684,7 @@ const quakes = computed(() => {
       }) : '—',
       dist
     }
-  }).sort((a, b) => b.time - a.time)
+  }).sort((a, b) => Number(b.time) - Number(a.time))
 })
 
 /* ---------- 生命周期 ---------- */
@@ -1353,15 +1429,6 @@ onMounted(() => {
   font-size: 0.85rem;
   padding: 0.8rem 0;
 }
-.ok-spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--ok-line);
-  border-top-color: var(--ok-accent);
-  border-radius: 50%;
-  animation: cd-spin 0.6s linear infinite;
-}
-@keyframes cd-spin { to { transform: rotate(360deg); } }
 .ok-error {
   color: var(--ok-down);
   background: var(--ok-down-bg);

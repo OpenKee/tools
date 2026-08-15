@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Repo Scope — GitHub 用户与仓库分析（Vue 3 SFC）
    - 用户资料、仓库列表、语言分布、活跃度评分
@@ -12,6 +12,48 @@ import { useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale, githubLangColors } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- GitHub API 类型 ---------- */
+interface GHUser {
+  login: string
+  name: string | null
+  bio: string | null
+  company: string | null
+  location: string | null
+  blog: string | null
+  avatar_url: string
+  html_url: string
+  followers: number
+  created_at: string
+}
+
+interface GHRepo {
+  name: string
+  full_name: string
+  description: string | null
+  language: string | null
+  fork: boolean
+  html_url: string
+  homepage: string | null
+  topics: string[]
+  created_at: string
+  updated_at: string
+  pushed_at: string
+  size: number
+  stargazers_count: number
+  forks_count: number
+  open_issues_count: number
+  subscribers_count: number
+  watchers_count: number
+  default_branch: string
+  license: { spdx_id: string | null } | null
+}
+
+interface GHProfileCache {
+  ts: number
+  profile: GHUser
+  repos: GHRepo[]
+}
 
 /* ---------- i18n 文案字典 ---------- */
 const copy = {
@@ -80,8 +122,8 @@ const tokenOk = ref(false)                            // token 保存成功的�
 const tokenToggleOpen = ref(false)                    // token 折叠区是否展开
 const ghToken = ref(lsGet('repo-scope-token') || '')  // 已保存的 token
 
-const profile = ref(null)       // GitHub 用户资料
-const repos = ref([])           // 已过滤的非 fork 仓库列表
+const profile = ref<GHUser | null>(null)   // GitHub 用户资料
+const repos = ref<GHRepo[]>([])            // 已过滤的非 fork 仓库列表
 
 const search = ref('')          // 仓库搜索关键字
 const sort = ref('stars')       // 排序方式
@@ -91,11 +133,11 @@ const loading = ref(false)      // 主加载中
 const errorMsg = ref('')        // 主错误信息
 
 const detailFullName = ref('')  // 详情面板对应的仓库全名
-const detail = ref(null)        // 仓库详情数据
+const detail = ref<GHRepo | null>(null)  // 仓库详情数据
 const detailLoading = ref(false)// 详情加载中
 const detailError = ref('')     // 详情错误信息
 
-const tokenInputEl = ref(null)  // token 输入框引用（用于聚焦）
+const tokenInputEl = ref<HTMLInputElement | null>(null)  // token 输入框引用（用于聚焦）
 
 /* 初始化 token 输入框 */
 if (ghToken.value) tokenInput.value = ghToken.value
@@ -103,33 +145,33 @@ if (ghToken.value) tokenInput.value = ghToken.value
 /* ---------- 工具函数 ---------- */
 
 // 数字格式化（按当前语言）
-function num(v) {
+function num(v: number) {
   return new Intl.NumberFormat(locale()).format(v || 0)
 }
 
 // 语言对应颜色，缺省灰色
-function langColor(n) {
+function langColor(n: string) {
   return githubLangColors[n] || '#8b8b8b'
 }
 
 // 距今天数
-function daysSince(d) {
+function daysSince(d: string) {
   return (Date.now() - new Date(d).getTime()) / 86400000
 }
 
 // 日期格式化（按当前语言）
-function fmtDate(d) {
+function fmtDate(d: string) {
   return new Date(d).toLocaleDateString(locale())
 }
 
 // 博客地址补全协议
-function blogUrl(blog) {
+function blogUrl(blog: string) {
   return blog.startsWith('http') ? blog : 'https://' + blog
 }
 
 // 仓库标签：fresh / dormant / hot / fork
-function repoTags(repo) {
-  const tags = []
+function repoTags(repo: GHRepo) {
+  const tags: { text: string; cls: string }[] = []
   if (daysSince(repo.updated_at) < 21) tags.push({ text: t.value('fresh'), cls: 'fresh' })
   if (daysSince(repo.updated_at) > 180) tags.push({ text: t.value('dormant'), cls: 'dormant' })
   if ((repo.stargazers_count || 0) >= 50) tags.push({ text: t.value('hot'), cls: 'hot' })
@@ -138,7 +180,7 @@ function repoTags(repo) {
 }
 
 // 活跃度评分（0-100）
-function calcScore(p, rs) {
+function calcScore(p: GHUser, rs: GHRepo[]) {
   let score = 0
   score += Math.min(15, daysSince(p.created_at) / 100)     // 账号年龄（max 15）
   score += Math.min(20, rs.length * 1.5)                    // 公开仓库数（max 20）
@@ -153,31 +195,31 @@ function calcScore(p, rs) {
 
 /* ---------- 缓存读写 ---------- */
 
-function cacheKey(u) {
+function cacheKey(u: string) {
   return 'repo-scope-cache-' + u.toLowerCase()
 }
 
 // 读取缓存（过期返回 null）
-function getCache(u) {
+function getCache(u: string): GHProfileCache | null {
   try {
     const raw = lsGet(cacheKey(u))
     if (!raw) return null
-    const data = JSON.parse(raw)
+    const data = JSON.parse(raw) as GHProfileCache
     if (Date.now() - data.ts > CACHE_TTL) return null
     return data
   } catch (e) { return null }
 }
 
 // 写入缓存
-function setCache(u, p, rs) {
+function setCache(u: string, p: GHUser, rs: GHRepo[]) {
   lsSet(cacheKey(u), JSON.stringify({ ts: Date.now(), profile: p, repos: rs }))
 }
 
 /* ---------- GitHub API 请求 ---------- */
 
 // 主流程：用响应体 message 文本判断真限流（不能靠 remaining 头，缺失时默认 0 会误判）
-async function ghFetch(url) {
-  const h = { Accept: 'application/vnd.github+json' }
+async function ghFetch<T = unknown>(url: string): Promise<T> {
+  const h: Record<string, string> = { Accept: 'application/vnd.github+json' }
   if (ghToken.value) h.Authorization = `Bearer ${ghToken.value}`
   const r = await fetch(url, { headers: h })
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
@@ -185,7 +227,7 @@ async function ghFetch(url) {
     const body = await r.json().catch(() => ({}))
     const msg = (body && body.message) || ''
     if (/rate limit/i.test(msg)) {
-      const err = new Error('rate_limit')
+      const err = new Error('rate_limit') as Error & { resetAt: Date | null }
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err
     }
@@ -196,7 +238,7 @@ async function ghFetch(url) {
     const b = await r.json().catch(() => ({}))
     throw new Error(b.message || `${r.status}`)
   }
-  return r.json()
+  return r.json() as Promise<T>
 }
 
 /* ---------- 派生：统计卡片 ---------- */
@@ -250,7 +292,7 @@ const scoreDescKey = computed(() =>
 /* ---------- 派生：语言分布 ---------- */
 
 const languageStats = computed(() => {
-  const counts = {}
+  const counts: Record<string, number> = {}
   repos.value.forEach(r => { if (r.language) counts[r.language] = (counts[r.language] || 0) + 1 })
   const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10)
   const max = ranked[0]?.[1] || 1
@@ -275,7 +317,7 @@ const filteredRepos = computed(() => {
 const sortedRepos = computed(() => {
   const arr = [...filteredRepos.value]
   if (sort.value === 'stars') arr.sort((a, b) => b.stargazers_count - a.stargazers_count)
-  else if (sort.value === 'updated') arr.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+  else if (sort.value === 'updated') arr.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
   else if (sort.value === 'forks') arr.sort((a, b) => b.forks_count - a.forks_count)
   else arr.sort((a, b) => a.name.localeCompare(b.name))
   return arr
@@ -309,7 +351,7 @@ function onSubmit() {
   analyzeUser(username.value.trim())
 }
 
-function changePage(p) {
+function changePage(p: number) {
   page.value = p
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -337,7 +379,7 @@ function clearToken() {
 
 /* ---------- 主流程：分析用户 ---------- */
 
-async function analyzeUser(u) {
+async function analyzeUser(u: string) {
   if (!u) return
   // 重置已有结果与详情
   profile.value = null
@@ -359,23 +401,24 @@ async function analyzeUser(u) {
 
   try {
     const [p, rs] = await Promise.all([
-      ghFetch(`https://api.github.com/users/${u}`),
-      ghFetch(`https://api.github.com/users/${u}/repos?per_page=100&sort=updated`),
+      ghFetch<GHUser>(`https://api.github.com/users/${u}`),
+      ghFetch<GHRepo[]>(`https://api.github.com/users/${u}/repos?per_page=100&sort=updated`),
     ])
     const nonForks = rs.filter(r => !r.fork).sort((a, b) => b.stargazers_count - a.stargazers_count)
     setCache(u, p, nonForks)
     applyData(p, nonForks)
   } catch (e) {
     loading.value = false
+    const err = e as Error & { resetAt?: Date | null }
     let msg
-    if (e.message === 'rate_limit') {
+    if (err.message === 'rate_limit') {
       msg = t.value('errorRateLimit')
       // 未配 token 时给出 IP 共享配额的解释，避免用户误以为是自己的请求导致的
       if (!ghToken.value) {
         msg += ' ' + t.value('errorRateLimitHint')
       }
-      if (e.resetAt) {
-        const timeStr = e.resetAt.toLocaleString(locale(), {
+      if (err.resetAt) {
+        const timeStr = err.resetAt.toLocaleString(locale(), {
           month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
         })
         msg += ' ' + t.value('errorRateLimitReset').replace('{time}', timeStr)
@@ -383,19 +426,19 @@ async function analyzeUser(u) {
       // 自动展开 token 输入区，提醒用户填入
       tokenToggleOpen.value = true
       setTimeout(() => tokenInputEl.value?.focus(), 0)
-    } else if (e.message === 'forbidden') {
+    } else if (err.message === 'forbidden') {
       msg = t.value('errorForbidden')
-    } else if (e.message === 'not_found') {
+    } else if (err.message === 'not_found') {
       msg = t.value('errorNotFound')
     } else {
-      msg = t.value('errorGeneric').replace('{msg}', e.message)
+      msg = t.value('errorGeneric').replace('{msg}', err.message)
     }
     errorMsg.value = msg
   }
 }
 
 // 应用数据到状态
-function applyData(p, rs) {
+function applyData(p: GHUser, rs: GHRepo[]) {
   profile.value = p
   repos.value = rs
   page.value = 1
@@ -404,13 +447,13 @@ function applyData(p, rs) {
 }
 
 // 后台静默刷新（错误吞掉，缓存数据仍可用）
-async function refreshInBackground(u) {
+async function refreshInBackground(u: string) {
   try {
-    const headers = { Accept: 'application/vnd.github+json' }
+    const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
     if (ghToken.value) headers.Authorization = `Bearer ${ghToken.value}`
     const [p, rs] = await Promise.all([
-      fetchJSON(`https://api.github.com/users/${u}`, { headers }),
-      fetchJSON(`https://api.github.com/users/${u}/repos?per_page=100&sort=updated`, { headers }),
+      fetchJSON<GHUser>(`https://api.github.com/users/${u}`, { headers }),
+      fetchJSON<GHRepo[]>(`https://api.github.com/users/${u}/repos?per_page=100&sort=updated`, { headers }),
     ])
     const nonForks = rs.filter(r => !r.fork).sort((a, b) => b.stargazers_count - a.stargazers_count)
     setCache(u, p, nonForks)
@@ -423,15 +466,15 @@ async function refreshInBackground(u) {
 
 /* ---------- 加载仓库详情 ---------- */
 
-async function loadDetail(fullName) {
+async function loadDetail(fullName: string) {
   detailFullName.value = fullName
   detail.value = null
   detailError.value = ''
   detailLoading.value = true
   try {
-    detail.value = await ghFetch(`https://api.github.com/repos/${fullName}`)
+    detail.value = await ghFetch<GHRepo>(`https://api.github.com/repos/${fullName}`)
   } catch (e) {
-    detailError.value = e.message
+    detailError.value = (e as Error).message
   } finally {
     detailLoading.value = false
   }

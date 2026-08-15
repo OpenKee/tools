@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Night Sky Guide — 今晚观天指南（Vue 3 SFC）
    融合数据源：
@@ -151,45 +151,87 @@ const CORS_PROXY = 'https://corsproxy.io/?url='
 
 const COMPASS_DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 
+/* ---------- 类型定义 ---------- */
+interface GeoPlace { name: string; lat: number; lon: number; country?: string; admin1?: string }
+interface IssPass {
+  risetime: number
+  duration: number
+  timeLabel: string
+  durLabel: string
+  direction: string
+}
+interface PassApiResponse { message: string; response?: Array<{ risetime: number; duration: number }> }
+type KpRow = Array<string | number> | {
+  Kp?: string
+  kp?: string
+  KP?: string
+  time_tag?: string
+  TimeTag?: string
+  time?: string
+}
+interface MoonData { phase: number; phaseName: string; icon: string }
+interface MoonApiResponse { results?: { moon_phase?: string | number } }
+interface LaunchItem {
+  name: string
+  net?: string
+  timeLabel: string
+  provider?: string
+  vehicle?: string
+  mission?: string
+  site?: string
+  image?: string
+}
+interface LaunchesApiResponse {
+  results?: Array<{
+    name?: string
+    net?: string
+    image?: string
+    launch_service_provider?: { name?: string }
+    rocket?: { configuration?: { name?: string } }
+    mission?: { description?: string }
+    pad?: { name?: string; location?: { name?: string } }
+  }>
+}
+
 /* ---------- 响应式状态 ---------- */
 const query = ref('')
-const location = ref(null)          // { name, lat, lon, country, admin1 }
+const location = ref<GeoPlace | null>(null)   // { name, lat, lon, country, admin1 }
 const locationError = ref('')
 const locationLoading = ref(false)
 
 // ISS passes
-const issPasses = ref([])
-const issState = ref('idle')        // idle | loading | loaded | empty | error
+const issPasses = ref<IssPass[]>([])
+const issState = ref<'idle' | 'loading' | 'loaded' | 'empty' | 'error'>('idle')
 
 // Aurora
-const kpData = ref(null)
-const kpState = ref('idle')         // idle | loading | loaded | error
-const kpCurrent = ref(null)
+const kpData = ref<KpRow[] | null>(null)
+const kpState = ref<'idle' | 'loading' | 'loaded' | 'error'>('idle')
+const kpCurrent = ref<number | null>(null)
 
 // Moon
-const moonData = ref(null)
-const moonState = ref('idle')
+const moonData = ref<MoonData | null>(null)
+const moonState = ref<'idle' | 'loading' | 'loaded' | 'error'>('idle')
 
 // Launches
-const launches = ref([])
-const launchesState = ref('idle')
+const launches = ref<LaunchItem[]>([])
+const launchesState = ref<'idle' | 'loading' | 'loaded' | 'empty' | 'error'>('idle')
 
 // 全局加载状态
 const loading = ref(false)
 
 /* ---------- 工具函数 ---------- */
-function degToCompass(deg) {
+function degToCompass(deg: number): string {
   const index = Math.round(deg / 45) % 8
   return COMPASS_DIRECTIONS[index]
 }
 
-function formatTime(iso) {
+function formatTime(iso?: string): string {
   if (!iso) return '—'
   const d = new Date(iso)
   return d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-function formatDateTime(iso) {
+function formatDateTime(iso?: string): string {
   if (!iso) return '—'
   const d = new Date(iso)
   return d.toLocaleString(locale(), {
@@ -197,21 +239,21 @@ function formatDateTime(iso) {
   })
 }
 
-function formatPassTime(ts) {
+function formatPassTime(ts: number): string {
   const d = new Date(ts * 1000)
   return d.toLocaleString(locale(), {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
   })
 }
 
-function parseKpTime(s) {
+function parseKpTime(s: string) {
   let str = String(s).replace(' ', 'T')
   if (!/[zZ]|[+-]\d\d:?\d\d$/.test(str)) str += 'Z'
   return new Date(str)
 }
 
 /* ---------- 月相 ---------- */
-function moonPhaseName(phase) {
+function moonPhaseName(phase: number): string {
   // phase: 0 = New Moon, 0.25 = First Quarter, 0.5 = Full Moon, 0.75 = Last Quarter
   if (phase < 0.06) return t.value('moonNew')
   if (phase < 0.19) return t.value('moonWaxingCrescent')
@@ -224,7 +266,7 @@ function moonPhaseName(phase) {
   return t.value('moonNew')
 }
 
-function moonIcon(phase) {
+function moonIcon(phase: number): string {
   if (phase < 0.06) return 'moon-new'
   if (phase < 0.19) return 'moon-waxing-crescent'
   if (phase < 0.31) return 'moon-first-quarter'
@@ -237,7 +279,7 @@ function moonIcon(phase) {
 }
 
 /* ---------- Kp 解释 ---------- */
-function kpLevelName(kp) {
+function kpLevelName(kp: number): string {
   if (kp < 2) return t.value('kpQuiet')
   if (kp < 4) return t.value('kpWeak')
   if (kp < 6) return t.value('kpModerate')
@@ -245,7 +287,7 @@ function kpLevelName(kp) {
   return t.value('kpStorm')
 }
 
-function kpVisibleLat(kp) {
+function kpVisibleLat(kp: number): number {
   if (kp < 2) return 90
   if (kp < 4) return 65
   if (kp < 6) return 55
@@ -253,7 +295,7 @@ function kpVisibleLat(kp) {
   return 35
 }
 
-function kpColor(kp) {
+function kpColor(kp: number): string {
   if (kp < 2) return '#4ade80'
   if (kp < 4) return '#22d3ee'
   if (kp < 6) return '#facc15'
@@ -301,12 +343,12 @@ const auroraVisible = computed(() => {
 
 /* ---------- 数据加载 ---------- */
 
-async function fetchIssPasses(lat, lon) {
+async function fetchIssPasses(lat: number, lon: number) {
   issState.value = 'loading'
-  const targetUrl = ISS_PASS_URL + '?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon) + '&n=5'
+  const targetUrl = ISS_PASS_URL + '?lat=' + encodeURIComponent(String(lat)) + '&lon=' + encodeURIComponent(String(lon)) + '&n=5'
   const url = CORS_PROXY + encodeURIComponent(targetUrl)
   try {
-    const data = await fetchJSON(url, { timeout: 15000 })
+    const data = await fetchJSON<PassApiResponse>(url, { timeout: 15000 })
     if (!data || data.message !== 'success') throw new Error('Bad ISS pass response')
     const passes = (data.response || []).map(function (p) {
       const d = new Date(p.risetime * 1000)
@@ -320,7 +362,7 @@ async function fetchIssPasses(lat, lon) {
         // 用 risetime 的小时数模拟一个方向（实际方向取决于轨道几何）
         direction: degToCompass((d.getHours() * 15 + d.getMinutes() * 0.25) % 360),
       }
-    }).filter(Boolean)
+    }).filter((p): p is IssPass => p !== null)
     if (!passes.length) {
       issState.value = 'empty'
       issPasses.value = []
@@ -338,19 +380,20 @@ async function fetchIssPasses(lat, lon) {
 async function fetchKp() {
   kpState.value = 'loading'
   try {
-    const data = await fetchJSON(KP_URL, { timeout: 15000 })
+    const data = await fetchJSON<KpRow[]>(KP_URL, { timeout: 15000 })
     if (!data || !data.length) throw new Error('Bad Kp response')
     // 解析 NOAA Kp 数据（数组格式或对象数组格式）
-    let latest = null
+    let latest: number | null = null
     for (let i = data.length - 1; i >= 0; i--) {
       const row = data[i]
-      let kpVal, timeStr
+      let kpVal: number
+      let timeStr: string
       if (Array.isArray(row)) {
-        kpVal = parseFloat(row[1])
-        timeStr = row[0]
+        kpVal = parseFloat(String(row[1]))
+        timeStr = String(row[0])
       } else {
-        kpVal = parseFloat(row.Kp || row.kp || row.KP)
-        timeStr = row.time_tag || row.TimeTag || row.time
+        kpVal = parseFloat(String(row.Kp || row.kp || row.KP))
+        timeStr = String(row.time_tag || row.TimeTag || row.time)
       }
       if (!isNaN(kpVal) && kpVal >= 0) {
         latest = kpVal
@@ -367,16 +410,16 @@ async function fetchKp() {
   }
 }
 
-async function fetchMoon(lat, lon) {
+async function fetchMoon(lat: number, lon: number) {
   moonState.value = 'loading'
   try {
-    const url = 'https://api.sunrise-sunset.org/json?lat=' + encodeURIComponent(lat) +
-      '&lng=' + encodeURIComponent(lon) + '&date=today&formatted=0'
-    const data = await fetchJSON(url, { timeout: 15000 })
+    const url = 'https://api.sunrise-sunset.org/json?lat=' + encodeURIComponent(String(lat)) +
+      '&lng=' + encodeURIComponent(String(lon)) + '&date=today&formatted=0'
+    const data = await fetchJSON<MoonApiResponse>(url, { timeout: 15000 })
     if (!data || !data.results || data.results.moon_phase === undefined) {
       throw new Error('Bad moon response')
     }
-    const phase = parseFloat(data.results.moon_phase)
+    const phase = parseFloat(String(data.results.moon_phase))
     moonData.value = {
       phase: phase,
       phaseName: moonPhaseName(phase),
@@ -392,7 +435,7 @@ async function fetchMoon(lat, lon) {
 async function fetchLaunches() {
   launchesState.value = 'loading'
   try {
-    const data = await fetchJSON(LAUNCHES_URL, { timeout: 15000 })
+    const data = await fetchJSON<LaunchesApiResponse>(LAUNCHES_URL, { timeout: 15000 })
     const results = data.results || []
     const now = new Date()
     const tomorrow = new Date(now.getTime() + 172800000) // 48 小时
@@ -405,9 +448,9 @@ async function fetchLaunches() {
         net: l.net,
         timeLabel: formatDateTime(l.net),
         provider: l.launch_service_provider ? l.launch_service_provider.name : '—',
-        vehicle: l.rocket ? l.rocket.configuration.name : '—',
+        vehicle: l.rocket?.configuration?.name ?? '—',
         mission: l.mission && l.mission.description ? l.mission.description : '—',
-        site: l.pad ? l.pad.location.name + ' / ' + l.pad.name : '—',
+        site: l.pad?.location ? l.pad.location.name + ' / ' + l.pad.name : '—',
         image: l.image,
       }
     })
@@ -424,7 +467,7 @@ async function fetchLaunches() {
   }
 }
 
-async function loadAll(lat, lon) {
+async function loadAll(lat: number, lon: number) {
   loading.value = true
   await Promise.all([
     fetchIssPasses(lat, lon),
@@ -469,7 +512,7 @@ async function doSearch() {
     // 加载所有数据
     loadAll(place.lat, place.lon)
   } catch (e) {
-    locationError.value = e.message || t.value('searchFail')
+    locationError.value = (e instanceof Error ? e.message : '') || t.value('searchFail')
     locationLoading.value = false
   }
 }

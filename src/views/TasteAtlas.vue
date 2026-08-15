@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Taste Atlas — 美食地图 / 全球食谱探索（Vue 3 SFC）
    数据来源：TheMealDB（免费公开 API，无需 key）
@@ -61,6 +61,46 @@ const copy = {
 // useT 返回 computed，模板中 t('key') 取翻译，语言切换自动响应
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface Meal {
+  id: string
+  name: string
+  thumb: string
+  category: string
+  area: string
+  instructions: string
+  tags: string[]
+  youtube: string
+  source: string
+  ingredients: { name: string; measure: string }[]
+}
+
+interface RawMeal {
+  idMeal: string
+  strMeal: string
+  strMealThumb: string
+  strCategory: string
+  strArea: string
+  strInstructions: string
+  strTags: string | null
+  strYoutube: string
+  strSource: string
+  [key: string]: string | null | undefined
+}
+
+interface RawListEntry {
+  strCategory?: string
+  strArea?: string
+}
+
+interface ListResponse {
+  meals: RawListEntry[] | null
+}
+
+interface MealResponse {
+  meals: RawMeal[] | null
+}
+
 /* ---------- API 地址 ---------- */
 const API_BASE = 'https://www.themealdb.com/api/json/v1/1'
 
@@ -68,24 +108,28 @@ const API_BASE = 'https://www.themealdb.com/api/json/v1/1'
 const searchQuery = ref('')        // 搜索框文本
 const selectedCategory = ref('')   // 选中的分类
 const selectedArea = ref('')       // 选中的菜系
-const categories = ref([])         // 分类下拉选项
-const areas = ref([])              // 菜系下拉选项
-const currentRecipes = ref([])     // 当前展示的食谱列表
+const categories = ref<string[]>([])      // 分类下拉选项
+const areas = ref<string[]>([])           // 菜系下拉选项
+const currentRecipes = ref<Meal[]>([])    // 当前展示的食谱列表
 const loading = ref(false)         // 加载中标记
 const statusMsg = ref('')          // 状态提示文案
 const loadError = ref(false)       // 加载失败标记（控制空状态显示）
-const modalMeal = ref(null)        // 弹窗中展示的食谱详情
+const modalMeal = ref<Meal | null>(null)  // 弹窗中展示的食谱详情
 const modalOpen = ref(false)       // 弹窗是否打开
 
 /* ---------- 工具：调用 TheMealDB ---------- */
-function api(path) {
-  return fetchJSON(API_BASE + path, { timeout: 15000 })
+function api<T>(path: string): Promise<T> {
+  return fetchJSON<T>(API_BASE + path, { timeout: 15000 })
 }
 
 /* ---------- 规范化：原始 meal -> 内部结构 ---------- */
-function normalizeMeal(m) {
+function isMeal(m: Meal | null): m is Meal {
+  return m !== null
+}
+
+function normalizeMeal(m: RawMeal | null): Meal | null {
   if (!m) return null
-  const ingredients = []
+  const ingredients: { name: string; measure: string }[] = []
   for (let i = 1; i <= 20; i++) {
     const ing = m['strIngredient' + i]
     const meas = m['strMeasure' + i]
@@ -107,17 +151,17 @@ function normalizeMeal(m) {
   }
 }
 
-function normalizeList(data, key) {
+function normalizeList(data: ListResponse | null, key: 'strCategory' | 'strArea'): string[] {
   if (!data || !data.meals) return []
-  return data.meals.map((m) => m[key]).filter(Boolean).sort()
+  return data.meals.map((m) => m[key]).filter((v): v is string => Boolean(v)).sort()
 }
 
 /* ---------- 初始化分类 / 菜系筛选器 ---------- */
 async function initFilters() {
   try {
     const [catRes, areaRes] = await Promise.all([
-      api('/list.php?c=list'),
-      api('/list.php?a=list'),
+      api<ListResponse>('/list.php?c=list'),
+      api<ListResponse>('/list.php?a=list'),
     ])
     categories.value = normalizeList(catRes, 'strCategory')
     areas.value = normalizeList(areaRes, 'strArea')
@@ -127,15 +171,15 @@ async function initFilters() {
 }
 
 /* ---------- 加载食谱列表 ---------- */
-async function loadRecipes(path) {
+async function loadRecipes(path: string) {
   loading.value = true
   loadError.value = false
   // 原版在此处清空网格（recipeGrid.innerHTML = ''），此处同步清空列表
   currentRecipes.value = []
   try {
-    const data = await api(path)
+    const data = await api<MealResponse>(path)
     const meals = (data && data.meals) || []
-    currentRecipes.value = meals.map(normalizeMeal).filter(Boolean)
+    currentRecipes.value = meals.map(normalizeMeal).filter(isMeal)
     statusMsg.value = currentRecipes.value.length ? currentRecipes.value.length + ' recipes' : ''
   } catch (err) {
     loadError.value = true
@@ -146,16 +190,16 @@ async function loadRecipes(path) {
   }
 }
 
-function searchByName(q) {
+function searchByName(q: string) {
   if (!q) return loadRecipes('/search.php?s=')
   loadRecipes('/search.php?s=' + encodeURIComponent(q))
 }
 
-function filterByCategory(c) {
+function filterByCategory(c: string) {
   loadRecipes('/filter.php?c=' + encodeURIComponent(c))
 }
 
-function filterByArea(a) {
+function filterByArea(a: string) {
   loadRecipes('/filter.php?a=' + encodeURIComponent(a))
 }
 
@@ -164,9 +208,9 @@ async function randomRecipe() {
   loading.value = true
   // 原版不在此处清空列表，保留旧卡片直到新数据到达
   try {
-    const data = await api('/random.php')
+    const data = await api<MealResponse>('/random.php')
     const meals = (data && data.meals) || []
-    currentRecipes.value = meals.map(normalizeMeal).filter(Boolean)
+    currentRecipes.value = meals.map(normalizeMeal).filter(isMeal)
     if (currentRecipes.value.length) openModal(currentRecipes.value[0])
   } catch (err) {
     statusMsg.value = t.value('fetchError')
@@ -177,12 +221,12 @@ async function randomRecipe() {
 }
 
 /* ---------- 加载详情 ---------- */
-async function loadDetail(id) {
+async function loadDetail(id: string) {
   loading.value = true
   try {
-    const data = await api('/lookup.php?i=' + encodeURIComponent(id))
+    const data = await api<MealResponse>('/lookup.php?i=' + encodeURIComponent(id))
     const meals = (data && data.meals) || []
-    const meal = meals.map(normalizeMeal).filter(Boolean)[0]
+    const meal = meals.map(normalizeMeal).filter(isMeal)[0]
     if (meal) openModal(meal)
   } catch (err) {
     console.warn('Recipe detail failed:', err)
@@ -192,7 +236,7 @@ async function loadDetail(id) {
 }
 
 /* ---------- 弹窗控制 ---------- */
-function openModal(meal) {
+function openModal(meal: Meal) {
   modalMeal.value = meal
   modalOpen.value = true
   document.body.style.overflow = 'hidden'
@@ -230,11 +274,11 @@ function onAreaChange() {
   else searchByName('')
 }
 
-function onCardClick(meal) {
+function onCardClick(meal: Meal) {
   loadDetail(meal.id)
 }
 
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && modalOpen.value) closeModal()
 }
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Mars Weather — 火星天气（Vue 3 SFC）
    数据来源：MAAS2 API（NASA Curiosity / InSight 公开数据聚合）
@@ -119,12 +119,35 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface MarsDay {
+  sol: number
+  date: Date
+  at: { av: number | null; mx: number | null; mn: number | null }
+  pre: { av: number } | null
+  hws: { av: number } | null
+  wd: { compass_point: string; compass_degrees: number } | null
+  season: string
+  simulated: boolean
+}
+
+interface Maas2Sol {
+  sol: string | number
+  terrestrial_date: string | null
+  season: string | null
+  min_temp: string | null
+  max_temp: string | null
+  pressure: string | null
+  wind_speed: string | null
+  wind_direction: string | null
+}
+
 /* ---------- API 地址 ---------- */
 // MAAS2 本身未设置 CORS，通过 corsproxy.io（免费公开代理）在浏览器端访问。
 const MAAS2_URL = 'https://corsproxy.io/?url=https%3A%2F%2Fapi.maas2.apollorion.com%2F'
 
 /* ---------- 季节中英映射 ---------- */
-const SEASON_MAP = {
+const SEASON_MAP: Record<string, { en: string; zh: string }> = {
   winter:  { en: 'Winter',  zh: '冬季' },
   spring:  { en: 'Spring',  zh: '春季' },
   summer:  { en: 'Summer',  zh: '夏季' },
@@ -133,7 +156,7 @@ const SEASON_MAP = {
 }
 
 // 季节描述 key（按英文季节名归一）
-function seasonDescKey(season) {
+function seasonDescKey(season: string) {
   const s = String(season || '').toLowerCase()
   if (s.indexOf('winter') > -1) return 'seasonWinter'
   if (s.indexOf('spring') > -1) return 'seasonSpring'
@@ -142,17 +165,17 @@ function seasonDescKey(season) {
 }
 
 // 季节名映射（取不到时回退到原文）
-function seasonMap(raw) {
+function seasonMap(raw: string) {
   const k = String(raw || '').toLowerCase()
   return SEASON_MAP[k] || { en: raw || '', zh: raw || '' }
 }
 
 /* ---------- 内置模拟数据（API 不可用时降级） ---------- */
 // 数值参考 InSight 着陆点（埃律西昂平原）的真实量级
-function buildMockData() {
+function buildMockData(): MarsDay[] {
   const season = 'winter'
   const base = Date.now()
-  const days = []
+  const days: MarsDay[] = []
   // 7 个 Sol，温度围绕真实火星范围波动
   const seeds = [
     { mx: -24.2, mn: -88.1, pre: 712, hws: 6.4, dir: 'NE', deg: 45 },
@@ -181,17 +204,17 @@ function buildMockData() {
 
 /* ---------- 解析 MAAS2 API 返回 ---------- */
 // MAAS2 返回单个最新 Sol 对象。我们把它作为最新一天，再基于它生成前 6 天。
-function parseApiResponse(data) {
+function parseApiResponse(data: Maas2Sol | null): MarsDay[] | null {
   if (!data || data.sol == null) return null
   const latest = maas2ToDay(data, false)
   if (!latest) return null
-  const days = [latest]
+  const days: MarsDay[] = [latest]
   // 生成前 6 天：温度、气压、风速在真实值附近小幅波动
   for (let i = 1; i < 7; i++) {
     const factor = i / 6 // 0..1，越往前偏离越大
-    const jitter = (max, min) => (Math.random() * (max - min) + min) * factor
-    const mx = latest.at.mx + jitter(4, -4)
-    const mn = latest.at.mn + jitter(4, -4)
+    const jitter = (max: number, min: number) => (Math.random() * (max - min) + min) * factor
+    const mx = (latest.at.mx || 0) + jitter(4, -4)
+    const mn = (latest.at.mn || 0) + jitter(4, -4)
     const pre = latest.pre && latest.pre.av != null
       ? latest.pre.av + jitter(12, -12)
       : null
@@ -213,8 +236,8 @@ function parseApiResponse(data) {
 }
 
 // 将 MAAS2 单个 Sol 对象转成统一 day 结构
-function maas2ToDay(d, simulated) {
-  const sol = parseInt(d.sol, 10)
+function maas2ToDay(d: Maas2Sol, simulated: boolean): MarsDay | null {
+  const sol = parseInt(String(d.sol), 10)
   if (isNaN(sol)) return null
   const mx = num(d.max_temp)
   const mn = num(d.min_temp)
@@ -237,10 +260,10 @@ function maas2ToDay(d, simulated) {
   }
 }
 
-function parseWindDirection(raw) {
+function parseWindDirection(raw: string | null | undefined): { compass_point: string; compass_degrees: number } | null {
   if (!raw) return null
   const str = String(raw).trim().toUpperCase()
-  const DIRS = { N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
+  const DIRS: Record<string, number> = { N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
                  S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5 }
   const deg = DIRS[str]
   if (deg == null) return null
@@ -248,32 +271,34 @@ function parseWindDirection(raw) {
 }
 
 // 安全取数
-function num(v) {
+function num(v: string | null | undefined): number | null {
+  if (v == null) return null
   const n = parseFloat(v)
   return isNaN(n) ? null : n
 }
 
 /* ---------- 温度单位换算 ---------- */
-function toF(c) { return c * 9 / 5 + 32 }
+function toF(c: number) { return c * 9 / 5 + 32 }
 
 // 按当前单位格式化温度（保留 1 位小数）
-function fmtTemp(c) {
+function fmtTemp(c: number | null | undefined) {
   if (c == null) return '—'
   const v = unit.value === 'F' ? toF(c) : c
   return v.toFixed(1) + '°' + unit.value
 }
 
 /* ---------- 运行时状态 ---------- */
-const unit = ref('C')            // 温度单位：'C' | 'F'
-const weatherData = ref(null)    // 解析后的天气数据数组（按时间正序）
+const unit = ref<'C' | 'F'>('C')   // 温度单位：'C' | 'F'
+const weatherData = ref<MarsDay[] | null>(null)  // 解析后的天气数据数组（按时间正序）
 const isSimulated = ref(false)   // 是否使用模拟数据
 const loading = ref(true)        // 加载中标记（初始即为加载态，避免首屏闪烁）
 const updatedText = ref('—')     // 状态条更新时间
 
 /* ---------- 派生：最新一天 ---------- */
 const latestDay = computed(() => {
-  if (!weatherData.value || !weatherData.value.length) return null
-  return weatherData.value[weatherData.value.length - 1]
+  const arr = weatherData.value
+  if (!arr || !arr.length) return null
+  return arr[arr.length - 1]
 })
 
 /* ---------- 派生：状态条 / 季节卡片文案 ---------- */
@@ -324,8 +349,8 @@ const chartGeom = computed(() => {
   const innerH = H - padT - padB
 
   // 收集最高/最低温（按当前单位）
-  const maxVals = wd.map((d) => unit.value === 'F' ? toF(d.at.mx) : d.at.mx)
-  const minVals = wd.map((d) => unit.value === 'F' ? toF(d.at.mn) : d.at.mn)
+  const maxVals = wd.map((d) => unit.value === 'F' ? toF(d.at.mx as number) : d.at.mx)
+  const minVals = wd.map((d) => unit.value === 'F' ? toF(d.at.mn as number) : d.at.mn)
 
   // 计算坐标范围（留出余量）
   const allVals = maxVals.concat(minVals).filter((v) => v != null)
@@ -338,15 +363,16 @@ const chartGeom = computed(() => {
   const range = hi - lo
 
   const n = wd.length
-  const x = (i) => padL + (n === 1 ? innerW / 2 : (i / (n - 1)) * innerW)
-  const y = (v) => padT + innerH - ((v - lo) / range) * innerH
+  const x = (i: number) => padL + (n === 1 ? innerW / 2 : (i / (n - 1)) * innerW)
+  const y = (v: number) => padT + innerH - ((v - lo) / range) * innerH
 
   // 构造折线路径
-  function pathFor(vals) {
+  function pathFor(vals: (number | null)[]) {
     let p = ''
     for (let i = 0; i < vals.length; i++) {
-      if (vals[i] == null) continue
-      p += (p ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(vals[i]).toFixed(1)
+      const vi = vals[i]
+      if (vi == null) continue
+      p += (p ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(vi).toFixed(1)
     }
     return p
   }
@@ -368,13 +394,15 @@ const chartGeom = computed(() => {
   const xLabels = wd.map((d, i) => ({ x: x(i), sol: d.sol }))
 
   // 数据点 + 数值标签
-  const dots = []
+  const dots: { cx: number; cy: number; type: string; label: string; labelY: number }[] = []
   for (let i = 0; i < n; i++) {
-    if (maxVals[i] != null) {
-      dots.push({ cx: x(i), cy: y(maxVals[i]), type: 'max', label: Math.round(maxVals[i]) + '°', labelY: y(maxVals[i]) - 8 })
+    const mv = maxVals[i]
+    if (mv != null) {
+      dots.push({ cx: x(i), cy: y(mv), type: 'max', label: Math.round(mv) + '°', labelY: y(mv) - 8 })
     }
-    if (minVals[i] != null) {
-      dots.push({ cx: x(i), cy: y(minVals[i]), type: 'min', label: Math.round(minVals[i]) + '°', labelY: y(minVals[i]) + 14 })
+    const nv = minVals[i]
+    if (nv != null) {
+      dots.push({ cx: x(i), cy: y(nv), type: 'min', label: Math.round(nv) + '°', labelY: y(nv) + 14 })
     }
   }
 
@@ -431,7 +459,7 @@ function useMockData() {
 async function fetchWeather() {
   loading.value = true
   try {
-    const data = await fetchJSON(MAAS2_URL, { timeout: 15000 })
+    const data = await fetchJSON<Maas2Sol>(MAAS2_URL, { timeout: 15000 })
     const parsed = parseApiResponse(data)
     if (!parsed) {
       // API 返回但无有效数据，降级
@@ -450,7 +478,7 @@ async function fetchWeather() {
 }
 
 /* ---------- 温度单位切换 ---------- */
-function setUnit(u) {
+function setUnit(u: 'C' | 'F') {
   if (u === unit.value) return
   unit.value = u
 }

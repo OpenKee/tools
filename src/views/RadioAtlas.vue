@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Radio Atlas — 全球电台探索器（Vue 3 SFC）
    数据来源：radio-browser.info 公共 API
@@ -9,6 +9,23 @@ import { useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- 数据类型 ---------- */
+interface RadioStation {
+  stationuuid: string
+  name: string
+  url: string
+  url_resolved: string
+  favicon: string
+  tags: string
+  country: string
+  language: string
+  votes: number
+  clickcount: number
+  bitrate: number
+}
+interface RadioCountry { name: string }
+interface RadioTag { name: string }
 
 /* ---------- i18n 文案字典（中英双语） ---------- */
 const copy = {
@@ -44,10 +61,10 @@ const FAVS_KEY = 'radio-favs'
 const country = ref('')        // 国家筛选
 const tag = ref('')            // 流派筛选
 const name = ref('')           // 电台名筛选
-const stations = ref([])       // 当前展示的电台列表
-const countries = ref([])      // 国家元数据（用于 datalist）
-const tags = ref([])           // 流派元数据（用于 datalist）
-const playing = ref(null)      // 正在播放的电台对象
+const stations = ref<RadioStation[]>([])   // 当前展示的电台列表
+const countries = ref<RadioCountry[]>([])  // 国家元数据（用于 datalist）
+const tags = ref<RadioTag[]>([])           // 流派元数据（用于 datalist）
+const playing = ref<RadioStation | null>(null)  // 正在播放的电台对象
 const offset = ref(0)          // 分页偏移
 const loading = ref(false)     // 加载中标记
 const ended = ref(false)       // 已加载到末尾
@@ -59,30 +76,30 @@ const initError = ref('')      // 初始化失败消息
 const searchError = ref('')    // 搜索失败消息
 const favVersion = ref(0)      // 收藏变更版本号（驱动 isFav 重算）
 
-const audioEl = ref(null)      // <audio> 元素引用
-const loadMoreEl = ref(null)   // 无限滚动哨兵元素引用
+const audioEl = ref<HTMLAudioElement | null>(null)  // <audio> 元素引用
+const loadMoreEl = ref<HTMLElement | null>(null)    // 无限滚动哨兵元素引用
 
 /* favicon 缓存：reactive 以便模板在 blob URL 就绪后响应式刷新 */
-const faviconCache = reactive({})
-const faviconStarted = new Set() // 已派发的 favicon 请求，避免重复抓取
+const faviconCache = reactive<Record<string, string>>({})
+const faviconStarted = new Set<string>() // 已派发的 favicon 请求，避免重复抓取
 
 /* toast 提示 */
 const toast = reactive({ visible: false, msg: '' })
-let toastTimer = null
+let toastTimer: ReturnType<typeof setTimeout> | null = null
 
-let observer = null            // IntersectionObserver 实例
+let observer: IntersectionObserver | null = null   // IntersectionObserver 实例
 
 /* ---------- 收藏管理（localStorage 持久化） ---------- */
-function getFavs() {
+function getFavs(): RadioStation[] {
   try { return JSON.parse(lsGet(FAVS_KEY) || '[]') } catch { return [] }
 }
-function setFavs(f) { lsSet(FAVS_KEY, JSON.stringify(f)) }
-function isFav(id) {
+function setFavs(f: RadioStation[]) { lsSet(FAVS_KEY, JSON.stringify(f)) }
+function isFav(id: string) {
   // 读取版本号以建立响应式依赖，收藏切换时模板自动重算
   favVersion.value
   return getFavs().some(s => s.stationuuid === id)
 }
-function onToggleFav(station) {
+function onToggleFav(station: RadioStation) {
   const f = getFavs()
   const idx = f.findIndex(s => s.stationuuid === station.stationuuid)
   if (idx >= 0) f.splice(idx, 1); else f.push(station)
@@ -91,7 +108,7 @@ function onToggleFav(station) {
 }
 
 /* ---------- favicon 抓取（带缓存，返回 blob URL） ---------- */
-async function fetchFavicon(url) {
+async function fetchFavicon(url: string) {
   const key = url.replace('http://', 'https://')
   try {
     const r = await fetch(key, { mode: 'cors' })
@@ -108,7 +125,7 @@ async function fetchFavicon(url) {
   }
 }
 // 同步返回缓存中的 favicon URL；未缓存则触发异步抓取
-function faviconFor(url) {
+function faviconFor(url: string) {
   const key = (url || '').replace('http://', 'https://')
   if (!key) return ''
   if (key in faviconCache) return faviconCache[key]
@@ -120,7 +137,7 @@ function faviconFor(url) {
 }
 
 /* ---------- 标签解析（取前 3 个） ---------- */
-function parseTags(tagsStr) {
+function parseTags(tagsStr: string): string[] {
   return (tagsStr || '').split(',').filter(Boolean).map(s => s.trim()).slice(0, 3)
 }
 
@@ -143,9 +160,10 @@ const resultCountText = computed(() => {
 })
 
 /* ---------- 播放控制 ---------- */
-function playStation(s) {
+function playStation(s: RadioStation) {
   playing.value = s
   const audio = audioEl.value
+  if (!audio) return
   audio.src = s.url_resolved || s.url
   audio.play().catch(() => {})
   showPlayer.value = true
@@ -153,6 +171,7 @@ function playStation(s) {
 }
 function stopPlayback() {
   const audio = audioEl.value
+  if (!audio) return
   audio.pause()
   audio.removeAttribute('src')
   audio.load()
@@ -161,18 +180,21 @@ function stopPlayback() {
 }
 function onPlayClick() {
   const audio = audioEl.value
+  if (!audio) return
   // 无源且列表非空时，播放第一首
   if (!audio.src && stations.value.length) { playStation(stations.value[0]); return }
   if (audio.paused) audio.play().catch(() => {}); else audio.pause()
 }
 function onPrev() {
   if (!playing.value || !stations.value.length) return
-  const idx = stations.value.findIndex(s => s.stationuuid === playing.value.stationuuid)
+  const cur = playing.value
+  const idx = stations.value.findIndex(s => s.stationuuid === cur.stationuuid)
   if (idx > 0) playStation(stations.value[idx - 1])
 }
 function onNext() {
   if (!playing.value || !stations.value.length) return
-  const idx = stations.value.findIndex(s => s.stationuuid === playing.value.stationuuid)
+  const cur = playing.value
+  const idx = stations.value.findIndex(s => s.stationuuid === cur.stationuuid)
   if (idx < stations.value.length - 1) playStation(stations.value[idx + 1])
 }
 function onAudioPlay() { isAudioPlaying.value = true }
@@ -196,8 +218,8 @@ async function search(reset = true) {
   try {
     const params = new URLSearchParams({
       hidebroken: 'true',
-      limit: PAGE,
-      offset: offset.value,
+      limit: String(PAGE),
+      offset: String(offset.value),
       order: 'clickcount',
       reverse: 'true'
     })
@@ -207,7 +229,7 @@ async function search(reset = true) {
     if (c) params.set('country', c)
     if (tg) params.set('tag', tg)
     if (nm) params.set('name', nm)
-    const chunk = await fetchJSON(`${API}/stations/search?${params}`)
+    const chunk = await fetchJSON<RadioStation[]>(`${API}/stations/search?${params}`)
     stations.value = reset ? chunk : [...stations.value, ...chunk]
     offset.value += chunk.length
     if (chunk.length < PAGE) ended.value = true
@@ -243,30 +265,30 @@ function onRandomClick() {
 /* ---------- 元数据加载（国家 / 流派列表） ---------- */
 async function loadMeta() {
   const [c, tg] = await Promise.all([
-    fetchJSON(`${API}/countries`),
-    fetchJSON(`${API}/tags`)
+    fetchJSON<RadioCountry[]>(`${API}/countries`),
+    fetchJSON<RadioTag[]>(`${API}/tags`)
   ])
   countries.value = c
   tags.value = tg
 }
 
 /* ---------- toast ---------- */
-function showToast(msg) {
+function showToast(msg: string) {
   toast.msg = msg
   toast.visible = true
-  clearTimeout(toastTimer)
+  if (toastTimer) clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toast.visible = false }, 3000)
 }
 
 /* ---------- 卡片图标加载失败：隐藏该 img ---------- */
-function onImgError(e) { e.target.style.display = 'none' }
+function onImgError(e: Event) { (e.target as HTMLElement).style.display = 'none' }
 
 /* ---------- 音量同步到 audio 元素 ---------- */
 watch(volume, (v) => { if (audioEl.value) audioEl.value.volume = v })
 
 /* ---------- 生命周期 ---------- */
 onMounted(() => {
-  audioEl.value.volume = 0.8
+  if (audioEl.value) audioEl.value.volume = 0.8
 
   // 无限滚动：哨兵进入视口时加载下一页
   observer = new IntersectionObserver((entries) => {
@@ -274,7 +296,7 @@ onMounted(() => {
       search(false)
     }
   }, { rootMargin: '500px' })
-  observer.observe(loadMoreEl.value)
+  if (loadMoreEl.value) observer.observe(loadMoreEl.value)
 
   // 初始化：加载元数据后默认筛选中国电台
   loadMeta()
@@ -284,7 +306,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (observer) observer.disconnect()
-  clearTimeout(toastTimer)
+  if (toastTimer) clearTimeout(toastTimer)
 })
 </script>
 

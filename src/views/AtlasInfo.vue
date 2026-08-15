@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, nextTick, onMounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON } from '../ok.js'
@@ -50,6 +50,36 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface CountryName {
+  common: string
+  official: string
+}
+
+interface CountryCurrency {
+  name: string
+  symbol: string
+}
+
+interface Country {
+  cca3: string
+  flag: string
+  name: CountryName
+  region: string
+  subregion: string
+  languages: Record<string, string> | null
+  currencies: Record<string, CountryCurrency> | null
+  latlng: [number, number] | null
+  capital: string[] | null
+  population: number
+  borders: string[] | null
+}
+
+interface WorldBankItem {
+  countryiso3code: string
+  value: number
+}
+
 /* ---------- 地区筛选常量 ---------- */
 const REGIONS = [
   { k: '', l: { en: 'All', zh: '全部' } },
@@ -61,15 +91,15 @@ const REGIONS = [
 ]
 
 /* ---------- 响应式状态 ---------- */
-const allCountries = ref([])      // 全部国家数据
+const allCountries = ref<Country[]>([])  // 全部国家数据
 const activeRegion = ref('')      // 当前选中地区
 const searchQuery = ref('')       // 搜索输入
-const selectedCode = ref(null)    // 当前查看详情的国家 cca3
+const selectedCode = ref<string | null>(null)  // 当前查看详情的国家 cca3
 const errorMsg = ref('')          // 加载错误信息
-const detailRef = ref(null)       // 详情卡片引用，用于滚动定位
+const detailRef = ref<HTMLElement | null>(null)  // 详情卡片引用，用于滚动定位
 
 /* ---------- 工具函数：数字千分位格式化 ---------- */
-function num(n) { return new Intl.NumberFormat().format(n) }
+function num(n: number) { return new Intl.NumberFormat().format(n) }
 
 /* ---------- 派生：搜索框占位符（随语言切换） ---------- */
 const searchPlaceholder = computed(() =>
@@ -139,12 +169,12 @@ const borders = computed(() => {
 })
 
 /* ---------- 选择地区 ---------- */
-function selectRegion(k) {
+function selectRegion(k: string) {
   activeRegion.value = k
 }
 
 /* ---------- 显示国家详情（邻国按钮点击复用同一函数） ---------- */
-function showDetail(code) {
+function showDetail(code: string) {
   selectedCode.value = code
   // 等待 DOM 更新后滚动到详情卡片
   nextTick(() => {
@@ -157,12 +187,12 @@ async function loadAll() {
   try {
     // 使用共享 fetchJSON（带超时和状态检查）
     const [countries, popData] = await Promise.all([
-      fetchJSON('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json'),
-      fetchJSON('https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&per_page=300&date=2023')
+      fetchJSON<Country[]>('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json'),
+      fetchJSON<[unknown, WorldBankItem[]]>('https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&per_page=300&date=2023')
     ])
     if (!Array.isArray(countries)) throw new Error('countries not array')
     // 构建 cca3 -> 人口 的映射
-    const popMap = {}
+    const popMap: Record<string, number> = {}
     if (Array.isArray(popData) && popData.length > 1) {
       popData[1].forEach(item => {
         if (item.countryiso3code && item.value) popMap[item.countryiso3code] = item.value
@@ -174,7 +204,7 @@ async function loadAll() {
       (a.name?.common || '').localeCompare(b.name?.common || '')
     )
   } catch (e) {
-    errorMsg.value = e.message
+    errorMsg.value = e instanceof Error ? e.message : String(e)
   }
 }
 

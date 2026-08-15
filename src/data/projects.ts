@@ -7,7 +7,16 @@
    前 4 个为"API 融合"应用：多个 API 协作产生单独调用没有的价值。
    ============================================================ */
 
-export const PROJECTS = [
+export interface Project {
+  name: string
+  nameZh: string
+  type: string
+  typeClass: string
+  desc: { en: string; zh: string }
+  slug?: string
+}
+
+export const PROJECTS: Project[] = [
   /* ---------- API 融合应用 ---------- */
   {
     name: 'Trip Prep', nameZh: '旅行准备台', type: 'travel', typeClass: 'travel',
@@ -188,7 +197,7 @@ export const PROJECTS = [
 ]
 
 /** 生成应用的 URL slug（用于 Vue 路由路径）。 */
-export function slugify(name) {
+export function slugify(name: string): string {
   return name
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

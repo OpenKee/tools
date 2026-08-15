@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Word Forge — 单词学习（Vue 3 SFC 迁移版）
    - 共享 i18n：useT（来自 ../i18n.js），语言切换由 AppHeader 负责
@@ -12,7 +12,59 @@ import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 
 /* ---------- 内嵌词库（66 个常用英语单词，覆盖初/中/高三级） ---------- */
-const WORDS = [
+interface Word {
+  word: string
+  phonetic: string
+  pos: string
+  meaning: string
+  meaningEn: string
+  example: string
+  exampleZh: string
+  level: number
+}
+
+interface DictionaryEntry {
+  phonetics?: Array<{ text?: string }>
+  meanings?: Array<{
+    partOfSpeech?: string
+    definitions?: Array<{ definition: string }>
+  }>
+}
+
+interface WordStatus {
+  s?: string
+  l?: boolean
+}
+
+interface ProgressData {
+  v: number
+  words: Record<string, WordStatus>
+  streak: number
+  best: number
+  total: number
+  correct: number
+  date: string
+  todayWords: Record<string, number>
+}
+
+interface SpellResult {
+  correct: boolean
+  target: string
+  input: string
+}
+
+interface ChoiceResult {
+  correct: boolean
+  chosen: string
+}
+
+interface LookupData {
+  phonetic: string
+  pos: string
+  meaning: string
+}
+
+const WORDS: Word[] = [
   /* 初级 level 1 */
   { word: 'apple', phonetic: '/ˈæpəl/', pos: 'n.', meaning: '苹果', meaningEn: 'a round fruit with red or green skin', example: 'She ate a fresh apple after lunch.', exampleZh: '她午饭后吃了一个新鲜的苹果。', level: 1 },
   { word: 'water', phonetic: '/ˈwɔːtər/', pos: 'n.', meaning: '水', meaningEn: 'the clear liquid that we drink', example: 'Please drink more water every day.', exampleZh: '请每天多喝水。', level: 1 },
@@ -143,16 +195,16 @@ const mode = ref('card')            // card | spell | choice
 const levelFilter = ref(0)          // 0 = 全部
 const cardIndex = ref(0)
 const speechAvailable = ref(false)
-const progress = ref(loadProgress()) // 学习进度
-const currentSpell = ref(null)      // 当前拼写题单词对象
-const currentChoice = ref(null)     // 当前选择题单词对象
+const progress = ref<ProgressData>(loadProgress()) // 学习进度
+const currentSpell = ref<Word | null>(null)        // 当前拼写题单词对象
+const currentChoice = ref<Word | null>(null)       // 当前选择题单词对象
 const flipped = ref(false)          // 卡片翻转状态
 const spellInput = ref('')          // 拼写输入值
-const spellResult = ref(null)       // { correct, target, input }
-const choiceOptions = ref([])       // 选择题选项数组
-const choiceResult = ref(null)      // { correct, chosen }
-const lookupData = ref(null)        // 查词覆盖数据 { phonetic, pos, meaning }
-const spellInputEl = ref(null)      // 拼写输入框元素引用（用于聚焦）
+const spellResult = ref<SpellResult | null>(null)  // { correct, target, input }
+const choiceOptions = ref<Word[]>([])       // 选择题选项数组
+const choiceResult = ref<ChoiceResult | null>(null) // { correct, chosen }
+const lookupData = ref<LookupData | null>(null)  // 查词覆盖数据 { phonetic, pos, meaning }
+const spellInputEl = ref<HTMLInputElement | null>(null) // 拼写输入框元素引用（用于聚焦）
 
 /* ---------- 工具函数 ---------- */
 function dateStr() {
@@ -160,11 +212,11 @@ function dateStr() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 }
 
-function freshProgress() {
+function freshProgress(): ProgressData {
   return { v: 1, words: {}, streak: 0, best: 0, total: 0, correct: 0, date: dateStr(), todayWords: {} }
 }
 
-function loadProgress() {
+function loadProgress(): ProgressData {
   const raw = lsGet(LS_KEY)
   if (!raw) return freshProgress()
   try {
@@ -197,11 +249,11 @@ function ensureDate() {
   }
 }
 
-function levelLabel(n) {
+function levelLabel(n: number): string {
   return n === 1 ? t.value('level1') : n === 2 ? t.value('level2') : t.value('level3')
 }
 
-function shuffle(arr) {
+function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice()
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -211,9 +263,9 @@ function shuffle(arr) {
 }
 
 /* 从 pool 取 n 个，不足则从 fallback 补足（去重） */
-function sample(pool, n, fallback) {
-  const res = []
-  const used = {}
+function sample<T extends { word: string }>(pool: T[], n: number, fallback: T[]): T[] {
+  const res: T[] = []
+  const used: Record<string, boolean> = {}
   const p = pool.slice()
   while (res.length < n && p.length) {
     const i = Math.floor(Math.random() * p.length)
@@ -316,7 +368,7 @@ const spellLetters = computed(() => {
   const input = spellResult.value.input.toLowerCase()
   const tgt = target.toLowerCase()
   return target.split('').map(function (ch, i) {
-    const u = input[i]
+    const u = input[i] as string | undefined
     const ok = u !== undefined && u === tgt[i]
     return { ch: ch, ok: ok }
   })
@@ -331,22 +383,22 @@ const choiceMeaning = computed(() => {
 const choiceLevel = computed(() => currentChoice.value ? levelLabel(currentChoice.value.level) : '')
 
 /* ---------- 进度记录 ---------- */
-function setStatus(word, s) {
+function setStatus(word: string, s: string) {
   if (!progress.value.words[word]) progress.value.words[word] = {}
   progress.value.words[word].s = s
 }
 
-function markLearned(word) {
+function markLearned(word: string) {
   if (!progress.value.words[word]) progress.value.words[word] = {}
   progress.value.words[word].l = true
 }
 
-function touchToday(word) {
+function touchToday(word: string) {
   ensureDate()
   progress.value.todayWords[word] = 1
 }
 
-function recordAnswer(word, correct) {
+function recordAnswer(word: string, correct: boolean) {
   progress.value.total++
   if (correct) {
     progress.value.correct++
@@ -364,7 +416,7 @@ function recordAnswer(word, correct) {
 }
 
 /* ---------- 朗读（Web Speech API） ---------- */
-function speak(text) {
+function speak(text: string) {
   if (!speechAvailable.value || !text) return
   try {
     const synth = window.speechSynthesis
@@ -392,13 +444,14 @@ async function lookupCurrentWord() {
   const w = currentCard.value
   if (!w) return
   try {
-    const data = await fetchJSON('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.word))
+    const data = await fetchJSON<DictionaryEntry[]>('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.word))
     if (!Array.isArray(data) || !data.length) throw new Error('no result')
     const entry = data[0]
     let phonetic = ''
     if (entry.phonetics && entry.phonetics.length) {
       for (let i = 0; i < entry.phonetics.length; i++) {
-        if (entry.phonetics[i].text) { phonetic = entry.phonetics[i].text; break }
+        const ph = entry.phonetics[i].text
+        if (ph) { phonetic = ph; break }
       }
     }
     const meaning = entry.meanings && entry.meanings[0]
@@ -418,7 +471,7 @@ function toggleFlip() {
   flipped.value = !flipped.value
 }
 
-function onFlipKeydown(e) {
+function onFlipKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault()
     toggleFlip()
@@ -451,7 +504,7 @@ function speakCardExample() {
   if (w) speak(w.example)
 }
 
-function markCard(status) {
+function markCard(status: string) {
   const w = currentCard.value
   if (!w) return
   setStatus(w.word, status)
@@ -464,7 +517,7 @@ function markCard(status) {
 function newSpellWord() {
   const list = filtered.value
   if (!list.length) return
-  let pick
+  let pick: Word
   if (list.length === 1) {
     pick = list[0]
   } else {
@@ -497,7 +550,7 @@ function speakSpellWord() {
 function newChoice() {
   const list = filtered.value
   if (!list.length) return
-  let pick
+  let pick: Word
   if (list.length === 1) {
     pick = list[0]
   } else {
@@ -512,7 +565,7 @@ function newChoice() {
   choiceResult.value = null
 }
 
-function onChooseOption(word) {
+function onChooseOption(word: string) {
   if (!currentChoice.value || choiceResult.value) return
   const correct = word === currentChoice.value.word
   recordAnswer(currentChoice.value.word, correct)
@@ -520,7 +573,7 @@ function onChooseOption(word) {
 }
 
 /* ---------- 模式 / 难度切换 ---------- */
-function setMode(m) {
+function setMode(m: string) {
   mode.value = m
   if (m === 'card') {
     flipped.value = false
@@ -532,7 +585,7 @@ function setMode(m) {
   }
 }
 
-function setLevel(l) {
+function setLevel(l: number) {
   levelFilter.value = l
   cardIndex.value = 0
   currentSpell.value = null
@@ -756,7 +809,7 @@ onMounted(function () {
             :key="opt.word"
             class="wf-option"
             :class="{
-              'wf-option-correct': choiceResult && opt.word === currentChoice.word,
+              'wf-option-correct': choiceResult && currentChoice && opt.word === currentChoice.word,
               'wf-option-wrong': choiceResult && opt.word === choiceResult.chosen && !choiceResult.correct
             }"
             :disabled="!!choiceResult"
@@ -772,7 +825,7 @@ onMounted(function () {
           <div class="wf-result-msg" :class="choiceResult.correct ? 'wf-msg-good' : 'wf-msg-bad'">
             {{ choiceResult.correct ? t('choiceCorrect') : t('choiceWrong') }}
           </div>
-          <div v-if="!choiceResult.correct" class="wf-answer-line">{{ t('choiceAnswer') }} <strong>{{ currentChoice.word }}</strong></div>
+          <div v-if="currentChoice && !choiceResult.correct" class="wf-answer-line">{{ t('choiceAnswer') }} <strong>{{ currentChoice.word }}</strong></div>
         </div>
         <div class="wf-card-toolbar">
           <button v-if="choiceResult" class="wf-btn wf-btn-primary" type="button" @click="newChoice">{{ t('nextQuestion') }}</button>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Earth Now — 此刻地球
    多 API 协作的融合应用：展示此刻地球上正在发生的实时事件。
@@ -17,6 +17,52 @@ import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- API 数据类型 ---------- */
+interface QuakeProps { time?: number; mag?: number; place?: string }
+interface QuakeFeature { properties?: QuakeProps }
+interface QuakeResponse { features?: QuakeFeature[] }
+interface QuakeItem { time: number; mag: number; place: string }
+
+interface IssApiResponse {
+  latitude?: string
+  longitude?: string
+  timestamp?: number
+  velocity?: string | null
+  altitude?: string | null
+}
+interface IssData {
+  lat: number
+  lon: number
+  ts: number
+  speed: number | null
+  alt: number | null
+}
+
+interface KpObjectRow { time_tag?: string; time?: string; Kp?: string | number; kp?: string | number }
+type KpRowInput = string[] | KpObjectRow
+interface KpRow { time?: string; kp: number }
+
+interface LaunchConfiguration { full_name?: string; name?: string }
+interface LaunchRocket { configuration?: LaunchConfiguration }
+interface LaunchPadLocation { name?: string }
+interface LaunchPad { name?: string; location?: LaunchPadLocation }
+interface LaunchMission { name?: string }
+interface LaunchItem {
+  net?: string
+  name?: string
+  rocket?: LaunchRocket
+  pad?: LaunchPad
+  mission?: LaunchMission
+}
+interface LaunchResponse { results?: LaunchItem[] }
+
+interface MarsResponse { sol?: number; max_temp?: number | null; min_temp?: number | null; season?: string }
+interface MarsData { sol: number; max: number | null; min: number | null; season: string }
+
+interface PeopleEntry { name: string; craft: string }
+interface PeopleResponse { number?: number; people?: PeopleEntry[] }
+interface PeopleData { number: number; people: PeopleEntry[] }
 
 /* ---------- i18n 文案 ---------- */
 const copy = {
@@ -148,7 +194,8 @@ function quakeUrl() {
 }
 
 /* ---------- 简化区域判断（粗略经纬度框，中英名称）---------- */
-const CONTINENTS = [
+type RegionBox = [number, number, number, number, string, string]
+const CONTINENTS: RegionBox[] = [
   [25, 72, -168, -52, 'North America', '北美洲'],
   [-56, 13, -82, -34, 'South America', '南美洲'],
   [36, 71, -10, 40, 'Europe', '欧洲'],
@@ -158,14 +205,14 @@ const CONTINENTS = [
   [-44, -10, 112, 154, 'Australia', '澳大利亚'],
   [60, 83, -55, -20, 'Greenland', '格陵兰'],
 ]
-const OCEANS = [
+const OCEANS: RegionBox[] = [
   [-60, 60, -180, -130, 'Pacific Ocean', '太平洋'],
   [-60, 60, 120, 180, 'Pacific Ocean', '太平洋'],
   [-60, 60, -70, -15, 'Atlantic Ocean', '大西洋'],
   [-30, 25, 45, 100, 'Indian Ocean', '印度洋'],
 ]
 
-function detectRegion(lat, lon) {
+function detectRegion(lat: number, lon: number) {
   if (lat > 66.5) return { en: 'Arctic region', zh: '北极地区' }
   if (lat < -66.5) return { en: 'Antarctic region', zh: '南极地区' }
   for (let i = 0; i < CONTINENTS.length; i++) {
@@ -185,24 +232,24 @@ function detectRegion(lat, lon) {
 
 /* ---------- 模块状态（各模块独立 loading/error）---------- */
 const nowTick = ref(Date.now())            // 每秒更新（驱动"此刻"时间戳 + 倒计时）
-const quakeData = ref([])
+const quakeData = ref<QuakeItem[]>([])
 const quakeState = ref('loading')          // loading | loaded | error
-const issData = ref(null)
+const issData = ref<IssData | null>(null)
 const issState = ref('loading')
-const kpData = ref(null)
+const kpData = ref<KpRow | null>(null)
 const kpState = ref('loading')
-const launchData = ref(null)
+const launchData = ref<LaunchItem | null>(null)
 const launchState = ref('loading')         // loading | loaded | empty | error
-const marsData = ref(null)
+const marsData = ref<MarsData | null>(null)
 const marsState = ref('loading')
-const peopleData = ref(null)
+const peopleData = ref<PeopleData | null>(null)
 const peopleState = ref('loading')
 
 /* ---------- 各模块独立加载函数 ---------- */
 async function loadQuakes() {
   quakeState.value = 'loading'
   try {
-    const d = await fetchJSON(quakeUrl(), { timeout: 15000 })
+    const d = await fetchJSON<QuakeResponse>(quakeUrl(), { timeout: 15000 })
     const feats = (d && d.features) || []
     quakeData.value = feats
       .map(function (f) {
@@ -213,7 +260,7 @@ async function loadQuakes() {
           place: p && p.place,
         }
       })
-      .filter(function (e) { return e.mag != null })
+      .filter(function (e): e is QuakeItem { return e.mag != null })
       .sort(function (a, b) { return (b.time || 0) - (a.time || 0) })
     quakeState.value = 'loaded'
   } catch (e) {
@@ -224,11 +271,11 @@ async function loadQuakes() {
 async function loadIss() {
   issState.value = 'loading'
   try {
-    const d = await fetchJSON(ISS_URL, { timeout: 15000 })
+    const d = await fetchJSON<IssApiResponse>(ISS_URL, { timeout: 15000 })
     if (!d || typeof d.latitude === 'undefined') throw new Error('bad iss')
     issData.value = {
       lat: parseFloat(d.latitude),
-      lon: parseFloat(d.longitude),
+      lon: parseFloat(d.longitude ?? ''),
       ts: d.timestamp ? d.timestamp * 1000 : Date.now(),
       speed: d.velocity != null ? parseFloat(d.velocity) : null,
       alt: d.altitude != null ? parseFloat(d.altitude) : null,
@@ -240,25 +287,25 @@ async function loadIss() {
 }
 
 // NOAA Kp 兼容两种格式：嵌套数组 [['time_tag','Kp',...], ...] 或对象数组
-function normalizeKpRow(r) {
+function normalizeKpRow(r: KpRowInput): KpRow | null {
   if (!r) return null
   if (Array.isArray(r)) {
     return { time: r[0], kp: parseFloat(r[1]) }
   }
   const time = r.time_tag || r.time
   const kp = r.Kp != null ? r.Kp : r.kp
-  return { time: time, kp: parseFloat(kp) }
+  return { time: time, kp: parseFloat(String(kp)) }
 }
 
 async function loadKp() {
   kpState.value = 'loading'
   try {
-    const d = await fetchJSON(KP_URL, { timeout: 15000 })
+    const d = await fetchJSON<KpRowInput[]>(KP_URL, { timeout: 15000 })
     if (!Array.isArray(d) || d.length < 2) throw new Error('bad kp')
     const rows = d
       .map(normalizeKpRow)
-      .filter(function (r) { return r && !isNaN(r.kp) })
-    let latest = null
+      .filter(function (r): r is KpRow { return !!r && !isNaN(r.kp) })
+    let latest: KpRow | null = null
     for (let i = rows.length - 1; i >= 0; i--) {
       if (rows[i].kp != null) { latest = rows[i]; break }
     }
@@ -273,7 +320,7 @@ async function loadKp() {
 async function loadLaunch() {
   launchState.value = 'loading'
   try {
-    const d = await fetchJSON(LAUNCH_URL, { timeout: 15000 })
+    const d = await fetchJSON<LaunchResponse>(LAUNCH_URL, { timeout: 15000 })
     const results = (d && d.results) || []
     const now = Date.now()
     const next = results.find(function (l) {
@@ -289,7 +336,7 @@ async function loadLaunch() {
 async function loadMars() {
   marsState.value = 'loading'
   try {
-    const d = await fetchJSON(MARS_URL, { timeout: 15000 })
+    const d = await fetchJSON<MarsResponse>(MARS_URL, { timeout: 15000 })
     if (!d || d.sol == null) throw new Error('bad mars')
     marsData.value = {
       sol: d.sol,
@@ -306,7 +353,7 @@ async function loadMars() {
 async function loadPeople() {
   peopleState.value = 'loading'
   try {
-    const d = await fetchJSON(PEOPLE_URL, { timeout: 15000 })
+    const d = await fetchJSON<PeopleResponse>(PEOPLE_URL, { timeout: 15000 })
     if (!d || typeof d.number === 'undefined') throw new Error('bad people')
     peopleData.value = {
       number: d.number,
@@ -342,7 +389,7 @@ const quakeStat = computed(function () {
   }
   return { n: list.length, max: max }
 })
-function quakeTimeAgo(ts) {
+function quakeTimeAgo(ts: number) {
   if (!ts) return '--'
   const sec = Math.max(0, Math.floor((nowTick.value - ts) / 1000))
   if (sec < 60) return sec + 's'
@@ -350,7 +397,7 @@ function quakeTimeAgo(ts) {
   if (min < 60) return min + 'm'
   return Math.floor(min / 60) + 'h'
 }
-function magClass(m) {
+function magClass(m: number) {
   if (m == null) return 'mag-na'
   if (m < 4) return 'mag-low'
   if (m < 5) return 'mag-mid'
@@ -381,7 +428,7 @@ const issAltText = computed(function () {
 })
 
 /* ---------- 派生：极光模块 ---------- */
-function kpLevel(kp) {
+function kpLevel(kp: number) {
   if (kp < 4) return { key: 'levelQuiet', cls: 'kp-quiet' }
   if (kp < 5) return { key: 'levelWeak', cls: 'kp-weak' }
   if (kp < 6) return { key: 'levelModerate', cls: 'kp-moderate' }
@@ -416,7 +463,7 @@ const countdown = computed(function () {
     launched: launched,
   }
 })
-function pad2(n) { return n < 10 ? '0' + n : '' + n }
+function pad2(n: number) { return n < 10 ? '0' + n : '' + n }
 const launchRocket = computed(function () {
   const l = launchData.value
   if (!l || !l.rocket || !l.rocket.configuration) return ''
@@ -470,8 +517,8 @@ const peopleTop = computed(function () {
 })
 
 /* ---------- 生命周期：定时器 ---------- */
-let nowTimer = null       // 每秒 tick（"此刻"时间戳 + 倒计时）
-let refreshTimer = null   // 每 60 秒刷新全部数据
+let nowTimer: ReturnType<typeof setInterval> | null = null       // 每秒 tick（"此刻"时间戳 + 倒计时）
+let refreshTimer: ReturnType<typeof setInterval> | null = null   // 每 60 秒刷新全部数据
 
 onMounted(function () {
   nowTick.value = Date.now()
@@ -515,7 +562,7 @@ onBeforeUnmount(function () {
           <template v-else>
             <div class="stat-row">
               <span v-if="quakeStat.n > 0">
-                {{ t('quakeStat').replace('{n}', quakeStat.n).replace('{m}', quakeStat.max != null ? quakeStat.max.toFixed(1) : '--') }}
+                {{ t('quakeStat').replace('{n}', String(quakeStat.n)).replace('{m}', quakeStat.max != null ? quakeStat.max.toFixed(1) : '--') }}
               </span>
               <span v-else>{{ t('noQuakes') }}</span>
             </div>
@@ -535,7 +582,7 @@ onBeforeUnmount(function () {
           <div v-if="issState === 'loading'" class="card-state">{{ t('loading') }}</div>
           <div v-else-if="issState === 'error'" class="card-state card-error">{{ t('error') }}</div>
           <template v-else-if="issData">
-            <div class="flying">{{ t('flyingOver').replace('{region}', issRegion) }}</div>
+            <div class="flying">{{ t('flyingOver').replace('{region}', String(issRegion)) }}</div>
             <div class="metric-rows">
               <div class="metric"><span>{{ t('latitude') }}</span><strong>{{ issLatText }}</strong></div>
               <div class="metric"><span>{{ t('longitude') }}</span><strong>{{ issLonText }}</strong></div>
@@ -556,7 +603,7 @@ onBeforeUnmount(function () {
               <div class="kp-value">{{ kpDisplay }}</div>
               <div v-if="kpLevelInfo" class="kp-level" :class="kpLevelInfo.cls">{{ t(kpLevelInfo.key) }}</div>
             </div>
-            <div class="metric"><span>{{ t('visibleRange') }}</span><strong>{{ t('visibleAbove').replace('{lat}', kpVisibleLat) }}</strong></div>
+            <div class="metric"><span>{{ t('visibleRange') }}</span><strong>{{ t('visibleAbove').replace('{lat}', String(kpVisibleLat)) }}</strong></div>
             <p class="aurora-note">{{ t('auroraNote') }}</p>
           </template>
         </article>
@@ -602,7 +649,7 @@ onBeforeUnmount(function () {
             </div>
             <div class="metric"><span>{{ t('marsSol') }}</span><strong>Sol {{ marsSolText }}</strong></div>
             <div class="metric"><span>{{ t('marsSeason') }}</span><strong>{{ marsSeasonText }}</strong></div>
-            <p v-if="marsDiff != null" class="mars-vs">{{ t('marsVsEarth').replace('{diff}', marsDiff) }}</p>
+            <p v-if="marsDiff != null" class="mars-vs">{{ t('marsVsEarth').replace('{diff}', String(marsDiff)) }}</p>
           </template>
         </article>
 

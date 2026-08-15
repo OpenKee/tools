@@ -26,6 +26,9 @@ jobs:
 
       - run: npm ci
 
+      # 先跑单元测试，失败即终止，避免把坏代码部署上去
+      - run: npm test
+
       # 生产构建，base 路径 /tools/ 在 vite.config.js 中按 mode=production 自动生效
       - run: npm run build
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // 通用页脚，各应用页面可引入。
 </script>
 

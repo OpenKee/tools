@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Rate Board — 汇率与加密货币看板（Vue 3 SFC）
    数据源：open.er-api.com（汇率）/ CoinGecko（加密货币）
@@ -72,8 +72,32 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- 类型定义 ---------- */
+interface CurrencyInfo {
+  en: string
+  zh: string
+  flag: string
+}
+
+interface RateResponse {
+  result: string
+  time_last_update_utc: string
+  rates: Record<string, number>
+}
+
+interface CryptoCoin {
+  id: string
+  image: string
+  name: string
+  symbol: string
+  current_price: number
+  market_cap: number
+  price_change_percentage_24h: number | null
+  price_change_percentage_7d_in_currency: number | null
+}
+
 // ---------- 货币 / 区域 / 矩阵常量 ----------
-const CURRENCIES = {
+const CURRENCIES: Record<string, CurrencyInfo> = {
   USD: { en: 'US Dollar', zh: '美元', flag: '🇺🇸' },
   EUR: { en: 'Euro', zh: '欧元', flag: '🇪🇺' },
   GBP: { en: 'British Pound', zh: '英镑', flag: '🇬🇧' },
@@ -116,12 +140,12 @@ const MATRIX_CODES = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'HKD', 'KRW', 'SGD', 'A
 const allCodes = Object.keys(CURRENCIES)
 
 // ---------- 状态 ----------
-const ratesCache = ref(null)        // 汇率 API 原始数据
+const ratesCache = ref<RateResponse | null>(null)  // 汇率 API 原始数据
 const ratesLoading = ref(true)      // 汇率加载中
 const ratesError = ref(false)       // 汇率加载失败
-const updatedAt = ref(null)         // 汇率更新时间
+const updatedAt = ref<Date | null>(null)  // 汇率更新时间
 
-const cryptoCoins = ref([])         // 加密货币数组
+const cryptoCoins = ref<CryptoCoin[]>([])  // 加密货币数组
 const cryptoLoading = ref(true)     // 加密货币加载中
 const cryptoError = ref(false)      // 加密货币加载失败
 
@@ -136,12 +160,12 @@ const tableAmount = ref('100')
 
 // ---------- 工具函数 ----------
 // 货币名称（响应式依赖 i18nState.lang）
-function cname(code) {
+function cname(code: string) {
   return CURRENCIES[code]?.[i18nState.lang] || code
 }
 
 // 交叉汇率：基于以 USD 为基准的 rates 表换算
-function crossRate(rates, from, to) {
+function crossRate(rates: Record<string, number>, from: string, to: string): number | null {
   if (from === to) return 1
   const rFrom = rates[from]
   const rTo = rates[to]
@@ -150,7 +174,7 @@ function crossRate(rates, from, to) {
 }
 
 // 汇率展示格式（按量级选择小数位）
-function fmtRate(n) {
+function fmtRate(n: number | null | undefined) {
   if (n === null || n === undefined) return '—'
   if (n >= 100) return n.toFixed(2)
   if (n >= 1) return n.toFixed(4)
@@ -158,12 +182,12 @@ function fmtRate(n) {
 }
 
 // 金额格式（按语言区域）
-function fmtAmount(n) {
+function fmtAmount(n: number) {
   return new Intl.NumberFormat(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 }
 
 // 加密货币金额缩写（$ 前缀）
-function cryptoFmt(n) {
+function cryptoFmt(n: number) {
   if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T'
   if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B'
   if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M'
@@ -172,11 +196,11 @@ function cryptoFmt(n) {
 }
 
 // 加密货币涨跌百分比：class 与文本拆分，模板中分别绑定
-function cryptoPctCls(n) {
+function cryptoPctCls(n: number | null | undefined) {
   if (n == null) return ''
   return n >= 0 ? 'up' : 'down'
 }
-function cryptoPctText(n) {
+function cryptoPctText(n: number | null | undefined) {
   if (n == null) return '—'
   return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'
 }
@@ -184,64 +208,69 @@ function cryptoPctText(n) {
 // ---------- computed：换算器 ----------
 // 换算结果金额（只读输入框绑定）
 const toAmountValue = computed(() => {
-  if (!ratesCache.value) return ''
+  const cache = ratesCache.value
+  if (!cache) return ''
   const from = fromCurrency.value
   const to = toCurrency.value
   const amount = parseFloat(fromAmount.value) || 0
-  const rate = crossRate(ratesCache.value.rates, from, to)
+  const rate = crossRate(cache.rates, from, to)
   if (rate === null) return ''
   return (amount * rate).toFixed(2)
 })
 
 // 换算比率说明文本
 const converterRateText = computed(() => {
-  if (!ratesCache.value) return ''
+  const cache = ratesCache.value
+  if (!cache) return ''
   const from = fromCurrency.value
   const to = toCurrency.value
-  const rate = crossRate(ratesCache.value.rates, from, to)
+  const rate = crossRate(cache.rates, from, to)
   if (rate === null) return '—'
   return `1 ${from} = ${fmtRate(rate)} ${to}`
 })
 
 // ---------- computed：区域分组 ----------
 const regionData = computed(() => {
-  if (!ratesCache.value) return []
+  const cache = ratesCache.value
+  if (!cache) return []
   const base = 'USD'
   return REGIONS.map((region) => ({
     key: region.key,
     label: region.label[i18nState.lang],
     rows: region.codes
-      .filter((c) => c !== base && ratesCache.value.rates[c])
+      .filter((c) => c !== base && cache.rates[c])
       .map((c) => ({
         code: c,
         flag: CURRENCIES[c]?.flag || '',
         name: cname(c),
-        rateText: fmtRate(ratesCache.value.rates[c]),
+        rateText: fmtRate(cache.rates[c]),
       })),
   }))
 })
 
 // ---------- computed：交叉汇率矩阵 ----------
 const matrixRows = computed(() => {
-  if (!ratesCache.value) return []
+  const cache = ratesCache.value
+  if (!cache) return []
   return MATRIX_CODES.map((from) => ({
     from,
     cells: MATRIX_CODES.map((to) => {
       if (from === to) return { diag: true, val: '1' }
-      return { diag: false, val: fmtRate(crossRate(ratesCache.value.rates, from, to)) }
+      return { diag: false, val: fmtRate(crossRate(cache.rates, from, to)) }
     }),
   }))
 })
 
 // ---------- computed：全量汇率表 ----------
 const rateTableRows = computed(() => {
-  if (!ratesCache.value) return []
+  const cache = ratesCache.value
+  if (!cache) return []
   const base = tableBase.value
   const amount = parseFloat(tableAmount.value) || 0
-  const codes = Object.keys(CURRENCIES).filter((c) => c !== base && ratesCache.value.rates[c])
-  codes.sort((a, b) => (ratesCache.value.rates[b] || 0) - (ratesCache.value.rates[a] || 0))
+  const codes = Object.keys(CURRENCIES).filter((c) => c !== base && cache.rates[c])
+  codes.sort((a, b) => (cache.rates[b] || 0) - (cache.rates[a] || 0))
   return codes.map((c) => {
-    const rate = crossRate(ratesCache.value.rates, base, c)
+    const rate = crossRate(cache.rates, base, c)
     const converted = rate ? amount * rate : 0
     return {
       code: c,
@@ -287,7 +316,7 @@ function swap() {
 // ---------- 数据加载 ----------
 async function loadRates() {
   try {
-    const data = await fetchJSON('https://open.er-api.com/v6/latest/USD')
+    const data = await fetchJSON<RateResponse>('https://open.er-api.com/v6/latest/USD')
     if (data.result !== 'success') throw new Error('API error')
     ratesCache.value = data
     updatedAt.value = new Date(data.time_last_update_utc)
@@ -300,7 +329,7 @@ async function loadRates() {
 
 async function loadCrypto() {
   try {
-    const coins = await fetchJSON('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=false&price_change_percentage=24h,7d')
+    const coins = await fetchJSON<CryptoCoin[]>('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=false&price_change_percentage=24h,7d')
     cryptoCoins.value = Array.isArray(coins) ? coins : []
     cryptoLoading.value = false
   } catch (err) {

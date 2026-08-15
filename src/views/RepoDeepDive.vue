@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /* ============================================================
    Repo Deep Dive — GitHub 仓库深挖（Vue 3 SFC）
    - 多 GitHub REST API 协作：基本信息 + 语言字节 + 贡献者 + 提交活动 + topics
@@ -111,6 +111,48 @@ const copy = {
 
 const t = useT(copy)
 
+/* ---------- GitHub API 数据结构 ---------- */
+interface RepoInfo {
+  full_name: string
+  html_url: string
+  description?: string | null
+  stargazers_count: number
+  forks_count: number
+  open_issues_count: number
+  subscribers_count?: number
+  watchers_count?: number
+  size: number
+  default_branch?: string
+  license?: { spdx_id?: string | null } | null
+  created_at?: string
+  pushed_at?: string
+  homepage?: string | null
+  topics?: string[]
+}
+
+interface Contributor {
+  login?: string
+  name?: string
+  id?: number
+  avatar_url?: string
+  html_url?: string
+  contributions?: number
+}
+
+interface Participation {
+  all: number[]
+}
+
+interface LangNode {
+  name: string
+  bytes: number
+  pct: string
+  color: string
+  r: number
+  x: number
+  y: number
+}
+
 /* ---------- 推荐快捷仓库 ---------- */
 const quickPicks = ['vuejs/core', 'facebook/react', 'microsoft/vscode', 'torvalds/linux']
 
@@ -140,10 +182,10 @@ const repoInput = ref('')
 const currentRepo = ref('')
 
 /* ---------- 各 API 独立状态 ---------- */
-const repoInfo = ref(null)
-const languages = ref(null)
-const contributors = ref(null)
-const participation = ref(null)
+const repoInfo = ref<RepoInfo | null>(null)
+const languages = ref<Record<string, number> | null>(null)
+const contributors = ref<Contributor[] | null>(null)
+const participation = ref<Participation | null>(null)
 
 const loadingInfo = ref(false)
 const loadingLangs = ref(false)
@@ -155,19 +197,19 @@ const errorLangs = ref('')
 const errorContribs = ref('')
 const errorCommits = ref('')
 
-const hoveredLang = ref(null)
+const hoveredLang = ref<LangNode | null>(null)
 
 /* ---------- 工具函数 ---------- */
-function num(v) {
+function num(v: number | null | undefined): string {
   return new Intl.NumberFormat(locale()).format(v || 0)
 }
 
-function fmtDate(d) {
+function fmtDate(d: string | null | undefined): string {
   if (!d) return '—'
   return new Date(d).toLocaleDateString(locale())
 }
 
-function langColor(name) {
+function langColor(name: string): string {
   return githubLangColors[name] || '#999'
 }
 
@@ -175,9 +217,9 @@ function langColor(name) {
 // 404 抛 not_found；真限流（响应体 message 含 "rate limit"）抛 rate_limit；
 // 其他 403 抛 forbidden；202（stats 计算中）返回 null；其余非 ok 抛原始 message。
 // 注意：不能用 remaining===0 判断——响应缺失该头时默认值也是 0，会误判。
-async function ghFetch(url) {
-  const headers = { Accept: 'application/vnd.github+json' }
-  if (ghToken.value) headers.Authorization = `Bearer ${ghToken.value}`
+async function ghFetch<T = unknown>(url: string): Promise<T | null> {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
+  if (ghToken.value) headers['Authorization'] = `Bearer ${ghToken.value}`
   const r = await fetch(url, { headers })
   const reset = parseInt(r.headers.get('x-ratelimit-reset') || '0', 10)
   if (r.status === 404) throw new Error('not_found')
@@ -186,7 +228,7 @@ async function ghFetch(url) {
     const body = await r.json().catch(() => ({}))
     const msg = (body && body.message) || ''
     if (/rate limit/i.test(msg)) {
-      const err = new Error('rate_limit')
+      const err = new Error('rate_limit') as Error & { resetAt?: Date | null }
       err.resetAt = reset ? new Date(reset * 1000) : null
       throw err
     }
@@ -202,7 +244,7 @@ async function ghFetch(url) {
 }
 
 // 统一的错误信息格式化；rate_limit 时自动展开 token 配置区
-function formatError(e) {
+function formatError(e: Error) {
   if (e.message === 'not_found') return t.value('errorNotFound')
   if (e.message === 'rate_limit') {
     tokenToggleOpen.value = true
@@ -211,8 +253,9 @@ function formatError(e) {
     if (!ghToken.value) {
       msg += ' ' + t.value('errorRateLimitHint')
     }
-    if (e.resetAt) {
-      const timeStr = e.resetAt.toLocaleString(locale(), {
+    const resetAt = (e as Error & { resetAt?: Date | null }).resetAt
+    if (resetAt) {
+      const timeStr = resetAt.toLocaleString(locale(), {
         month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
       })
       msg += ' ' + t.value('errorRateLimitReset').replace('{time}', timeStr)
@@ -249,10 +292,10 @@ async function dive() {
 
   const base = `https://api.github.com/repos/${q}`
   const results = await Promise.allSettled([
-    ghFetch(base),
-    ghFetch(base + '/languages'),
-    ghFetch(base + '/contributors?per_page=30&anon=1'),
-    ghFetch(base + '/stats/participation'),
+    ghFetch<RepoInfo>(base),
+    ghFetch<Record<string, number>>(base + '/languages'),
+    ghFetch<Contributor[]>(base + '/contributors?per_page=30&anon=1'),
+    ghFetch<Participation>(base + '/stats/participation'),
   ])
 
   // 基本信息
@@ -291,11 +334,11 @@ async function dive() {
   loadingCommits.value = false
 }
 
-function onSearchKey(e) {
+function onSearchKey(e: KeyboardEvent) {
   if (e.key === 'Enter') dive()
 }
 
-function quickPick(name) {
+function quickPick(name: string) {
   repoInput.value = name
   dive()
 }
@@ -566,8 +609,8 @@ onMounted(() => {
             <div v-if="topContributors.length" class="contrib-grid">
               <a
                 v-for="c in topContributors"
-                :key="(c.login || c.name) + (c.id || '')"
-                :href="c.html_url || (c.login ? `https://github.com/${c.login}` : null)"
+                :key="String(c.login || c.name) + String(c.id || '')"
+                :href="c.html_url || (c.login ? `https://github.com/${c.login}` : undefined)"
                 target="_blank"
                 rel="noreferrer"
                 class="contrib-card"

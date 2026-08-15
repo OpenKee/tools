@@ -1,9 +1,59 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet, locale } from '../ok.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+
+/* ---------- 类型定义 ---------- */
+interface City {
+  name: string
+  lat: number
+  lng: number
+  country?: string
+  timezone?: string
+}
+
+interface GeoItem {
+  name: string
+  latitude: number
+  longitude: number
+  country?: string
+  admin1?: string
+  timezone?: string
+}
+
+interface GeocodingResponse {
+  results?: GeoItem[]
+}
+
+interface SunTimesData {
+  sunrise: string
+  sunset: string
+  solar_noon: string
+  day_length: number
+  civil_twilight_begin: string
+  civil_twilight_end: string
+  nautical_twilight_begin: string
+  nautical_twilight_end: string
+  astronomical_twilight_begin: string
+  astronomical_twilight_end: string
+}
+
+interface SunResult {
+  status?: string
+  results?: SunTimesData
+}
+
+interface TimelineEvent {
+  key: string
+  hours: number
+  date: Date
+  phase: string
+  label: string
+  time: string
+  left: string
+}
 
 /* ============================================================
    Sun & Moon — 日出日落时间
@@ -101,7 +151,7 @@ const FAV_KEY = 'sun-moon-favorites'
 const BEIJING = { name: 'Beijing', lat: 39.9, lng: 116.4, country: 'China', timezone: 'Asia/Shanghai' }
 
 // 各阶段配色（与时间轴渐变一致）
-const PHASE_COLORS = {
+const PHASE_COLORS: Record<string, string> = {
   night: '#0a0f24',
   astro: '#1e1b4b',
   nautical: '#4338ca',
@@ -112,31 +162,31 @@ const PHASE_COLORS = {
 
 // 时间轴上的小时刻度
 const tickHours = [0, 6, 12, 18, 24]
-function tickLeft(h) { return (h / 24 * 100).toFixed(2) }
+function tickLeft(h: number) { return (h / 24 * 100).toFixed(2) }
 
 /* ---------- 响应式状态 ---------- */
-const city = ref(null)          // 当前选中城市
-const data = ref(null)          // Sunrise-Sunset API 返回的 results
-const error = ref(null)         // 错误信息
+const city = ref<City | null>(null)          // 当前选中城市
+const data = ref<SunTimesData | null>(null)  // Sunrise-Sunset API 返回的 results
+const error = ref<string | null>(null)       // 错误信息
 const loading = ref(false)
 const dateValue = ref('')       // 日期输入 YYYY-MM-DD
 const searchQuery = ref('')     // 城市搜索输入
-const searchResults = ref([])
+const searchResults = ref<GeoItem[]>([])
 const showResults = ref(false)
-const favorites = ref([])
-const searchWrapRef = ref(null) // 搜索框容器引用，用于点击外部关闭下拉
-let searchTimer = null
+const favorites = ref<City[]>([])
+const searchWrapRef = ref<HTMLElement | null>(null) // 搜索框容器引用，用于点击外部关闭下拉
+let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 /* ---------- 工具函数 ---------- */
-function pad2(n) { return n < 10 ? '0' + n : '' + n }
+function pad2(n: number) { return n < 10 ? '0' + n : '' + n }
 
 // 在指定时区下格式化时间为 HH:MM
-function fmtTime(date, timeZone) {
+function fmtTime(date: Date | null | undefined, timeZone?: string | null) {
   if (!date || isNaN(date.getTime())) return '—'
   const loc = locale()
   try {
     return new Intl.DateTimeFormat(loc, {
-      timeZone: timeZone, hour: '2-digit', minute: '2-digit', hour12: false
+      timeZone: timeZone ?? undefined, hour: '2-digit', minute: '2-digit', hour12: false
     }).format(date)
   } catch (e) {
     return date.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit', hour12: false })
@@ -144,11 +194,11 @@ function fmtTime(date, timeZone) {
 }
 
 // 取某时刻在指定时区下的小时（小数，0~24）
-function localHours(date, timeZone) {
+function localHours(date: Date | null | undefined, timeZone?: string | null) {
   if (!date || isNaN(date.getTime())) return null
   try {
     const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      timeZone: timeZone ?? undefined, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
     }).formatToParts(date)
     let h = 0, m = 0, s = 0
     parts.forEach((p) => {
@@ -164,10 +214,10 @@ function localHours(date, timeZone) {
 }
 
 // 取指定时区下今天的日期字符串 YYYY-MM-DD
-function todayInTZ(timeZone) {
+function todayInTZ(timeZone?: string | null) {
   try {
     const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timeZone, year: 'numeric', month: '2-digit', day: '2-digit'
+      timeZone: timeZone ?? undefined, year: 'numeric', month: '2-digit', day: '2-digit'
     }).formatToParts(new Date())
     let y, mo, d
     parts.forEach((p) => {
@@ -183,7 +233,7 @@ function todayInTZ(timeZone) {
 }
 
 // 将 YYYY-MM-DD 格式化为带星期的本地日期文字（按当前语言）
-function fmtDateLabel(ymd) {
+function fmtDateLabel(ymd: string) {
   if (!ymd) return ''
   const parts = ymd.split('-')
   if (parts.length !== 3) return ymd
@@ -200,7 +250,7 @@ function fmtDateLabel(ymd) {
 }
 
 // 白昼时长（秒）转 "Xh Ym" / "X 小时 Y 分"
-function fmtDayLength(seconds) {
+function fmtDayLength(seconds: number | null | undefined) {
   if (seconds == null || isNaN(seconds)) return '—'
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
@@ -208,7 +258,7 @@ function fmtDayLength(seconds) {
   return h + 'h ' + m + 'm'
 }
 
-function safeDate(iso) { return iso ? new Date(iso) : null }
+function safeDate(iso: string | null | undefined) { return iso ? new Date(iso) : null }
 
 /* ---------- 派生：判断所选日期是否为该城市时区的今天 ---------- */
 const isToday = computed(() => {
@@ -223,7 +273,7 @@ function loadFavs() {
 function persistFavs() {
   lsSet(FAV_KEY, JSON.stringify(favorites.value))
 }
-function isFav(c) {
+function isFav(c: City | null | undefined) {
   if (!c) return false
   return favorites.value.some((f) => f.lat === c.lat && f.lng === c.lng)
 }
@@ -240,21 +290,21 @@ function toggleFav() {
   }
   persistFavs()
 }
-function removeFav(idx) {
+function removeFav(idx: number) {
   if (idx >= 0 && idx < favorites.value.length) {
     favorites.value.splice(idx, 1)
     persistFavs()
   }
 }
-function selectFav(f) {
+function selectFav(f: City) {
   selectCity(f)
 }
 
 /* ---------- 城市搜索 ---------- */
-async function searchCities(query) {
+async function searchCities(query: string) {
   const url = GEO_URL + '?name=' + encodeURIComponent(query) + '&count=5&language=en&format=json'
   try {
-    const result = await fetchJSON(url)
+    const result = await fetchJSON<GeocodingResponse>(url)
     searchResults.value = (result && result.results) || []
     showResults.value = true
   } catch (e) {
@@ -268,21 +318,21 @@ function hideSearchResults() {
 }
 
 // 搜索结果项的标签：name, admin1, country
-function resultLabel(r) {
+function resultLabel(r: GeoItem) {
   let label = r.name
   if (r.admin1) label += ', ' + r.admin1
   if (r.country) label += ', ' + r.country
   return label
 }
 // 搜索结果项的副标题：经纬度 + 时区
-function resultSub(r) {
+function resultSub(r: GeoItem) {
   return (r.latitude != null ? r.latitude.toFixed(2) : '—') + ', ' +
     (r.longitude != null ? r.longitude.toFixed(2) : '—') +
     (r.timezone ? ' · ' + r.timezone : '')
 }
 
 // 搜索框键盘事件：Enter 立即搜索，Escape 关闭下拉
-function onSearchKeydown(e) {
+function onSearchKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') {
     e.preventDefault()
     clearTimeout(searchTimer)
@@ -299,14 +349,14 @@ function onSearchFocus() {
 }
 
 // 点击页面外部关闭搜索下拉
-function onDocClick(e) {
-  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target)) {
+function onDocClick(e: MouseEvent) {
+  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target as Node)) {
     hideSearchResults()
   }
 }
 
 /* ---------- 选择城市 ---------- */
-function selectCity(c) {
+function selectCity(c: City) {
   city.value = c
   searchQuery.value = ''
   showResults.value = false
@@ -325,12 +375,12 @@ async function load() {
   const url = SUN_URL + '?lat=' + city.value.lat + '&lng=' + city.value.lng +
     '&date=' + encodeURIComponent(date) + '&formatted=0'
   try {
-    const result = await fetchJSON(url)
+    const result = await fetchJSON<SunResult>(url)
     if (!result || result.status !== 'OK') throw new Error(result && result.status ? result.status : 'error')
-    data.value = result.results
+    data.value = result.results ?? null
   } catch (e) {
     data.value = null
-    error.value = (e && e.message) ? e.message : 'error'
+    error.value = e instanceof Error ? e.message : 'error'
   } finally {
     loading.value = false
   }
@@ -386,7 +436,7 @@ const timelineEvents = computed(() => {
     { key: 'nautEnd', iso: d.nautical_twilight_end, phase: 'nautical', label: t.value('nautEnd') },
     { key: 'astroEnd', iso: d.astronomical_twilight_end, phase: 'astro', label: t.value('astroEnd') }
   ]
-  const events = []
+  const events: TimelineEvent[] = []
   defs.forEach((e) => {
     if (!e.iso) return
     const date = new Date(e.iso)
@@ -408,12 +458,12 @@ const timelineEvents = computed(() => {
 /* ---------- 派生：时间轴渐变样式 ---------- */
 const gradientStyle = computed(() => {
   const events = timelineEvents.value
-  function find(key) {
+  function find(key: string) {
     for (let i = 0; i < events.length; i++) if (events[i].key === key) return events[i]
     return null
   }
-  function pct(h) { return (h / 24 * 100).toFixed(2) }
-  function stop(color, h) { return PHASE_COLORS[color] + ' ' + pct(h) + '%' }
+  function pct(h: number) { return (h / 24 * 100).toFixed(2) }
+  function stop(color: string, h: number) { return PHASE_COLORS[color] + ' ' + pct(h) + '%' }
 
   const sunrise = find('sunrise')
   const sunset = find('sunset')
