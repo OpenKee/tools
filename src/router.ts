@@ -5,13 +5,11 @@ const base = import.meta.env.PROD ? '/tools/' : '/'
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./views/Home.vue') },
-  { path: '/apps/air-quality', name: 'air-quality', component: () => import('./views/AirQuality.vue') },
   { path: '/apps/aurora-forecast', name: 'aurora-forecast', component: () => import('./views/AuroraForecast.vue') },
   { path: '/apps/atlas-info', name: 'atlas-info', component: () => import('./views/AtlasInfo.vue') },
   { path: '/apps/book-finder', name: 'book-finder', component: () => import('./views/BookFinder.vue') },
   { path: '/apps/city-dashboard', name: 'city-dashboard', component: () => import('./views/CityDashboard.vue') },
   { path: '/apps/cocktail-bar', name: 'cocktail-bar', component: () => import('./views/CocktailBar.vue') },
-  { path: '/apps/crypto-pulse', name: 'crypto-pulse', component: () => import('./views/CryptoPulse.vue') },
   { path: '/apps/dev-tools', name: 'dev-tools', component: () => import('./views/DevTools.vue') },
   { path: '/apps/earth-now', name: 'earth-now', component: () => import('./views/EarthNow.vue') },
   { path: '/apps/earthquake', name: 'earthquake', component: () => import('./views/Earthquake.vue') },
@@ -30,7 +28,6 @@ const routes = [
   { path: '/apps/radio-atlas', name: 'radio-atlas', component: () => import('./views/RadioAtlas.vue') },
   { path: '/apps/rate-board', name: 'rate-board', component: () => import('./views/RateBoard.vue') },
   { path: '/apps/repo-deep-dive', name: 'repo-deep-dive', component: () => import('./views/RepoDeepDive.vue') },
-  { path: '/apps/repo-scope', name: 'repo-scope', component: () => import('./views/RepoScope.vue') },
   { path: '/apps/sky-brief', name: 'sky-brief', component: () => import('./views/SkyBrief.vue') },
   { path: '/apps/sun-moon', name: 'sun-moon', component: () => import('./views/SunMoon.vue') },
   { path: '/apps/taste-atlas', name: 'taste-atlas', component: () => import('./views/TasteAtlas.vue') },
@@ -40,12 +37,17 @@ const routes = [
 
   /* ---------- API 融合应用（第二批） ---------- */
   { path: '/apps/tech-stack-advisor', name: 'tech-stack-advisor', component: () => import('./views/TechStackAdvisor.vue') },
-  { path: '/apps/trip-weather-advisor', name: 'trip-weather-advisor', component: () => import('./views/TripWeatherAdvisor.vue') },
   { path: '/apps/asset-snapshot', name: 'asset-snapshot', component: () => import('./views/AssetSnapshot.vue') },
   { path: '/apps/night-sky-guide', name: 'night-sky-guide', component: () => import('./views/NightSkyGuide.vue') },
   // Space Hub / GitHub Hub 已拆解为独立应用，旧链接重定向到对应的融合应用
   { path: '/apps/space-hub', redirect: '/apps/earth-now' },
   { path: '/apps/github-hub', redirect: '/apps/repo-deep-dive' },
+  /* ---------- 已下线应用的旧链接重定向 ----------
+     这些页面因功能被其他应用覆盖而移除，保留重定向避免旧书签/外链 404。 */
+  { path: '/apps/crypto-pulse', redirect: '/apps/rate-board' },
+  { path: '/apps/air-quality', redirect: '/apps/sky-brief' },
+  { path: '/apps/trip-weather-advisor', redirect: '/apps/sky-brief' },
+  { path: '/apps/repo-scope', redirect: '/apps/repo-deep-dive' },
   // 兜底：未知路径回到首页
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]

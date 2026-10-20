@@ -42,8 +42,8 @@ export const PROJECTS: Project[] = [
   {
     name: 'Repo Deep Dive', nameZh: '仓库深挖', type: 'data', typeClass: 'data',
     desc: {
-      en: 'Deep-dive any GitHub repo: stats, language node graph, top contributors, 52-week commit activity, and topics.',
-      zh: '深度透视任意 GitHub 仓库：统计数据、语言节点图、核心贡献者、52 周提交活动、话题标签。',
+      en: 'Deep-dive any GitHub repo or user: stats, language node graph, top contributors, 52-week commit activity, topics, and profile analytics.',
+      zh: '深度透视任意 GitHub 仓库或用户：统计数据、语言节点图、核心贡献者、52 周提交活动、话题标签、用户资料分析。',
     },
   },
 
@@ -53,13 +53,6 @@ export const PROJECTS: Project[] = [
     desc: {
       en: 'Search, compare, and pick the right open-source library. Search GitHub repos, compare metrics side-by-side, and get a recommendation in seconds.',
       zh: '搜索、对比、选型。输入关键词，对比多个 GitHub 仓库的 Star、Fork、活跃度，秒级推荐最优选。',
-    },
-  },
-  {
-    name: 'Trip Weather Advisor', nameZh: '行程天气顾问', type: 'travel', typeClass: 'travel',
-    desc: {
-      en: 'Plan your trip with weather-aware advice. Enter a city and dates — get daily forecasts, air quality, sunrise times, and tailored suggestions.',
-      zh: '智能出行天气规划。输入目的地和日期，获取逐日天气预报、空气质量、日出日落时间，以及个性化出行建议。',
     },
   },
   {
@@ -99,10 +92,6 @@ export const PROJECTS: Project[] = [
   {
     name: 'Trending Atlas', nameZh: '趋势仓库', type: 'data', typeClass: 'data',
     desc: { en: 'Discover trending GitHub repositories by day/week/month and language.', zh: '按日/周/月和语言发现 GitHub 热门仓库。' },
-  },
-  {
-    name: 'Repo Scope', nameZh: '仓库透视', type: 'data', typeClass: 'data',
-    desc: { en: 'Analyze any GitHub user or repo: profile, repos, language stats, activity score.', zh: '透视任意 GitHub 用户或仓库：资料、仓库列表、语言分布、活跃度评分。' },
   },
   {
     name: 'Node Atlas', nameZh: '节点情报', type: 'data', typeClass: 'data',
@@ -185,14 +174,6 @@ export const PROJECTS: Project[] = [
   {
     name: 'Sun & Moon', nameZh: '日出日落', slug: 'sun-moon', type: 'geo', typeClass: 'geo',
     desc: { en: 'Sunrise, sunset, and twilight times for any city and date.', zh: '任意城市和日期的日出、日落和曙暮光时间。' },
-  },
-  {
-    name: 'Crypto Pulse', nameZh: '加密行情', slug: 'crypto-pulse', type: 'finance', typeClass: 'finance',
-    desc: { en: 'Real-time cryptocurrency prices with 7d trends and market cap.', zh: '实时加密货币价格，含 7 天趋势和市值。' },
-  },
-  {
-    name: 'Air Quality', nameZh: '空气质量', type: 'geo', typeClass: 'geo',
-    desc: { en: 'Real-time air quality index and pollutant details worldwide.', zh: '全球实时空气质量指数和污染物详情。' },
   },
 ]
 
