@@ -1,5 +1,16 @@
 <script setup>
-// 根组件：仅承载路由出口。每个页面自行决定是否显示顶栏/footer。
+import { nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+watch(
+  () => route.path,
+  async () => {
+    await nextTick()
+    document.querySelector('main')?.focus({ preventScroll: true })
+  },
+  { flush: 'post' },
+)
 </script>
 
 <template>

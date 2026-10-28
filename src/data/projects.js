@@ -1,193 +1,117 @@
-/* ============================================================
-   应用元数据：首页卡片列表。
-   - name：英文原名，同时用于生成 URL slug（保持链接稳定）
-   - nameZh：中文名，中文模式下首页卡片显示
-   - slug：可选，手动指定 URL slug（少数特殊名字需要）
-   全部应用已迁移到 Vue SPA，用 RouterLink 跳转。
-   前 4 个为"API 融合"应用：多个 API 协作产生单独调用没有的价值。
-   ============================================================ */
-
 export const PROJECTS = [
-  /* ---------- API 融合应用 ---------- */
   {
-    name: 'Trip Prep', nameZh: '旅行准备台', type: 'travel', typeClass: 'travel',
+    name: 'Space Now',
+    nameZh: '此刻太空',
+    type: 'space',
+    typeClass: 'space',
     desc: {
-      en: 'Plan any trip in one screen: country facts, weather, exchange rates, time difference, sunrise/sunset, air quality, and nearby quakes — fused from 7 APIs.',
-      zh: '一屏搞定出行准备：国家信息、天气、汇率、时差、日出日落、空气质量、周边地震，7 个 API 协作。',
+      en: 'A live overview of Earth, the night sky, and Mars.',
+      zh: '地球、星空与火星的实时概览。',
     },
   },
   {
-    name: 'Earth Now', nameZh: '此刻地球', type: 'space', typeClass: 'space',
+    name: 'Repo Lens',
+    nameZh: '仓库分析台',
+    type: 'data',
+    typeClass: 'data',
     desc: {
-      en: 'A live snapshot of Earth right now: recent quakes, ISS position, aurora Kp, next launch, Mars weather, and people in space.',
-      zh: '此刻地球快照：最新地震、ISS 位置、极光 Kp、下次发射、火星天气、在轨人数，6 个实时 API 协作。',
-    },
-  },
-  {
-    name: 'City Dashboard', nameZh: '城市仪表盘', type: 'geo', typeClass: 'geo',
-    desc: {
-      en: 'Environmental dashboard for any city: weather, 24h temperature + AQI dual-axis chart, sunrise timeline, and nearby quakes.',
-      zh: '任意城市的环境仪表盘：天气、24 小时温度与空气质量双轴图、日出日落时间轴、周边地震。',
-    },
-  },
-  {
-    name: 'Repo Deep Dive', nameZh: '仓库深挖', type: 'data', typeClass: 'data',
-    desc: {
-      en: 'Deep-dive any GitHub repo: stats, language node graph, top contributors, 52-week commit activity, and topics.',
-      zh: '深度透视任意 GitHub 仓库：统计数据、语言节点图、核心贡献者、52 周提交活动、话题标签。',
+      en: 'Trending repositories, user overviews, library search, and repo details.',
+      zh: 'GitHub 趋势、用户概览、库搜索与仓库详情。',
     },
   },
 
-  /* ---------- API 融合应用（第二批） ---------- */
   {
-    name: 'Tech Stack Advisor', nameZh: '技术选型助手', type: 'data', typeClass: 'data',
+    name: 'Node Atlas',
+    nameZh: '节点情报',
+    type: 'data',
+    typeClass: 'data',
     desc: {
-      en: 'Search, compare, and pick the right open-source library. Search GitHub repos, compare metrics side-by-side, and get a recommendation in seconds.',
-      zh: '搜索、对比、选型。输入关键词，对比多个 GitHub 仓库的 Star、Fork、活跃度，秒级推荐最优选。',
-    },
-  },
-  {
-    name: 'Trip Weather Advisor', nameZh: '行程天气顾问', type: 'travel', typeClass: 'travel',
-    desc: {
-      en: 'Plan your trip with weather-aware advice. Enter a city and dates — get daily forecasts, air quality, sunrise times, and tailored suggestions.',
-      zh: '智能出行天气规划。输入目的地和日期，获取逐日天气预报、空气质量、日出日落时间，以及个性化出行建议。',
-    },
-  },
-  {
-    name: 'Asset Snapshot', nameZh: '资产快照', type: 'finance', typeClass: 'finance',
-    desc: {
-      en: 'See your money in every form. Enter any amount and currency — instantly convert to 10 fiat currencies and top 10 cryptocurrencies.',
-      zh: '一屏看清你的钱值多少。输入任意金额和币种，瞬间换算成 10 种法币和 10 种加密货币。',
-    },
-  },
-  {
-    name: 'Night Sky Guide', nameZh: '今晚观天指南', type: 'space', typeClass: 'space',
-    desc: {
-      en: 'What to look for in the sky tonight. ISS passes, aurora visibility, moon phase, and rocket launches — all based on your location.',
-      zh: '今晚抬头看什么？ISS 过境预报、极光可见性、月相、火箭发射——全部基于你的位置。',
+      en: 'IP, DNS, certificate, latency, and HTTP reachability lookups.',
+      zh: 'IP、DNS、证书、延迟与 HTTP 可达性查询。',
     },
   },
 
-  /* ---------- 太空类 ---------- */
   {
-    name: 'ISS Tracker', nameZh: '空间站追踪', type: 'space', typeClass: 'space',
-    desc: { en: 'Track the ISS in real time: position, speed, altitude, astronauts, and next pass over your location.', zh: '实时追踪国际空间站：位置、速度、高度、宇航员、下次过境预测。' },
+    name: 'Rate Board',
+    nameZh: '汇率看板',
+    type: 'finance',
+    typeClass: 'finance',
+    desc: { en: 'Exchange rates, crypto prices, and multi-asset conversion.', zh: '汇率、加密货币行情与多资产换算。' },
   },
   {
-    name: 'Mars Weather', nameZh: '火星天气', type: 'space', typeClass: 'space',
-    desc: { en: "Latest weather from Mars: temperature, pressure, wind, and season from NASA's Curiosity/InSight.", zh: '火星最新天气：温度、气压、风速、季节，数据来自 NASA Curiosity/InSight。' },
+    name: 'Atlas Info',
+    nameZh: '国家百科',
+    type: 'data',
+    typeClass: 'data',
+    desc: {
+      en: 'Country profiles with population, economy, society, and geography.',
+      zh: '国家人口、经济、社会与地理信息。',
+    },
   },
   {
-    name: 'Aurora Forecast', nameZh: '极光预报', type: 'space', typeClass: 'space',
-    desc: { en: 'Aurora forecast: current Kp index, visibility latitude, and auroral oval map.', zh: '极光预报：当前 Kp 指数、可见纬度、极光椭圆图。' },
+    name: 'Radio Atlas',
+    nameZh: '全球电台',
+    type: 'media',
+    typeClass: 'media',
+    desc: {
+      en: 'Discover global radio stations by region, tag, and language.',
+      zh: '按地区、风格和语言搜索全球电台。',
+    },
   },
   {
-    name: 'Launch Board', nameZh: '发射日程', type: 'space', typeClass: 'space',
-    desc: { en: 'Upcoming rocket launches worldwide: countdown, rocket, payload, and launch site.', zh: '全球即将发射的火箭：倒计时、火箭、载荷、发射场。' },
-  },
-
-  /* ---------- GitHub 类 ---------- */
-  {
-    name: 'Trending Atlas', nameZh: '趋势仓库', type: 'data', typeClass: 'data',
-    desc: { en: 'Discover trending GitHub repositories by day/week/month and language.', zh: '按日/周/月和语言发现 GitHub 热门仓库。' },
-  },
-  {
-    name: 'Repo Scope', nameZh: '仓库透视', type: 'data', typeClass: 'data',
-    desc: { en: 'Analyze any GitHub user or repo: profile, repos, language stats, activity score.', zh: '透视任意 GitHub 用户或仓库：资料、仓库列表、语言分布、活跃度评分。' },
+    name: 'Time & Leave',
+    nameZh: '时间与假期',
+    type: 'tool',
+    typeClass: 'tool',
+    desc: {
+      en: 'Plan fair meetings across time zones and review holiday dates.',
+      zh: '跨时区会议规划与假期日期查询。',
+    },
   },
   {
-    name: 'Node Atlas', nameZh: '节点情报', type: 'data', typeClass: 'data',
-    desc: { en: 'IP and domain intelligence: geolocation, DNS records, SSL certificates, and response latency.', zh: 'IP 与域名情报：地理定位、DNS 记录、SSL 证书、响应延迟。' },
-  },
-
-  /* ---------- 金融 / 数据 / 媒体 / 地理等 ---------- */
-  {
-    name: 'Rate Board', nameZh: '汇率看板', type: 'finance', typeClass: 'finance',
-    desc: { en: 'Exchange rates, currency converter, and crypto prices.', zh: '汇率查询、币种换算、加密货币行情。' },
-  },
-  {
-    name: 'Atlas Info', nameZh: '国家百科', type: 'data', typeClass: 'data',
-    desc: { en: 'Country encyclopedia with population, languages, and borders.', zh: '国家百科：人口、语言、邻国等信息。' },
+    name: 'Dev Tools',
+    nameZh: '开发者工具',
+    type: 'tool',
+    typeClass: 'tool',
+    desc: {
+      en: 'Markdown editing, QR code generation, and password tools.',
+      zh: 'Markdown 编辑、二维码生成与密码工具。',
+    },
   },
   {
-    name: 'Radio Atlas', nameZh: '全球电台', type: 'media', typeClass: 'media',
-    desc: { en: 'Global radio explorer powered by Radio Browser API.', zh: '基于 Radio Browser API 的全球电台探索器。' },
+    name: 'Food & Drinks',
+    nameZh: '美食与调酒',
+    slug: 'food',
+    type: 'food',
+    typeClass: 'food',
+    desc: {
+      en: 'Browse recipes and cocktail recipes in one tabbed app.',
+      zh: '全球食谱与鸡尾酒配方，一个应用分栏呈现。',
+    },
   },
   {
-    name: 'Sky Brief', nameZh: '天气简报', type: 'geo', typeClass: 'geo',
-    desc: { en: 'Weather, air quality, 7-day forecast, and city comparison.', zh: '天气、空气质量、7 天预报、城市对比。' },
+    name: 'Meme Forge',
+    nameZh: '梗图工坊',
+    type: 'fun',
+    typeClass: 'fun',
+    desc: {
+      en: 'Browse random Reddit memes by subreddit or fully at random.',
+      zh: '按版块浏览 Reddit 梗图，也可完全随机。',
+    },
   },
   {
-    name: 'Hour Bridge', nameZh: '时区桥梁', type: 'data', typeClass: 'data',
-    desc: { en: 'Time zone bridge — compare times across regions.', zh: '时区桥梁 — 跨区域时间对照。' },
-  },
-  {
-    name: 'Earthquake', nameZh: '地震监测', type: 'data', typeClass: 'data',
-    desc: { en: 'Real-time global seismic activity map.', zh: '全球实时地震监测地图。' },
-  },
-  {
-    name: 'Dev Tools', nameZh: '开发者工具', type: 'data', typeClass: 'data',
-    desc: { en: '14 developer tools: CSS/HTML compressor, JSON/SQL formatter, Encode/Decode, Hash, JWT, Regex, Diff, Lorem, UUID, Timestamp, Color, Markdown.', zh: '14 款开发者工具：CSS 压缩、JSON 格式化、编解码、哈希、JWT、正则、Diff、Lorem、UUID、时间戳、颜色、Markdown。' },
-  },
-  {
-    name: 'Offday Planner', nameZh: '假期规划', type: 'data', typeClass: 'data',
-    desc: { en: 'Holiday and off-day planner tool.', zh: '假期与休息日规划工具。' },
-  },
-  {
-    name: 'Book Finder', nameZh: '找书助手', type: 'media', typeClass: 'media',
-    desc: { en: 'Search millions of books from Open Library.', zh: '搜索 Open Library 海量图书。' },
-  },
-  {
-    name: 'QR Forge', nameZh: '二维码工坊', type: 'data', typeClass: 'data',
-    desc: { en: 'Generate custom QR codes with live preview.', zh: '生成自定义二维码，实时预览。' },
-  },
-  {
-    name: 'Movie Quest', nameZh: '影视搜索', type: 'media', typeClass: 'media',
-    desc: { en: 'Search movies and TV shows, view ratings and details.', zh: '搜索电影和电视剧，查看评分和详情。' },
-  },
-  {
-    name: 'Password Vault', nameZh: '密码保险箱', type: 'data', typeClass: 'data',
-    desc: { en: 'Secure password generator with strength analysis.', zh: '安全密码生成器，含强度分析。' },
-  },
-  {
-    name: 'Markdown Studio', nameZh: 'Markdown 工作室', type: 'data', typeClass: 'data',
-    desc: { en: 'Markdown editor with live preview and export.', zh: 'Markdown 编辑器，实时预览与导出。' },
-  },
-  {
-    name: 'Word Forge', nameZh: '单词工坊', type: 'data', typeClass: 'data',
-    desc: { en: 'Vocabulary trainer with speech, spelling, and quizzes.', zh: '单词学习，含朗读、拼写、选择题。' },
-  },
-  {
-    name: 'Taste Atlas', nameZh: '美食图谱', type: 'food', typeClass: 'food',
-    desc: { en: 'Explore recipes from around the world via TheMealDB.', zh: '通过 TheMealDB 探索全球食谱。' },
-  },
-  {
-    name: 'Meme Forge', nameZh: '梗图工坊', type: 'fun', typeClass: 'fun',
-    desc: { en: 'Random memes from Reddit by subreddit or fully random.', zh: 'Reddit 随机梗图，可按 subreddit 或完全随机。' },
-  },
-  {
-    name: 'Cocktail Bar', nameZh: '鸡尾酒吧', type: 'food', typeClass: 'food',
-    desc: { en: 'Search cocktail recipes with ingredients, steps, and glassware.', zh: '鸡尾酒配方搜索：材料、步骤、酒杯。' },
-  },
-  {
-    name: 'HN Reader', nameZh: 'HN 阅读器', slug: 'hn-reader', type: 'data', typeClass: 'data',
-    desc: { en: 'Browse Hacker News top stories, Ask HN, Show HN, and jobs.', zh: '浏览 Hacker News 热门文章、Ask HN、Show HN 和招聘。' },
-  },
-  {
-    name: 'Sun & Moon', nameZh: '日出日落', slug: 'sun-moon', type: 'geo', typeClass: 'geo',
-    desc: { en: 'Sunrise, sunset, and twilight times for any city and date.', zh: '任意城市和日期的日出、日落和曙暮光时间。' },
-  },
-  {
-    name: 'Crypto Pulse', nameZh: '加密行情', slug: 'crypto-pulse', type: 'finance', typeClass: 'finance',
-    desc: { en: 'Real-time cryptocurrency prices with 7d trends and market cap.', zh: '实时加密货币价格，含 7 天趋势和市值。' },
-  },
-  {
-    name: 'Air Quality', nameZh: '空气质量', type: 'geo', typeClass: 'geo',
-    desc: { en: 'Real-time air quality index and pollutant details worldwide.', zh: '全球实时空气质量指数和污染物详情。' },
+    name: 'HN Reader',
+    nameZh: 'HN 阅读器',
+    slug: 'hn-reader',
+    type: 'data',
+    typeClass: 'data',
+    desc: {
+      en: 'Read Hacker News top stories, Ask HN, Show HN, and jobs.',
+      zh: '浏览 Hacker News 热门、问答、分享与招聘。',
+    },
   },
 ]
 
-/** 生成应用的 URL slug（用于 Vue 路由路径）。 */
 export function slugify(name) {
   return name
     .normalize('NFD')

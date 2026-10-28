@@ -1,99 +1,110 @@
 <script setup>
-/* ============================================================
-   Meme Forge — 梗图生成器（Vue 3 SFC 迁移版）
-   数据来源：Meme API（聚合 Reddit 公开梗图，支持 CORS）
-   - 共享 i18n：useT（来自 ../i18n.js），语言切换由 AppHeader 负责
-   - 共享工具：fetchJSON（来自 ../ok.js）
-   - 共享组件：AppHeader / AppFooter
-   ============================================================ */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '../i18n.js'
 import { fetchJSON } from '../ok.js'
-import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
+import {
+  UiBadge,
+  UiButton,
+  UiCard,
+  UiErrorState,
+  UiField,
+  UiInput,
+  UiLoading,
+  UiPage,
+  UiPageHead,
+} from '../components/ui/index.js'
+import copy from '../copy/meme-forge.js'
 
-// ---------- i18n 文案字典 ----------
-const copy = {
-  en: {
-    eyebrow: 'Meme API · Random Memes',
-    title: 'Meme Forge',
-    lead: 'Get a random meme, pick a subreddit, or browse through the latest posts.',
-    load: 'Load',
-    random: 'Random',
-    prev: '← Prev',
-    next: 'Next →',
-    copyLink: 'Copy Link',
-    copied: 'Copied!',
-    loading: 'Loading…',
-    fetchError: 'Failed to load meme.',
-    dataSource: 'Data: Meme API / Reddit',
-    allProjects: 'All projects ↗',
-    subPlaceholder: 'memes',
-    viewPost: 'View post ↗',
-    upvotes: 'upvotes',
-    by: 'by',
-  },
-  zh: {
-    eyebrow: 'Meme API · 随机梗图',
-    title: '梗图工坊',
-    lead: '随机获取一张梗图，或指定 subreddit 浏览最新帖子。',
-    load: '加载',
-    random: '随机',
-    prev: '← 上一张',
-    next: '下一张 →',
-    copyLink: '复制链接',
-    copied: '已复制！',
-    loading: '加载中…',
-    fetchError: '梗图加载失败。',
-    dataSource: '数据：Meme API / Reddit',
-    allProjects: '全部项目 ↗',
-    subPlaceholder: 'memes',
-    viewPost: '查看原帖 ↗',
-    upvotes: '赞',
-    by: '作者',
-  },
-}
-
-// useT 返回 computed ref，模板中 t('key') 自动 unwrap；脚本中用 t.value('key')
 const t = useT(copy)
 
-// ---------- API 地址 ----------
 const API_BASE = 'https://meme-api.com/gimme'
 
-// ---------- 响应式状态 ----------
-const subInput = ref('')           // subreddit 输入框
-const currentMeme = ref(null)      // 当前展示的梗图
-const history = ref([])            // 浏览历史
-const historyIndex = ref(-1)       // 当前历史指针
-const loading = ref(false)         // 加载中标志
-const hasError = ref(false)        // 加载失败标志
-const copied = ref(false)          // 复制成功提示
+const subInput = ref('')
+const currentMeme = ref(null)
+const history = ref([])
+const historyIndex = ref(-1)
+const loading = ref(false)
+const hasError = ref(false)
+const copied = ref(false)
+const copyError = ref(false)
+let copyTimer = null
+const imageSrc = ref('')
+const imageFallbackUsed = ref(false)
+const imageBroken = ref(false)
+const imageLoading = ref(false)
+let imageTimer = null
 
-// ---------- 计算属性 ----------
-// 上一张按钮禁用：历史指针已到最前
-const prevDisabled = computed(() => historyIndex.value <= 0)
-// 下一张按钮禁用：历史指针已到最后
-const nextDisabled = computed(() => historyIndex.value >= history.value.length - 1)
-// 复制按钮文案：复制成功时显示“已复制”，否则显示“复制链接”
+const prevDisabled = computed(() => loading.value || historyIndex.value <= 0)
+
+const nextDisabled = computed(() => loading.value)
+
 const copyBtnText = computed(() => (copied.value ? t.value('copied') : t.value('copyLink')))
 
-// ---------- 工具：构造 API 地址 ----------
+function formatUps(value) {
+  return Number(value || 0).toLocaleString()
+}
+
+function clearImageTimer() {
+  if (imageTimer) clearTimeout(imageTimer)
+  imageTimer = null
+}
+
+function armImageTimer() {
+  clearImageTimer()
+  imageTimer = setTimeout(function () {
+    if (imageLoading.value && !imageBroken.value) onImageError()
+  }, 10000)
+}
+
+function showMeme(meme) {
+  copied.value = false
+  copyError.value = false
+  currentMeme.value = meme
+  imageSrc.value = meme.url || ''
+  imageFallbackUsed.value = false
+  imageBroken.value = false
+  imageLoading.value = Boolean(imageSrc.value)
+  hasError.value = false
+  if (imageLoading.value) armImageTimer()
+}
+
+function onImageLoad() {
+  imageLoading.value = false
+  clearImageTimer()
+}
+
+function onImageError() {
+  const previews = currentMeme.value && currentMeme.value.preview
+  if (!imageFallbackUsed.value && Array.isArray(previews) && previews.length) {
+    imageFallbackUsed.value = true
+    imageSrc.value = previews[previews.length - 1]
+    imageLoading.value = true
+    armImageTimer()
+  } else {
+    imageLoading.value = false
+    imageBroken.value = true
+    clearImageTimer()
+  }
+}
+
 function apiUrl(subreddit) {
   let url = API_BASE
   if (subreddit) url += '/' + encodeURIComponent(subreddit)
   return url
 }
 
-// ---------- 获取并规范化 subreddit 输入（去除 r/ 前缀） ----------
 function getSubreddit() {
   return subInput.value.trim().replace(/^r\//, '')
 }
 
-// ---------- 拉取梗图 ----------
 async function fetchMeme(subreddit) {
+  if (loading.value) return
   loading.value = true
   currentMeme.value = null
   hasError.value = false
+  imageBroken.value = false
+  imageLoading.value = false
+  clearImageTimer()
   try {
     const data = await fetchJSON(apiUrl(subreddit), { timeout: 15000 })
     loading.value = false
@@ -101,8 +112,8 @@ async function fetchMeme(subreddit) {
       hasError.value = true
       return
     }
-    currentMeme.value = data
-    // 丢弃当前位置之后的历史，追加新条目
+    showMeme(data)
+
     history.value = history.value.slice(0, historyIndex.value + 1)
     history.value.push(data)
     historyIndex.value = history.value.length - 1
@@ -113,346 +124,354 @@ async function fetchMeme(subreddit) {
   }
 }
 
-// ---------- 历史导航：上一张 ----------
 function goBack() {
   if (historyIndex.value > 0) {
     historyIndex.value--
-    currentMeme.value = history.value[historyIndex.value]
+    showMeme(history.value[historyIndex.value])
   }
 }
 
-// ---------- 历史导航：下一张（到末尾则拉取新梗图） ----------
 function goForward() {
   if (historyIndex.value < history.value.length - 1) {
     historyIndex.value++
-    currentMeme.value = history.value[historyIndex.value]
+    showMeme(history.value[historyIndex.value])
   } else {
     fetchMeme(getSubreddit())
   }
 }
 
-// ---------- 复制当前梗图链接到剪贴板 ----------
 function copyLink() {
   if (!currentMeme.value || !currentMeme.value.url) return
-  const url = currentMeme.value.url
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function () {
-      copied.value = true
-      setTimeout(function () { copied.value = false }, 1500)
-    }).catch(function () {})
-  }
+  copied.value = false
+  copyError.value = false
+  navigator.clipboard.writeText(currentMeme.value.url).then(showCopied, () => {
+    copyError.value = true
+  })
 }
 
-// ---------- 提交 subreddit 表单：重置历史并加载 ----------
+function showCopied() {
+  copyError.value = false
+  copied.value = true
+  clearTimeout(copyTimer)
+  copyTimer = setTimeout(function () {
+    copied.value = false
+  }, 1500)
+}
+
 function onSubmit() {
+  if (loading.value) return
   history.value = []
   historyIndex.value = -1
   fetchMeme(getSubreddit())
 }
 
-// ---------- 随机梗图：清空输入并重置历史 ----------
 function onRandom() {
+  if (loading.value) return
   subInput.value = ''
   history.value = []
   historyIndex.value = -1
   fetchMeme('')
 }
 
-// ---------- 初始化：首次拉取一张随机梗图 ----------
 onMounted(function () {
   fetchMeme('')
+})
+
+onBeforeUnmount(() => {
+  clearImageTimer()
+  clearTimeout(copyTimer)
 })
 </script>
 
 <template>
-  <div class="meme-forge-app">
-    <AppHeader :show-lang-toggle="true" />
+  <UiPage
+    class="meme-forge-app"
+    :title="t('title')"
+    :sources="[
+      { name: 'Meme API', url: 'https://meme-api.com/' },
+      { name: 'Reddit', url: 'https://www.reddit.com/' },
+    ]"
+    spacing="compact"
+  >
+    <UiPageHead :description="t('lead')" />
 
-    <main class="shell">
-      <header class="masthead">
-        <p class="eyebrow">{{ t('eyebrow') }}</p>
-        <h1>{{ t('title') }}</h1>
-        <p class="lead">{{ t('lead') }}</p>
-      </header>
-
-      <section class="controls">
-        <form class="sub-row" @submit.prevent="onSubmit">
-          <span class="sub-label">r/</span>
-          <input
-            v-model="subInput"
-            type="text"
-            :placeholder="t('subPlaceholder')"
-            autocomplete="off"
-            aria-label="Subreddit name"
-          />
-          <button type="submit">{{ t('load') }}</button>
-          <button type="button" class="ok-btn-ghost" @click="onRandom">{{ t('random') }}</button>
+    <section class="workspace">
+      <UiCard as="aside" class="control-panel" padding="sm" aria-label="Meme navigation">
+        <form class="sub-form" @submit.prevent="onSubmit">
+          <UiField :label="t('subredditLabel')" label-for="subredditInput">
+            <div class="sub-row">
+              <span class="sub-prefix" aria-hidden="true">r/</span>
+              <UiInput
+                id="subredditInput"
+                v-model="subInput"
+                type="text"
+                :placeholder="t('subPlaceholder')"
+                autocomplete="off"
+                :aria-label="t('subredditLabel')"
+                :disabled="loading"
+              />
+              <UiButton type="submit" variant="primary" :disabled="loading">{{ t('load') }}</UiButton>
+            </div>
+          </UiField>
         </form>
-        <div class="action-row">
-          <button type="button" class="ok-btn-ghost" :disabled="prevDisabled" @click="goBack">{{ t('prev') }}</button>
-          <button type="button" class="ok-btn-ghost" :disabled="nextDisabled" @click="goForward">{{ t('next') }}</button>
-          <button type="button" class="ok-btn-ghost copy-btn" @click="copyLink">{{ copyBtnText }}</button>
+
+        <div class="control-actions">
+          <UiButton variant="ghost" size="sm" class="control-btn" :disabled="loading" @click="onRandom">
+            {{ t('random') }}
+          </UiButton>
+          <UiButton variant="ghost" size="sm" class="control-btn" :disabled="prevDisabled" @click="goBack">
+            {{ t('prev') }}
+          </UiButton>
+          <UiButton variant="ghost" size="sm" class="control-btn" :disabled="nextDisabled" @click="goForward">
+            {{ t('next') }}
+          </UiButton>
         </div>
-      </section>
 
-      <!-- 加载中 -->
-      <div v-if="loading" class="ok-loading">
-        <span class="ok-spinner"></span>
-        <span>{{ t('loading') }}</span>
-      </div>
+        <p v-if="history.length" class="history-pos">{{ historyIndex + 1 }} / {{ history.length }}</p>
+      </UiCard>
 
-      <!-- 梗图卡片 -->
-      <div v-if="currentMeme" class="meme-card">
-        <img :src="currentMeme.url" :alt="currentMeme.title || ''" />
-        <div class="meme-body">
-          <h2 class="meme-title">{{ currentMeme.title || '' }}</h2>
-          <div class="meme-meta">
-            <span>r/{{ currentMeme.subreddit || '' }}</span>
-            <span>{{ (currentMeme.ups || 0) + ' ' + t('upvotes') }}</span>
-            <span>{{ t('by') + ' u/' + (currentMeme.author || '') }}</span>
+      <div class="viewer-panel">
+        <UiCard v-if="loading" class="viewer-state">
+          <UiLoading :label="t('loading')" />
+        </UiCard>
+
+        <UiCard v-else-if="hasError" class="viewer-state">
+          <UiErrorState
+            variant="block"
+            :message="t('fetchError')"
+            :retry-label="t('retry')"
+            @retry="fetchMeme(getSubreddit())"
+          />
+        </UiCard>
+
+        <UiCard v-else-if="currentMeme" class="meme-card" padding="none">
+          <div class="meme-image-wrap">
+            <img
+              v-if="!imageBroken"
+              v-show="!imageLoading"
+              :src="imageSrc"
+              :alt="currentMeme.title || ''"
+              @load="onImageLoad"
+              @error="onImageError"
+            />
+            <UiLoading
+              v-if="imageLoading && !imageBroken"
+              inline
+              compact
+              class="image-loading"
+              :label="t('imageLoading')"
+            />
+            <div v-else-if="imageBroken" class="image-fallback">
+              <p>{{ t('imageError') }}</p>
+              <UiButton v-if="currentMeme.postLink" variant="link" :href="currentMeme.postLink" target="_blank">
+                {{ t('viewPost') }}
+              </UiButton>
+            </div>
           </div>
-          <a class="meme-link" :href="currentMeme.postLink || '#'" target="_blank" rel="noopener">{{ t('viewPost') }}</a>
-        </div>
+          <div class="meme-body">
+            <h2 v-if="currentMeme.title" class="meme-title">{{ currentMeme.title }}</h2>
+            <div class="meme-meta">
+              <UiBadge v-if="currentMeme.subreddit" size="sm" mono>r/{{ currentMeme.subreddit }}</UiBadge>
+              <UiBadge variant="accent" size="sm" mono> {{ formatUps(currentMeme.ups) }} {{ t('upvotes') }} </UiBadge>
+              <UiBadge v-if="currentMeme.author" size="sm" mono> {{ t('by') }} u/{{ currentMeme.author }} </UiBadge>
+            </div>
+            <div class="meme-actions">
+              <UiButton
+                v-if="currentMeme.postLink"
+                variant="link"
+                :href="currentMeme.postLink"
+                target="_blank"
+                rel="noopener"
+              >
+                {{ t('viewPost') }}
+              </UiButton>
+              <UiButton size="sm" :variant="copied ? 'soft' : 'secondary'" @click="copyLink">
+                {{ copyBtnText }}
+              </UiButton>
+            </div>
+            <p v-if="copyError" role="alert">{{ t('copyFailed') }}</p>
+          </div>
+        </UiCard>
       </div>
-
-      <!-- 加载失败 -->
-      <div v-if="hasError" class="ok-error">{{ t('fetchError') }}</div>
-
-      <!-- 数据来源声明 -->
-      <p class="data-source">{{ t('dataSource') }}</p>
-    </main>
-
-    <AppFooter />
-  </div>
+    </section>
+  </UiPage>
 </template>
 
 <style scoped>
-/* ============================================================
-   主题变量：原 :root 中的自定义变量迁移到组件根类 .meme-forge-app，
-   同时把 --ok-* 共享 token 映射到本应用主题色（影响 AppHeader /
-   AppFooter 等共享组件，CSS 变量会沿 DOM 树向下继承）。
-   ============================================================ */
 .meme-forge-app {
-  --bg: #111111;
-  --surface: #1a1a1a;
-  --surface-2: #262626;
-  --text: #f7f7f7;
-  --text-muted: #a1a1aa;
-  --border: #333333;
-  --accent: #f97316;
-  --accent-2: #fbbf24;
-  --accent-contrast: #ffffff;
-  color-scheme: dark;
-
-  /* 共享组件主题映射 */
-  --ok-bg: var(--bg);
-  --ok-surface: var(--surface);
-  --ok-text: var(--text);
-  --ok-text-muted: var(--text-muted);
-  --ok-border: var(--border);
-  --ok-accent: var(--accent);
-  --ok-accent-contrast: var(--accent-contrast);
-  --ok-radius: 16px;
-  --ok-shadow: 0 14px 44px rgba(0, 0, 0, 0.6);
-  --ok-line: var(--border);
-  --ok-panel: var(--surface);
-  --ok-muted: var(--text-muted);
-  --ok-accent-soft: rgba(249, 115, 22, 0.14);
-  --ok-topbar-line: var(--border);
-  --ok-footer-line: var(--border);
-  --ok-footer-text: var(--text-muted);
-  --ok-footer-link: var(--accent-2);
-  --ok-font: "Outfit", system-ui, sans-serif;
-  --ok-mono: "IBM Plex Mono", monospace;
-
-  /* 原 body 背景迁移到根元素 */
-  margin: 0;
-  font-family: var(--ok-font);
-  color: var(--text);
-  background:
-    radial-gradient(900px 500px at 85% -10%, rgba(249, 115, 22, 0.15), transparent 60%),
-    radial-gradient(800px 500px at 10% -5%, rgba(251, 191, 36, 0.08), transparent 55%),
-    var(--bg);
-  background-attachment: fixed;
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- 主容器 ---------- */
-.shell {
-  width: min(720px, calc(100% - 2rem));
-  margin: 0 auto;
-  padding: 1.2rem 0 4rem;
+.workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
 }
 
-/* ---------- 页头 masthead ---------- */
-.masthead {
-  padding: 1.5rem 0 1.2rem;
+.control-panel {
+  position: sticky;
+  top: calc(var(--ok-topbar-h, 3.4rem) + 1rem);
+  height: auto;
+  align-self: start;
 }
 
-.eyebrow {
+.sub-form :deep(.ui-field-label) {
   font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--accent);
-  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-h1 {
-  margin-top: 0.45rem;
-  font-size: clamp(2.2rem, 5vw, 3.2rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.55;
-  max-width: 58ch;
-}
-
-/* ---------- 控制区 ---------- */
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  padding: 1rem 0 1.5rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.2rem;
+.sub-form {
+  margin: 0;
 }
 
 .sub-row {
-  display: flex;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.35rem;
   align-items: center;
-  flex-wrap: wrap;
 }
 
-.sub-label {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-muted);
+.sub-prefix {
+  color: var(--ok-muted);
+  font-family: var(--ok-mono);
+  font-size: 0.8rem;
 }
 
-.sub-row input {
-  flex: 1;
-  min-width: 160px;
-  font: inherit;
-  height: 2.6rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text);
-  outline: none;
-}
-
-.sub-row input:focus {
-  border-color: var(--accent);
-}
-
-.sub-row button {
-  font: inherit;
-  height: 2.6rem;
-  padding: 0 1.1rem;
-  border: none;
-  border-radius: 10px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sub-row button.ok-btn-ghost {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-}
-
-.action-row {
+.control-actions {
   display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.action-row .ok-btn-ghost {
-  height: 2.2rem;
-  padding: 0 0.8rem;
+.control-actions .control-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0.4rem;
 }
 
-.copy-btn {
-  margin-left: auto;
+.history-pos {
+  color: var(--ok-muted);
+  font-family: var(--ok-mono);
+  font-size: 0.66rem;
 }
 
-/* ---------- 梗图卡片 ---------- */
+.viewer-panel {
+  min-width: 0;
+}
+
+.viewer-state {
+  min-height: 360px;
+}
+
+.viewer-state :deep(.ui-card-body) {
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.viewer-state :deep(.ui-error--block) {
+  width: 100%;
+}
+
 .meme-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--ok-radius);
   overflow: hidden;
-  box-shadow: var(--ok-shadow);
+  min-width: 0;
+}
+
+.meme-card :deep(.ui-card-body) {
+  gap: 0;
+}
+
+.meme-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  background: var(--ok-bg);
 }
 
 .meme-card img {
-  width: 100%;
   display: block;
-  max-height: 70vh;
-  object-fit: contain;
-  background: #000;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: min(62vh, 620px);
+  width: auto;
+  height: auto;
+}
+
+.meme-image-wrap .image-loading {
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-size: 0.78rem;
+}
+
+.image-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--ok-muted);
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 .meme-body {
-  padding: 1.2rem;
+  padding: 1rem;
 }
 
 .meme-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .meme-meta {
   display: flex;
-  gap: 0.8rem;
   flex-wrap: wrap;
-  margin-top: 0.5rem;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-family: var(--ok-mono);
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  overflow-wrap: anywhere;
 }
 
-.meme-link {
-  display: inline-block;
-  margin-top: 0.9rem;
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.82rem;
+.meme-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
 }
 
-.meme-link:hover {
-  background: var(--ok-accent-soft);
-}
-
-/* ---------- 数据来源声明 ---------- */
-.data-source {
-  margin-top: 1.5rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  letter-spacing: 0.03em;
-}
-
-/* ---------- 响应式 ---------- */
-@media (max-width: 480px) {
-  .sub-label {
-    display: none;
+@media (max-width: 860px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .copy-btn {
-    margin-left: 0;
+  .control-panel {
+    position: static;
+  }
+  .meme-card img {
+    max-height: 70vh;
+  }
+}
+
+@media (max-width: 520px) {
+  .meme-body {
+    padding: 0.85rem;
+  }
+  .meme-image-wrap {
+    min-height: 180px;
+  }
+  .meme-card img {
+    max-height: 60vh;
+  }
+  .meme-actions {
+    justify-content: flex-start;
+  }
+  .viewer-state {
+    min-height: 280px;
   }
 }
 </style>

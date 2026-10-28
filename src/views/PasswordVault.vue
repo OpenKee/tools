@@ -1,145 +1,36 @@
 <script setup>
-/* ============================================================
-   Password Vault — 密码生成器（Vue 3 SFC 迁移版）
-   - 共享 i18n：i18nState / useT / toggleLang（来自 ../i18n.js）
-   - 共享工具：lsGet / lsSet / locale（来自 ../ok.js）
-   - 共享组件：AppHeader / AppFooter
-   - 所有随机性均来自 crypto.getRandomValues()，确保密码学安全。
-   ============================================================ */
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { i18nState, toggleLang, useT } from '../i18n.js'
-import { lsGet, lsSet, locale } from '../ok.js'
-import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
+import { Copy, Eye, EyeOff, RefreshCw, ShieldCheck, Sparkles } from '@lucide/vue'
+import { i18nState, useT } from '../i18n.js'
+import { lsGet, lsRemove, lsSet, locale } from '../ok.js'
+import {
+  UiBadge,
+  UiButton,
+  UiCard,
+  UiCheckbox,
+  UiEmptyState,
+  UiField,
+  UiIconButton,
+  UiInput,
+  UiPage,
+  UiPageHead,
+  UiRange,
+  UiSectionHead,
+  UiSelect,
+} from '../components/ui/index.js'
+import copy from '../copy/password-vault.js'
 
-// ---------- i18n 文案字典 ----------
-const copy = {
-  en: {
-    eyebrow: 'Security tool',
-    title: 'Password Vault',
-    lead: 'Generate cryptographically secure passwords with real-time strength analysis, entropy estimation, and crack-time forecasting.',
-    lengthLabel: 'Length',
-    optionsLabel: 'Character types',
-    optUppercase: 'Uppercase (A–Z)',
-    optLowercase: 'Lowercase (a–z)',
-    optDigits: 'Digits (0–9)',
-    optSymbols: 'Symbols (!@#$…)',
-    optExcludeSimilar: 'Exclude similar (0/O/1/l/I)',
-    generate: 'Generate',
-    regenerate: 'Regenerate',
-    copy: 'Copy',
-    copied: 'Copied',
-    copyAll: 'Copy all',
-    strengthLabel: 'Strength analysis',
-    entropyLabel: 'Entropy',
-    bitsUnit: 'bits',
-    crackTimeLabel: 'Estimated crack time',
-    compositionLabel: 'Character composition',
-    compUppercase: 'Uppercase',
-    compLowercase: 'Lowercase',
-    compDigits: 'Digits',
-    compSymbols: 'Symbols',
-    levelWeak: 'Weak',
-    levelMedium: 'Medium',
-    levelStrong: 'Strong',
-    levelVeryStrong: 'Very strong',
-    batchLabel: 'Batch generate',
-    batchGenerate: 'Generate',
-    batchResults: 'Batch results',
-    historyLabel: 'History',
-    clearHistory: 'Clear',
-    noHistory: 'No history yet. Generated passwords will appear here.',
-    noBatch: 'Generate a batch to see multiple passwords.',
-    noOptions: 'Select at least one character type.',
-    emptyPassword: '—',
-    copyFailed: 'Copy failed',
-    timeInstant: 'Instant',
-    timeSecond: 'second',
-    timeMinute: 'minute',
-    timeHour: 'hour',
-    timeDay: 'day',
-    timeYear: 'year',
-    ariaCopy: 'Copy password',
-    ariaRegenerate: 'Regenerate password',
-    ariaCheckBreach: 'Check password breach',
-    checkBreach: 'Check breach',
-    breachSafe: 'No breaches found',
-    breachFound: 'Found in {n} breaches',
-    breachError: 'Check failed',
-    ariaLength: 'Password length',
-    ariaBatchCount: 'Batch count',
-    ariaStrength: 'Password strength',
-  },
-  zh: {
-    eyebrow: '安全工具',
-    title: '密码保险箱',
-    lead: '生成加密安全的随机密码，提供实时强度分析、熵值估算与破解时间预测。',
-    lengthLabel: '长度',
-    optionsLabel: '字符类型',
-    optUppercase: '大写字母 (A–Z)',
-    optLowercase: '小写字母 (a–z)',
-    optDigits: '数字 (0–9)',
-    optSymbols: '特殊符号 (!@#$…)',
-    optExcludeSimilar: '排除相似字符 (0/O/1/l/I)',
-    generate: '生成密码',
-    regenerate: '重新生成',
-    copy: '复制',
-    copied: '已复制',
-    copyAll: '全部复制',
-    strengthLabel: '强度分析',
-    entropyLabel: '熵值',
-    bitsUnit: '位',
-    crackTimeLabel: '预估破解时间',
-    compositionLabel: '字符组成',
-    compUppercase: '大写',
-    compLowercase: '小写',
-    compDigits: '数字',
-    compSymbols: '符号',
-    levelWeak: '弱',
-    levelMedium: '中',
-    levelStrong: '强',
-    levelVeryStrong: '极强',
-    batchLabel: '批量生成',
-    batchGenerate: '生成',
-    batchResults: '批量结果',
-    historyLabel: '历史记录',
-    clearHistory: '清空',
-    noHistory: '暂无历史记录。生成的密码会显示在这里。',
-    noBatch: '生成批量密码以查看多个结果。',
-    noOptions: '请至少选择一种字符类型。',
-    emptyPassword: '—',
-    copyFailed: '复制失败',
-    timeInstant: '瞬间',
-    timeSecond: '秒',
-    timeMinute: '分',
-    timeHour: '小时',
-    timeDay: '天',
-    timeYear: '年',
-    ariaCopy: '复制密码',
-    ariaRegenerate: '重新生成密码',
-    ariaCheckBreach: '检查密码是否泄露',
-    checkBreach: '检查泄露',
-    breachSafe: '未发现泄露',
-    breachFound: '发现于 {n} 次泄露中',
-    breachError: '检查失败',
-    ariaLength: '密码长度',
-    ariaBatchCount: '批量数量',
-    ariaStrength: '密码强度',
-  },
-}
+defineProps({ embedded: { type: Boolean, default: false } })
 
-// useT 返回 computed ref，模板中 t('key') 自动 unwrap；脚本中用 t.value('key')
 const t = useT(copy)
 
-// ---------- 字符集定义 ----------
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const LOWER = 'abcdefghijklmnopqrstuvwxyz'
 const DIGITS = '0123456789'
 const SYMBOLS = '!@#$%^&*()-_=+[]{}|;:,.<>?/~'
-// 排除相似字符集合
+
 const SIMILAR = '0Oo1lI|`'
 
-// ---------- 响应式状态 ----------
 const state = reactive({
   length: 20,
   upper: true,
@@ -150,19 +41,26 @@ const state = reactive({
   batchCount: 5,
 })
 
-const currentPassword = ref('')     // 当前展示的密码
-const history = ref([])             // 历史记录列表
-const batchPasswords = ref([])      // 批量生成的密码
-const breachResult = ref('—')       // 泄露检查结果文案
-const breachChecking = ref(false)   // 泄露检查进行中
+const BATCH_OPTIONS = [5, 10, 20].map((n) => ({ value: n, label: String(n) }))
 
-// 复制成功的视觉反馈标志
-const copiedMain = ref(false)       // 主复制按钮
-const copiedAll = ref(false)        // 全部复制按钮
-const copiedBatchIdx = ref(-1)      // 批量项复制按钮（-1 表示无）
+const currentPassword = ref('')
+const history = ref([])
+const batchPasswords = ref([])
+const revealed = ref(true)
+const breachState = ref('idle')
+const breachCount = ref(0)
+const breachChecking = ref(false)
+let breachRequestId = 0
 
-// ---------- 历史记录持久化（localStorage） ----------
+const copiedMain = ref(false)
+const copiedAll = ref(false)
+const copiedBatchIdx = ref(-1)
+const copiedHistoryIdx = ref(-1)
+let historyCopyTimer = null
+
 const HISTORY_KEY = 'pv-history'
+const HISTORY_PERSIST_KEY = 'pv-history-persist'
+const persistHistory = ref(lsGet(HISTORY_PERSIST_KEY) === '1')
 
 function loadHistory() {
   try {
@@ -173,11 +71,20 @@ function loadHistory() {
 }
 
 function saveHistory() {
+  if (!persistHistory.value) {
+    lsRemove(HISTORY_KEY)
+    return
+  }
   lsSet(HISTORY_KEY, JSON.stringify(history.value))
 }
 
-// ---------- 工具函数 ----------
-// 从字符串中移除相似字符
+function setPersistHistory(on) {
+  persistHistory.value = on
+  lsSet(HISTORY_PERSIST_KEY, on ? '1' : '0')
+  if (on) saveHistory()
+  else lsRemove(HISTORY_KEY)
+}
+
 function filterSimilar(str) {
   let result = ''
   for (let i = 0; i < str.length; i++) {
@@ -186,30 +93,26 @@ function filterSimilar(str) {
   return result
 }
 
-// 基于当前选项构造可用字符集数组（已过滤相似字符）
 function buildSets() {
   const sets = []
   if (state.upper) sets.push(state.exclude ? filterSimilar(UPPER) : UPPER)
   if (state.lower) sets.push(state.exclude ? filterSimilar(LOWER) : LOWER)
   if (state.digits) sets.push(state.exclude ? filterSimilar(DIGITS) : DIGITS)
   if (state.symbols) sets.push(state.exclude ? filterSimilar(SYMBOLS) : SYMBOLS)
-  // 过滤后可能为空字符串，剔除
-  return sets.filter(function (s) { return s.length > 0 })
+
+  return sets.filter(function (s) {
+    return s.length > 0
+  })
 }
 
-// 拼接完整字符池
 function buildPool(sets) {
   return sets.join('')
 }
 
-/**
- * 密码学安全的随机整数 [0, max)。
- * 使用拒绝采样消除取模偏差。
- */
 function secureRandomInt(max) {
   if (max <= 0) return 0
-  const range = 4294967296 // 2^32
-  const limit = range - (range % max) // 最大可接受边界
+  const range = 4294967296
+  const limit = range - (range % max)
   const arr = new Uint32Array(1)
   let x
   do {
@@ -219,24 +122,20 @@ function secureRandomInt(max) {
   return x % max
 }
 
-/**
- * 生成密码。
- * 保证每个已选字符集至少出现一次（当长度足够时），再用 Fisher-Yates 洗牌。
- */
 function generatePassword(length, sets) {
   const pool = buildPool(sets)
   if (!pool || length <= 0) return ''
   const chars = []
-  // 先从每个集合各取一个，保证覆盖
+
   const ensureCount = Math.min(sets.length, length)
   for (let i = 0; i < ensureCount; i++) {
     chars.push(sets[i][secureRandomInt(sets[i].length)])
   }
-  // 填充剩余长度
+
   for (let j = ensureCount; j < length; j++) {
     chars.push(pool[secureRandomInt(pool.length)])
   }
-  // Fisher-Yates 洗牌（使用安全随机）
+
   for (let k = chars.length - 1; k > 0; k--) {
     const idx = secureRandomInt(k + 1)
     const tmp = chars[k]
@@ -246,13 +145,11 @@ function generatePassword(length, sets) {
   return chars.join('')
 }
 
-// 计算熵值（bits）= 长度 * log2(字符池大小)
 function calcEntropy(length, poolSize) {
   if (poolSize <= 0 || length <= 0) return 0
   return length * Math.log2(poolSize)
 }
 
-// 根据熵值判定强度等级
 function strengthFromEntropy(entropy) {
   if (entropy < 35) return 'weak'
   if (entropy < 60) return 'medium'
@@ -260,7 +157,6 @@ function strengthFromEntropy(entropy) {
   return 'verystrong'
 }
 
-// 强度等级文案
 function levelLabel(level) {
   if (level === 'weak') return t.value('levelWeak')
   if (level === 'medium') return t.value('levelMedium')
@@ -268,7 +164,16 @@ function levelLabel(level) {
   return t.value('levelVeryStrong')
 }
 
-// 分析密码字符组成
+const LEVEL_BADGE_VARIANTS = {
+  weak: 'down',
+  medium: 'warn',
+  strong: 'up',
+  verystrong: 'accent',
+}
+function badgeVariant(level) {
+  return LEVEL_BADGE_VARIANTS[level] || 'neutral'
+}
+
 function analyzeComposition(pwd) {
   const counts = { upper: 0, lower: 0, digit: 0, symbol: 0 }
   for (let i = 0; i < pwd.length; i++) {
@@ -281,32 +186,40 @@ function analyzeComposition(pwd) {
   return counts
 }
 
-// 时间单位单词（处理英文复数）
 function unitWord(n, key) {
   const word = t.value(key)
   if (i18nState.lang === 'en' && n !== 1) return word + 's'
   return word
 }
 
-/**
- * 估算破解时间。
- * 假设离线快速攻击 1e10 次/秒，平均需要尝试 2^entropy / 2 次。
- */
 function formatCrackTime(entropy) {
   if (entropy <= 0) return t.value('timeInstant')
   const guesses = Math.pow(2, entropy) / 2
   const seconds = guesses / 1e10
   if (!isFinite(seconds) || seconds < 1) return t.value('timeInstant')
 
-  const minute = 60, hour = 3600, day = 86400, year = 31536000
+  const minute = 60,
+    hour = 3600,
+    day = 86400,
+    year = 31536000
   let val, key
-  if (seconds < minute) { val = seconds; key = 'timeSecond' }
-  else if (seconds < hour) { val = seconds / minute; key = 'timeMinute' }
-  else if (seconds < day) { val = seconds / hour; key = 'timeHour' }
-  else if (seconds < year) { val = seconds / day; key = 'timeDay' }
-  else { val = seconds / year; key = 'timeYear' }
+  if (seconds < minute) {
+    val = seconds
+    key = 'timeSecond'
+  } else if (seconds < hour) {
+    val = seconds / minute
+    key = 'timeMinute'
+  } else if (seconds < day) {
+    val = seconds / hour
+    key = 'timeHour'
+  } else if (seconds < year) {
+    val = seconds / day
+    key = 'timeDay'
+  } else {
+    val = seconds / year
+    key = 'timeYear'
+  }
 
-  // 极大年数使用科学计数法
   if (key === 'timeYear' && val >= 1e6) {
     return val.toExponential(2) + ' ' + unitWord(val, key)
   }
@@ -314,7 +227,6 @@ function formatCrackTime(entropy) {
   return rounded + ' ' + unitWord(rounded, key)
 }
 
-// ---------- 泄露检查（Have I Been Pwned k-Anonymity） ----------
 function bufferToHex(buffer) {
   const bytes = new Uint8Array(buffer)
   let hex = ''
@@ -324,13 +236,18 @@ function bufferToHex(buffer) {
   return hex
 }
 
+function resetBreach() {
+  breachRequestId += 1
+  breachState.value = 'idle'
+  breachCount.value = 0
+  breachChecking.value = false
+}
+
 async function checkBreach(password) {
-  if (!password || password === '—') {
-    breachResult.value = t.value('breachError')
-    return
-  }
+  if (!password) return
+  const requestId = ++breachRequestId
   breachChecking.value = true
-  breachResult.value = '…'
+  breachState.value = 'checking'
   try {
     const encoder = new TextEncoder()
     const buffer = await crypto.subtle.digest('SHA-1', encoder.encode(password))
@@ -339,6 +256,7 @@ async function checkBreach(password) {
     const suffix = hash.slice(5)
     const res = await fetch('https://api.pwnedpasswords.com/range/' + prefix, {
       headers: { Accept: 'text/plain' },
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) throw new Error('HTTP ' + res.status)
     const text = await res.text()
@@ -351,88 +269,77 @@ async function checkBreach(password) {
         break
       }
     }
-    breachResult.value = found > 0
-      ? t.value('breachFound').replace('{n}', String(found))
-      : t.value('breachSafe')
+    if (requestId !== breachRequestId) return
+    breachCount.value = found
+    breachState.value = found > 0 ? 'found' : 'safe'
   } catch (e) {
-    breachResult.value = t.value('breachError')
+    if (requestId === breachRequestId) breachState.value = 'error'
   } finally {
-    breachChecking.value = false
+    if (requestId === breachRequestId) breachChecking.value = false
   }
 }
 
-// ---------- 计算属性 ----------
-// 当前选项下的字符集与字符池大小
+const breachText = computed(() => {
+  if (breachState.value === 'checking') return t.value('breachChecking')
+  if (breachState.value === 'safe') return t.value('breachSafe')
+  if (breachState.value === 'found') return t.value('breachFound').replace('{n}', String(breachCount.value))
+  if (breachState.value === 'error') return t.value('breachError')
+  return t.value('notChecked')
+})
+
 const sets = computed(() => buildSets())
 const poolSize = computed(() => buildPool(sets.value).length)
 const poolIsEmpty = computed(() => sets.value.length === 0)
 
-// 字符组成
 const composition = computed(() => analyzeComposition(currentPassword.value))
 
-// 熵值与强度等级
-const entropy = computed(() =>
-  currentPassword.value ? calcEntropy(currentPassword.value.length, poolSize.value) : 0,
-)
-const level = computed(() =>
-  currentPassword.value ? strengthFromEntropy(entropy.value) : null,
-)
+const entropy = computed(() => (currentPassword.value ? calcEntropy(currentPassword.value.length, poolSize.value) : 0))
+const level = computed(() => (currentPassword.value ? strengthFromEntropy(entropy.value) : null))
 
-// 强度条填充宽度（熵值映射到 0-128 bits 区间）
+const levelVariant = computed(() => badgeVariant(level.value))
+
 const strengthPct = computed(() => Math.min(100, (entropy.value / 128) * 100))
 
-// 熵值、破解时间、等级文案
-const entropyText = computed(() => currentPassword.value ? entropy.value.toFixed(1) : '—')
-const crackTimeText = computed(() => currentPassword.value ? formatCrackTime(entropy.value) : '—')
-const levelText = computed(() => level.value ? levelLabel(level.value) : '—')
+const entropyText = computed(() => (currentPassword.value ? entropy.value.toFixed(1) : '—'))
+const crackTimeText = computed(() => (currentPassword.value ? formatCrackTime(entropy.value) : '—'))
+const levelText = computed(() => (level.value ? levelLabel(level.value) : '—'))
 
-// 密码区展示文案：无密码时根据选项状态给出提示
+function displayPassword(pwd) {
+  if (!pwd) return ''
+  return revealed.value ? pwd : '•'.repeat(pwd.length)
+}
+
 const passwordDisplayText = computed(() => {
   if (!currentPassword.value) {
     return poolIsEmpty.value ? t.value('noOptions') : t.value('emptyPassword')
   }
-  return currentPassword.value
+  return displayPassword(currentPassword.value)
 })
 const passwordIsEmpty = computed(() => !currentPassword.value)
+const passwordIsHidden = computed(() => !passwordIsEmpty.value && !revealed.value)
 
-// ---------- 复制功能 ----------
 function copyToClipboard(text) {
   if (!text) return Promise.resolve()
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    return navigator.clipboard.writeText(text).catch(function () {
-      return fallbackCopy(text)
-    })
-  }
-  return fallbackCopy(text)
+  return navigator.clipboard.writeText(text)
 }
 
-// 降级复制方案
-function fallbackCopy(text) {
-  return new Promise(function (resolve) {
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.select()
-    try { document.execCommand('copy') } catch (e) { /* 静默失败 */ }
-    document.body.removeChild(ta)
-    resolve()
-  })
-}
-
-// 复制成功后的视觉反馈
 function flashMain() {
   copiedMain.value = true
-  setTimeout(function () { copiedMain.value = false }, 1200)
+  setTimeout(function () {
+    copiedMain.value = false
+  }, 1200)
 }
 function flashAll() {
   copiedAll.value = true
-  setTimeout(function () { copiedAll.value = false }, 1200)
+  setTimeout(function () {
+    copiedAll.value = false
+  }, 1200)
 }
 function flashBatch(idx) {
   copiedBatchIdx.value = idx
-  setTimeout(function () { copiedBatchIdx.value = -1 }, 1200)
+  setTimeout(function () {
+    copiedBatchIdx.value = -1
+  }, 1200)
 }
 
 function onCopyMain() {
@@ -440,16 +347,23 @@ function onCopyMain() {
   copyToClipboard(currentPassword.value).then(flashMain)
 }
 
-function onCopyHistory(pwd) {
+function onCopyHistory(pwd, idx) {
   if (!pwd) return
-  // 点击历史项复制该密码，同时闪烁主复制按钮作为反馈
-  copyToClipboard(pwd).then(flashMain)
+  copyToClipboard(pwd).then(function () {
+    copiedHistoryIdx.value = idx
+    if (historyCopyTimer) clearTimeout(historyCopyTimer)
+    historyCopyTimer = setTimeout(function () {
+      copiedHistoryIdx.value = -1
+    }, 1200)
+  })
 }
 
 function onCopyBatchItem(idx) {
   const pwd = batchPasswords.value[idx]
   if (!pwd) return
-  copyToClipboard(pwd).then(function () { flashBatch(idx) })
+  copyToClipboard(pwd).then(function () {
+    flashBatch(idx)
+  })
 }
 
 function onCopyAll() {
@@ -457,11 +371,16 @@ function onCopyAll() {
   copyToClipboard(batchPasswords.value.join('\n')).then(flashAll)
 }
 
-// ---------- 生成并展示 ----------
+function clampLength() {
+  const n = Math.round(Number(state.length))
+  state.length = Number.isFinite(n) ? Math.min(64, Math.max(8, n)) : 20
+}
+
 function generateAndShow() {
+  clampLength()
+  resetBreach()
   const s = buildSets()
   if (s.length === 0) {
-    // 未选择任何字符类型，清空密码区以显示提示
     currentPassword.value = ''
     return
   }
@@ -472,10 +391,9 @@ function generateAndShow() {
   addToHistory(pwd, pool.length)
 }
 
-// ---------- 历史记录 ----------
 function addToHistory(pwd, poolSz) {
   if (!pwd) return
-  // 与最近一条相同则跳过
+
   if (history.value.length && history.value[0].password === pwd) return
 
   const ent = calcEntropy(pwd.length, poolSz)
@@ -491,7 +409,7 @@ function addToHistory(pwd, poolSz) {
     level: lvl,
     timeStr: timeStr,
   })
-  // 最多保留 20 条
+
   if (history.value.length > 20) history.value.splice(20)
 }
 
@@ -499,12 +417,13 @@ function clearHistory() {
   history.value = []
 }
 
-// ---------- 批量生成 ----------
 function generateBatch() {
+  clampLength()
   const s = buildSets()
   if (s.length === 0) {
     batchPasswords.value = []
-    currentPassword.value = '' // 触发密码区显示 noOptions 提示
+    currentPassword.value = ''
+    resetBreach()
     return
   }
   const length = Number(state.length)
@@ -516,1008 +435,740 @@ function generateBatch() {
   batchPasswords.value = arr
 }
 
-// ---------- 副作用：历史记录变化时持久化 ----------
 watch(history, saveHistory, { deep: true })
 
-// ---------- 初始化 ----------
 onMounted(function () {
-  history.value = loadHistory()
-  // 首次生成
+  if (persistHistory.value) history.value = loadHistory()
+  else lsRemove(HISTORY_KEY)
+
   generateAndShow()
 })
 </script>
 
 <template>
-  <div class="pv-app">
-    <AppHeader :show-lang-toggle="false" />
-    <main class="shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
-          <h1>{{ t('title') }}</h1>
-          <p class="lead">{{ t('lead') }}</p>
-        </div>
-        <div class="header-right">
-          <button class="ok-lang-toggle" type="button" @click="toggleLang">
-            {{ i18nState.lang === 'en' ? '中文' : 'EN' }}
-          </button>
-        </div>
-      </header>
+  <UiPage class="pv-app" :title="t('title')" spacing="compact" :embedded="embedded">
+    <UiPageHead compact :level="embedded ? 2 : 1" :title="t('title')" :description="t('lead')" />
 
-      <section class="workspace">
-        <!-- 左侧控制面板 -->
-        <aside class="control-panel" aria-label="Password options">
-          <!-- 长度滑块 -->
-          <div class="field-group">
-            <div class="field-head">
-              <label class="field-label" for="lengthRange">{{ t('lengthLabel') }}</label>
-              <span class="length-value">{{ state.length }}</span>
+    <section class="workspace">
+      <UiCard as="aside" class="control-panel" padding="sm" aria-label="Password options">
+        <UiField class="length-field">
+          <template #label>
+            <span>{{ t('lengthLabel') }}</span>
+            <UiInput
+              v-model.number="state.length"
+              class="length-input"
+              type="number"
+              size="sm"
+              min="8"
+              max="64"
+              :aria-label="t('ariaLength')"
+              @change="clampLength"
+            />
+          </template>
+          <UiRange v-model="state.length" :min="8" :max="64" :aria-label="t('ariaLength')" />
+          <div class="range-marks"><span>8</span><span>64</span></div>
+        </UiField>
+
+        <UiField :label="t('optionsLabel')">
+          <div class="option-stack">
+            <div class="option-grid">
+              <UiCheckbox v-model="state.upper" variant="tile" :label="t('optUppercase')" @change="generateAndShow" />
+              <UiCheckbox v-model="state.lower" variant="tile" :label="t('optLowercase')" @change="generateAndShow" />
+              <UiCheckbox v-model="state.digits" variant="tile" :label="t('optDigits')" @change="generateAndShow" />
+              <UiCheckbox v-model="state.symbols" variant="tile" :label="t('optSymbols')" @change="generateAndShow" />
             </div>
-            <div class="range-input">
-              <input
-                id="lengthRange"
-                v-model.number="state.length"
-                type="range"
-                min="8"
-                max="64"
-                :aria-label="t('ariaLength')"
-              />
-            </div>
-            <div class="range-marks"><span>8</span><span>64</span></div>
+            <UiCheckbox
+              v-model="state.exclude"
+              variant="tile"
+              :label="t('optExcludeSimilar')"
+              @change="generateAndShow"
+            />
           </div>
+        </UiField>
 
-          <!-- 字符类型选项 -->
-          <div class="field-group">
-            <span class="field-label">{{ t('optionsLabel') }}</span>
-            <div class="option-list">
-              <label class="option">
-                <input v-model="state.upper" type="checkbox" @change="generateAndShow" />
-                <span class="option-box" aria-hidden="true"></span>
-                <span class="option-text">{{ t('optUppercase') }}</span>
-              </label>
-              <label class="option">
-                <input v-model="state.lower" type="checkbox" @change="generateAndShow" />
-                <span class="option-box" aria-hidden="true"></span>
-                <span class="option-text">{{ t('optLowercase') }}</span>
-              </label>
-              <label class="option">
-                <input v-model="state.digits" type="checkbox" @change="generateAndShow" />
-                <span class="option-box" aria-hidden="true"></span>
-                <span class="option-text">{{ t('optDigits') }}</span>
-              </label>
-              <label class="option">
-                <input v-model="state.symbols" type="checkbox" @change="generateAndShow" />
-                <span class="option-box" aria-hidden="true"></span>
-                <span class="option-text">{{ t('optSymbols') }}</span>
-              </label>
-            </div>
+        <UiButton variant="primary" block class="generate-btn" @click="generateAndShow">
+          <Sparkles :size="15" aria-hidden="true" />
+          {{ t('generate') }}
+        </UiButton>
+
+        <UiField :label="t('batchLabel')" class="batch-group">
+          <div class="batch-row">
+            <UiSelect v-model="state.batchCount" :options="BATCH_OPTIONS" :aria-label="t('ariaBatchCount')" />
+            <UiButton variant="secondary" @click="generateBatch">
+              <Sparkles :size="14" aria-hidden="true" />
+              {{ t('batchGenerate') }}
+            </UiButton>
           </div>
+        </UiField>
+      </UiCard>
 
-          <!-- 排除相似字符 -->
-          <div class="field-group">
-            <label class="option">
-              <input v-model="state.exclude" type="checkbox" @change="generateAndShow" />
-              <span class="option-box" aria-hidden="true"></span>
-              <span class="option-text">{{ t('optExcludeSimilar') }}</span>
-            </label>
+      <div class="preview-panel">
+        <UiCard class="password-card" padding="sm">
+          <UiSectionHead :title="t('generatedPassword')">
+            <template #meta>
+              <UiBadge :variant="levelVariant" size="sm">{{ levelText }}</UiBadge>
+            </template>
+          </UiSectionHead>
+          <div
+            class="password-display"
+            :class="{ empty: passwordIsEmpty, hidden: passwordIsHidden }"
+            aria-live="polite"
+            :aria-label="t('generatedPassword')"
+          >
+            {{ passwordDisplayText }}
           </div>
-
-          <button class="ok-btn-primary generate-btn" type="button" @click="generateAndShow">
-            {{ t('generate') }}
-          </button>
-
-          <!-- 批量生成 -->
-          <div class="field-group batch-group">
-            <span class="field-label">{{ t('batchLabel') }}</span>
-            <div class="batch-row">
-              <select
-                v-model.number="state.batchCount"
-                class="text-input"
-                :aria-label="t('ariaBatchCount')"
-              >
-                <option :value="5">5</option>
-                <option :value="10">10</option>
-                <option :value="20">20</option>
-              </select>
-              <button class="ok-btn-ghost batch-btn" type="button" @click="generateBatch">
-                {{ t('batchGenerate') }}
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        <!-- 右侧密码显示与强度分析 -->
-        <div class="preview-panel">
-          <!-- 密码显示 -->
-          <div class="password-card">
-            <div
-              class="password-display"
-              :class="{ empty: passwordIsEmpty }"
-              aria-live="polite"
-              aria-label="Generated password"
-            >{{ passwordDisplayText }}</div>
-            <div class="password-actions">
-              <button
-                class="icon-btn"
-                :class="{ copied: copiedMain }"
-                type="button"
-                :aria-label="t('ariaCopy')"
-                @click="onCopyMain"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                <span class="icon-btn-text">{{ copiedMain ? t('copied') : t('copy') }}</span>
-              </button>
-              <button
-                class="icon-btn"
-                type="button"
-                :aria-label="t('ariaRegenerate')"
-                @click="generateAndShow"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                <span class="icon-btn-text">{{ t('regenerate') }}</span>
-              </button>
-              <button
-                class="icon-btn"
-                type="button"
-                :aria-label="t('ariaCheckBreach')"
-                :disabled="breachChecking"
-                @click="checkBreach(currentPassword)"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span class="icon-btn-text">{{ t('checkBreach') }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 强度分析 -->
-          <div class="strength-card">
-            <div class="section-head">
-              <h2>{{ t('strengthLabel') }}</h2>
-              <span class="strength-level" :class="level ? 'level-' + level : ''">{{ levelText }}</span>
-            </div>
-            <div
-              class="strength-bar"
-              role="meter"
-              aria-valuemin="0"
-              aria-valuemax="128"
-              :aria-valuenow="String(Math.round(entropy))"
-              :aria-label="t('ariaStrength')"
+          <div class="password-actions">
+            <UiButton
+              variant="soft"
+              size="sm"
+              :class="{ 'is-copied': copiedMain }"
+              :aria-label="t('ariaCopy')"
+              :disabled="passwordIsEmpty"
+              @click="onCopyMain"
             >
-              <div
-                class="strength-fill"
-                :class="level ? 'level-' + level : ''"
-                :style="{ width: strengthPct + '%' }"
-              ></div>
+              <Copy :size="14" aria-hidden="true" />
+              <span>{{ copiedMain ? t('copied') : t('copy') }}</span>
+            </UiButton>
+            <UiButton variant="secondary" size="sm" :aria-label="t('ariaRegenerate')" @click="generateAndShow">
+              <RefreshCw :size="14" aria-hidden="true" />
+              <span>{{ t('regenerate') }}</span>
+            </UiButton>
+            <UiButton
+              variant="secondary"
+              size="sm"
+              :aria-label="t('ariaToggleVisibility')"
+              :disabled="passwordIsEmpty"
+              @click="revealed = !revealed"
+            >
+              <component :is="revealed ? EyeOff : Eye" :size="14" aria-hidden="true" />
+              <span>{{ revealed ? t('hidePassword') : t('showPassword') }}</span>
+            </UiButton>
+            <UiButton
+              variant="secondary"
+              size="sm"
+              :aria-label="t('ariaCheckBreach')"
+              :disabled="breachChecking || passwordIsEmpty"
+              :loading="breachChecking"
+              @click="checkBreach(currentPassword)"
+            >
+              <ShieldCheck :size="14" aria-hidden="true" />
+              <span>{{ t('checkBreach') }}</span>
+            </UiButton>
+          </div>
+        </UiCard>
+
+        <UiCard class="strength-card" padding="sm">
+          <UiSectionHead
+            :title="t('strengthLabel')"
+            :meta="passwordIsEmpty ? '' : currentPassword.length + ' ' + t('characters')"
+          />
+          <div
+            class="strength-bar"
+            role="meter"
+            aria-valuemin="0"
+            aria-valuemax="128"
+            :aria-valuenow="String(Math.round(entropy))"
+            :aria-label="t('ariaStrength')"
+          >
+            <div
+              class="strength-fill"
+              :class="level ? 'level-' + level : ''"
+              :style="{ width: strengthPct + '%' }"
+            ></div>
+          </div>
+          <div class="metric-row">
+            <div class="metric">
+              <span class="metric-label">{{ t('entropyLabel') }}</span>
+              <span class="metric-value"
+                >{{ entropyText }} <small>{{ t('bitsUnit') }}</small></span
+              >
             </div>
-            <div class="strength-stats">
-              <div class="stat">
-                <span class="stat-label">{{ t('entropyLabel') }}</span>
-                <span class="stat-value">{{ entropyText }} <small>{{ t('bitsUnit') }}</small></span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">{{ t('crackTimeLabel') }}</span>
-                <span class="stat-value">{{ crackTimeText }}</span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">{{ t('checkBreach') }}</span>
-                <span class="stat-value">{{ breachResult }}</span>
-              </div>
+            <div class="metric">
+              <span class="metric-label">{{ t('crackTimeLabel') }}</span>
+              <span class="metric-value">{{ crackTimeText }}</span>
             </div>
-            <div class="composition">
-              <span class="field-label">{{ t('compositionLabel') }}</span>
-              <div class="comp-grid">
-                <div class="comp-item">
-                  <span class="comp-dot upper" aria-hidden="true"></span>
-                  <span class="comp-name">{{ t('compUppercase') }}</span>
-                  <span class="comp-count">{{ composition.upper }}</span>
-                </div>
-                <div class="comp-item">
-                  <span class="comp-dot lower" aria-hidden="true"></span>
-                  <span class="comp-name">{{ t('compLowercase') }}</span>
-                  <span class="comp-count">{{ composition.lower }}</span>
-                </div>
-                <div class="comp-item">
-                  <span class="comp-dot digit" aria-hidden="true"></span>
-                  <span class="comp-name">{{ t('compDigits') }}</span>
-                  <span class="comp-count">{{ composition.digit }}</span>
-                </div>
-                <div class="comp-item">
-                  <span class="comp-dot symbol" aria-hidden="true"></span>
-                  <span class="comp-name">{{ t('compSymbols') }}</span>
-                  <span class="comp-count">{{ composition.symbol }}</span>
-                </div>
-              </div>
+            <div class="metric">
+              <span class="metric-label">{{ t('breachStatus') }}</span>
+              <span class="metric-value" :class="'breach-' + breachState" :title="breachText">{{ breachText }}</span>
             </div>
           </div>
+          <div class="composition">
+            <span class="comp-label">{{ t('compositionLabel') }}</span>
+            <div class="comp-bar" aria-hidden="true">
+              <span class="comp-seg upper" :style="{ flexGrow: composition.upper }"></span>
+              <span class="comp-seg lower" :style="{ flexGrow: composition.lower }"></span>
+              <span class="comp-seg digit" :style="{ flexGrow: composition.digit }"></span>
+              <span class="comp-seg symbol" :style="{ flexGrow: composition.symbol }"></span>
+            </div>
+            <div class="comp-legend">
+              <span class="comp-item">
+                <span class="comp-dot upper" aria-hidden="true"></span>
+                {{ t('compUppercase') }} <b>{{ composition.upper }}</b>
+              </span>
+              <span class="comp-item">
+                <span class="comp-dot lower" aria-hidden="true"></span>
+                {{ t('compLowercase') }} <b>{{ composition.lower }}</b>
+              </span>
+              <span class="comp-item">
+                <span class="comp-dot digit" aria-hidden="true"></span>
+                {{ t('compDigits') }} <b>{{ composition.digit }}</b>
+              </span>
+              <span class="comp-item">
+                <span class="comp-dot symbol" aria-hidden="true"></span>
+                {{ t('compSymbols') }} <b>{{ composition.symbol }}</b>
+              </span>
+            </div>
+          </div>
+        </UiCard>
 
-          <!-- 批量结果 -->
-          <div class="batch-section">
-            <div class="section-head">
-              <h2>{{ t('batchResults') }}</h2>
-              <button
-                class="link-btn"
-                :class="{ copied: copiedAll }"
-                type="button"
+        <UiCard v-if="batchPasswords.length" class="batch-section" padding="sm">
+          <UiSectionHead :title="t('batchResults')">
+            <template #actions>
+              <UiButton
+                v-if="batchPasswords.length"
+                variant="ghost"
+                size="sm"
+                class="copy-all"
+                :class="{ 'is-copied': copiedAll }"
                 @click="onCopyAll"
-              >{{ t('copyAll') }}</button>
-            </div>
-            <div class="batch-list" aria-live="polite">
-              <p v-if="!batchPasswords.length" class="batch-empty">{{ t('noBatch') }}</p>
-              <div v-for="(pwd, i) in batchPasswords" :key="i" class="batch-item">
-                <span class="batch-idx">{{ i + 1 }}</span>
-                <span class="batch-pwd">{{ pwd }}</span>
-                <button
-                  class="batch-copy"
-                  :class="{ copied: copiedBatchIdx === i }"
-                  type="button"
-                  :aria-label="t('copy')"
-                  @click="onCopyBatchItem(i)"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-              </div>
+              >
+                <Copy :size="12" aria-hidden="true" />
+                {{ t('copyAll') }}
+              </UiButton>
+            </template>
+          </UiSectionHead>
+          <div class="batch-list" aria-live="polite">
+            <div v-for="(pwd, i) in batchPasswords" :key="i" class="batch-item">
+              <span class="batch-idx">{{ i + 1 }}</span>
+              <span class="batch-pwd">{{ displayPassword(pwd) }}</span>
+              <UiIconButton
+                :label="t('copy')"
+                variant="secondary"
+                size="sm"
+                :class="{ 'is-copied': copiedBatchIdx === i }"
+                @click="onCopyBatchItem(i)"
+              >
+                <Copy aria-hidden="true" />
+              </UiIconButton>
             </div>
           </div>
+        </UiCard>
 
-          <!-- 历史记录 -->
-          <div class="history-section">
-            <div class="section-head">
-              <h2>{{ t('historyLabel') }}</h2>
-              <button
-                class="link-btn"
-                type="button"
+        <UiCard class="history-section" padding="sm">
+          <UiSectionHead :title="t('historyLabel')">
+            <template #actions>
+              <UiButton
+                v-if="history.length"
+                variant="ghost"
+                size="sm"
                 :aria-label="t('clearHistory')"
                 @click="clearHistory"
-              >{{ t('clearHistory') }}</button>
-            </div>
-            <div class="history-list" aria-live="polite">
-              <p v-if="!history.length" class="history-empty">{{ t('noHistory') }}</p>
-              <button
-                v-for="(h, i) in history"
-                :key="i"
-                class="history-item"
-                type="button"
-                :aria-label="t('copy')"
-                @click="onCopyHistory(h.password)"
               >
-                <span class="history-level" :class="'level-' + h.level">{{ levelLabel(h.level) }}</span>
-                <span class="history-pwd" :title="h.password">{{ h.password }}</span>
-                <span class="history-time">{{ h.timeStr }}</span>
-              </button>
-            </div>
+                {{ t('clearHistory') }}
+              </UiButton>
+            </template>
+          </UiSectionHead>
+          <UiCheckbox
+            class="history-persist"
+            :model-value="persistHistory"
+            :label="t('persistHistory')"
+            @update:model-value="setPersistHistory"
+          />
+          <p class="history-note">{{ t('historyNote') }}</p>
+          <div class="history-list" aria-live="polite">
+            <UiEmptyState v-if="!history.length" compact :description="t('noHistory')" />
+            <button
+              v-for="(h, i) in history"
+              :key="i"
+              class="history-item"
+              :class="{ copied: copiedHistoryIdx === i }"
+              type="button"
+              :aria-label="t('copy')"
+              :title="t('copy')"
+              @click="onCopyHistory(h.password, i)"
+            >
+              <UiBadge :variant="badgeVariant(h.level)" size="sm">{{ levelLabel(h.level) }}</UiBadge>
+              <span class="history-pwd" :title="revealed ? h.password : ''">{{ displayPassword(h.password) }}</span>
+              <span class="history-time">{{ h.timeStr }}</span>
+            </button>
           </div>
-        </div>
-      </section>
-    </main>
-    <AppFooter />
-  </div>
+        </UiCard>
+      </div>
+    </section>
+  </UiPage>
 </template>
 
 <style scoped>
-/* ============================================================
-   深色安全主题（GitHub Dark 风格）。
-   原 :root 中的自定义变量迁移到组件根类 .pv-app，
-   同时把 --ok-* 共享 token 映射到本应用主题色，
-   通过 CSS 变量继承影响 AppHeader / AppFooter 等子组件。
-   ============================================================ */
 .pv-app {
-  --bg: #0d1117;
-  --panel: #161b22;
-  --line: #30363d;
-  --text: #e6edf3;
-  --muted: #7d8590;
-  --accent: #2f81f7;
-  --accent-soft: rgba(47, 129, 247, 0.12);
-  --green: #3fb950;
-  --yellow: #d29922;
-  --red: #f85149;
-
-  /* 共享组件主题映射 */
-  --ok-bg: var(--bg);
-  --ok-panel: var(--panel);
-  --ok-line: var(--line);
-  --ok-text: var(--text);
-  --ok-muted: var(--muted);
-  --ok-accent: var(--accent);
-  --ok-accent-soft: var(--accent-soft);
-  --ok-footer-line: var(--line);
-  --ok-footer-text: var(--muted);
-  --ok-footer-link: var(--accent);
-  --ok-topbar-line: var(--line);
-  color-scheme: dark;
-
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  --warn: #b45309;
+  --warn-soft: #fff7ed;
+  --purple: #8250df;
 }
 
-.pv-app a { color: var(--accent); text-decoration: none; }
-
-/* ---------- 主容器 ---------- */
-.shell {
-  width: min(1100px, calc(100% - 1.25rem));
-  margin: 0 auto;
-  padding: 1rem 0 3rem;
+:global(:root[data-theme='dark']) .pv-app {
+  --warn: #d29922;
+  --warn-soft: rgba(210, 153, 34, 0.14);
+  --purple: #a371f7;
 }
 
-/* ---------- 页头 ---------- */
-.masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  padding: 0.3rem 0 1.2rem;
-  border-bottom: 1px solid var(--line);
-  gap: 1rem;
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-h1 {
-  margin-top: 0.25rem;
-  font-size: clamp(2rem, 5vw, 3rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  font-weight: 800;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  max-width: 55ch;
-}
-
-.header-right {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* ---------- 工作区两栏布局 ---------- */
 .workspace {
-  margin-top: 1.5rem;
   display: grid;
-  grid-template-columns: minmax(320px, 380px) 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 0.8rem;
   align-items: start;
 }
 
-/* ---------- 控制面板 ---------- */
-.control-panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1.25rem;
-  border-radius: 8px;
+.workspace .control-panel {
   position: sticky;
-  top: 1rem;
+  top: calc(var(--ok-topbar-h, 3.4rem) + 0.75rem);
+  height: auto;
 }
 
-.field-group {
-  margin-bottom: 1.1rem;
-}
-
-.field-head {
+.preview-panel {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.5rem;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
-.field-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.length-value {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-/* ---------- 滑块 ---------- */
-.range-input {
-  border: 1px solid var(--line);
-  background: var(--bg);
-  padding: 0.55rem 0.7rem;
-  border-radius: 4px;
-}
-
-.range-input input[type="range"] {
+.length-field :deep(.ui-field-label) {
+  display: flex;
   width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.length-field .length-input {
+  width: 3.6rem;
+  flex: none;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.length-field .length-input :deep(input) {
+  font-family: var(--ok-mono);
+  text-align: center;
 }
 
 .range-marks {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.35rem;
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 0.68rem;
-  color: var(--muted);
+  margin-top: 0.2rem;
+  font-family: var(--ok-mono);
+  font-size: 0.64rem;
+  color: var(--ok-muted);
 }
 
-/* ---------- 自定义选项（checkbox） ---------- */
-.option-list {
+.option-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
-.option {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  user-select: none;
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
 }
 
-.option:hover {
-  border-color: var(--accent);
+.option-stack :deep(.ui-check--tile) {
+  padding: 0.42rem 0.5rem;
 }
 
-.option input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.option-box {
-  position: relative;
-  width: 1.15rem;
-  height: 1.15rem;
-  flex-shrink: 0;
-  border: 1.5px solid var(--muted);
-  border-radius: 3px;
-  background: var(--bg);
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.option-box::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 5px;
-  height: 9px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) scale(0);
-  transition: transform 0.12s;
-}
-
-.option input:checked + .option-box {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.option input:checked + .option-box::after {
-  transform: rotate(45deg) scale(1);
-}
-
-.option input:focus-visible + .option-box {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.option-text {
-  font-size: 0.85rem;
-  color: var(--text);
-}
-
-/* ---------- 生成按钮 ---------- */
 .generate-btn {
-  width: 100%;
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
-.generate-btn:active {
-  transform: translateY(1px);
-}
-
-/* ---------- 批量生成 ---------- */
 .batch-group {
-  margin-top: 1.4rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--ok-line);
 }
 
 .batch-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.4rem;
 }
 
-.batch-btn {
-  height: auto;
-  padding: 0 0.9rem;
-  font-weight: 600;
+.password-card :deep(.ui-section-head),
+.strength-card :deep(.ui-section-head) {
+  margin-bottom: 0;
 }
 
-/* ---------- 通用文本输入 ---------- */
-.text-input {
-  font: inherit;
-  width: 100%;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 0.85rem;
-  border-radius: 4px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+.password-card :deep(.ui-card-body) {
+  gap: 0.7rem;
 }
 
-.text-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+.strength-card :deep(.ui-card-body) {
+  gap: 0.55rem;
 }
 
-select.text-input {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237d8590' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.7rem center;
-  padding-right: 2rem;
-}
-
-/* ---------- 右侧面板 ---------- */
-.preview-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* ---------- 密码显示卡片 ---------- */
-.password-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.batch-section :deep(.ui-card-body),
+.history-section :deep(.ui-card-body) {
+  gap: 0;
 }
 
 .password-display {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  font-family: var(--ok-mono);
+  font-size: 1.12rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--text);
+  letter-spacing: 0.015em;
+  color: var(--ok-text);
   word-break: break-all;
-  line-height: 1.5;
-  min-height: 2.4em;
-  padding: 0.85rem 1rem;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  line-height: 1.45;
+  min-height: 2.1rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--ok-radius-sm);
   user-select: all;
 }
 
+.password-display.hidden {
+  letter-spacing: 0.16em;
+}
+
 .password-display.empty {
-  color: var(--muted);
+  color: var(--ok-muted);
+  font-family: var(--ok-font);
+  font-size: 0.86rem;
+  font-weight: 400;
   user-select: none;
 }
 
 .password-actions {
   display: flex;
-  gap: 0.5rem;
   flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.icon-btn {
-  font: inherit;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border-radius: 4px;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+.password-actions .is-copied,
+.copy-all.is-copied {
+  border-color: var(--ok-up);
+  background: var(--ok-up-bg);
+  color: var(--ok-up);
 }
 
-.icon-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.icon-btn:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-.icon-btn.copied {
-  border-color: var(--green);
-  color: var(--green);
-}
-
-.icon-btn svg {
-  flex-shrink: 0;
-}
-
-/* ---------- 强度分析卡片 ---------- */
-.strength-card,
-.batch-section,
-.history-section {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 1.1rem 1.25rem;
-}
-
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.85rem;
-  gap: 0.5rem;
-}
-
-.section-head h2 {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-/* ---------- 强度条 ---------- */
 .strength-bar {
-  position: relative;
-  height: 10px;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  height: 6px;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .strength-fill {
   height: 100%;
   width: 0%;
-  border-radius: 6px;
-  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s;
-  background: var(--line);
+  border-radius: 3px;
+  transition:
+    width 0.4s ease,
+    background 0.3s;
+  background: var(--ok-line);
 }
 
-/* 各强度等级渐变色：红 → 黄 → 绿 → 蓝 */
 .strength-fill.level-weak {
-  background: linear-gradient(90deg, #f85149, #ff7b72);
-  box-shadow: 0 0 12px rgba(248, 81, 73, 0.45);
+  background: var(--ok-down);
 }
 .strength-fill.level-medium {
-  background: linear-gradient(90deg, #d29922, #e3b341);
-  box-shadow: 0 0 12px rgba(210, 153, 34, 0.45);
+  background: var(--warn);
 }
 .strength-fill.level-strong {
-  background: linear-gradient(90deg, #3fb950, #56d364);
-  box-shadow: 0 0 12px rgba(63, 185, 80, 0.45);
+  background: var(--ok-up);
 }
 .strength-fill.level-verystrong {
-  background: linear-gradient(90deg, #2f81f7, #58a6ff);
-  box-shadow: 0 0 14px rgba(47, 129, 247, 0.55);
+  background: var(--ok-accent);
 }
 
-.strength-level {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  padding: 0.2rem 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-}
-
-.strength-level.level-weak { color: var(--red); border-color: rgba(248, 81, 73, 0.4); }
-.strength-level.level-medium { color: var(--yellow); border-color: rgba(210, 153, 34, 0.4); }
-.strength-level.level-strong { color: var(--green); border-color: rgba(63, 185, 80, 0.4); }
-.strength-level.level-verystrong { color: var(--accent); border-color: rgba(47, 129, 247, 0.4); }
-
-/* ---------- 强度统计 ---------- */
-.strength-stats {
+.metric-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0.2rem;
+  border-top: 1px solid var(--ok-line);
+  border-bottom: 1px solid var(--ok-line);
 }
 
-.stat {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.7rem 0.85rem;
+.metric {
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
 }
 
-.stat-label {
+.metric + .metric {
+  border-left: 1px solid var(--ok-line);
+}
+
+.metric-label {
   display: block;
   font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.3rem;
+  color: var(--ok-muted);
+  margin-bottom: 0.15rem;
 }
 
-.stat-value {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text);
-  word-break: break-word;
-}
-
-.stat-value small {
-  font-size: 0.72rem;
+.metric-value {
+  display: block;
+  font-family: var(--ok-mono);
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--ok-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ---------- 字符组成 ---------- */
+.metric-value small {
+  font-size: 0.66rem;
+  font-weight: 400;
+  color: var(--ok-muted);
+}
+
+.breach-safe {
+  color: var(--ok-up);
+}
+.breach-found,
+.breach-error {
+  color: var(--ok-down);
+}
+.breach-checking,
+.breach-idle {
+  color: var(--ok-muted);
+}
+
 .composition {
-  margin-top: 1rem;
+  margin-top: 0.15rem;
 }
 
-.composition .field-label {
-  margin-bottom: 0.55rem;
+.comp-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ok-muted);
+  margin-bottom: 0.4rem;
 }
 
-.comp-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
+.comp-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: 3px;
+}
+
+.comp-seg {
+  flex-basis: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.comp-seg + .comp-seg {
+  border-left: 1px solid var(--ok-panel);
+}
+.comp-seg.upper {
+  background: var(--ok-accent);
+}
+.comp-seg.lower {
+  background: var(--ok-up);
+}
+.comp-seg.digit {
+  background: var(--warn);
+}
+.comp-seg.symbol {
+  background: var(--purple);
+}
+
+.comp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.45rem;
 }
 
 .comp-item {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.6rem 0.4rem;
+  font-size: 0.68rem;
+  color: var(--ok-muted);
+}
+
+.comp-item b {
+  font-family: var(--ok-mono);
+  font-weight: 500;
+  color: var(--ok-text);
 }
 
 .comp-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--muted);
+  flex-shrink: 0;
 }
 
-.comp-dot.upper { background: var(--accent); }
-.comp-dot.lower { background: var(--green); }
-.comp-dot.digit { background: var(--yellow); }
-.comp-dot.symbol { background: #a371f7; }
-
-.comp-name {
-  font-size: 0.66rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.comp-dot.upper {
+  background: var(--ok-accent);
+}
+.comp-dot.lower {
+  background: var(--ok-up);
+}
+.comp-dot.digit {
+  background: var(--warn);
+}
+.comp-dot.symbol {
+  background: var(--purple);
 }
 
-.comp-count {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-/* ---------- 批量结果 ---------- */
 .batch-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 360px;
+  gap: 0.3rem;
+  max-height: 230px;
   overflow-y: auto;
-}
-
-.batch-empty {
-  color: var(--muted);
-  font-size: 0.82rem;
-  padding: 0.5rem 0;
 }
 
 .batch-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.6rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
   align-items: center;
-  padding: 0.5rem 0.7rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  border-radius: 4px;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--ok-line);
+  background: var(--ok-bg);
+  border-radius: var(--ok-radius-sm);
 }
 
 .batch-idx {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 0.72rem;
-  color: var(--muted);
-  min-width: 1.4rem;
+  font-family: var(--ok-mono);
+  font-size: 0.68rem;
+  color: var(--ok-muted);
+  min-width: 1.2rem;
 }
 
 .batch-pwd {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 0.82rem;
-  color: var(--text);
+  font-family: var(--ok-mono);
+  font-size: 0.78rem;
+  color: var(--ok-text);
   word-break: break-all;
 }
 
-.batch-copy {
-  font: inherit;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0.3rem 0.45rem;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  transition: border-color 0.15s, color 0.15s;
+.batch-item .is-copied {
+  border-color: var(--ok-up);
+  color: var(--ok-up);
 }
 
-.batch-copy:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+.history-persist {
+  margin-bottom: 0.3rem;
+  font-size: 0.74rem;
 }
 
-.batch-copy.copied {
-  border-color: var(--green);
-  color: var(--green);
-}
-
-/* ---------- 历史记录 ---------- */
-.link-btn {
-  font: inherit;
-  font-size: 0.76rem;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-}
-
-.link-btn:hover {
-  color: var(--accent);
-}
-
-.link-btn.copied {
-  color: var(--green);
+.history-note {
+  color: var(--ok-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
 }
 
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 340px;
+  gap: 0.3rem;
+  max-height: 230px;
   overflow-y: auto;
-}
-
-.history-empty {
-  color: var(--muted);
-  font-size: 0.82rem;
-  padding: 0.5rem 0;
 }
 
 .history-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.6rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
   align-items: center;
   width: 100%;
   text-align: left;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
+  padding: 0.42rem 0.55rem;
+  border: 1px solid var(--ok-line);
+  background: var(--ok-bg);
+  color: var(--ok-text);
   cursor: pointer;
-  border-radius: 4px;
-  transition: border-color 0.15s, background 0.15s;
+  border-radius: var(--ok-radius-sm);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .history-item:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: var(--ok-accent);
+  background: var(--ok-accent-soft);
 }
 
-.history-level {
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
-  white-space: nowrap;
+.history-item.copied {
+  border-color: var(--ok-up);
+  background: var(--ok-up-bg);
 }
-
-.history-level.level-weak { color: var(--red); background: rgba(248, 81, 73, 0.12); }
-.history-level.level-medium { color: var(--yellow); background: rgba(210, 153, 34, 0.12); }
-.history-level.level-strong { color: var(--green); background: rgba(63, 185, 80, 0.12); }
-.history-level.level-verystrong { color: var(--accent); background: rgba(47, 129, 247, 0.12); }
 
 .history-pwd {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 0.8rem;
-  color: var(--text);
+  font-family: var(--ok-mono);
+  font-size: 0.76rem;
+  color: var(--ok-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .history-time {
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 0.68rem;
-  color: var(--muted);
+  font-family: var(--ok-mono);
+  font-size: 0.66rem;
+  color: var(--ok-muted);
   white-space: nowrap;
 }
 
-/* ---------- 滚动条 ---------- */
-.history-list::-webkit-scrollbar,
-.batch-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.history-list::-webkit-scrollbar-thumb,
-.batch-list::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 3px;
-}
-
-/* ---------- 响应式 ---------- */
 @media (max-width: 860px) {
   .workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
-  .control-panel {
+  .workspace .control-panel {
     position: static;
   }
 }
 
 @media (max-width: 520px) {
-  .comp-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .metric-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .strength-stats {
-    grid-template-columns: 1fr;
+  .metric:nth-child(3) {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid var(--ok-line);
   }
-  .icon-btn-text {
-    display: none;
+  .password-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .icon-btn {
-    padding: 0.55rem 0.7rem;
+  .comp-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem 0.6rem;
   }
   .history-item {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
   }
   .history-time {
     grid-column: 1 / -1;
-    font-size: 0.64rem;
+    font-size: 0.63rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .option-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .metric-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .metric + .metric {
+    border-left: none;
+    border-top: 1px solid var(--ok-line);
   }
 }
 </style>

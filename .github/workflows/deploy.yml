@@ -3,43 +3,56 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# 同一时间只跑一个部署，避免冲突
 concurrency:
   group: deploy-pages
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npx prettier --check "src/**/*.{js,vue}" "tests/**/*.mjs" "ui-tests/**/*.js" "*.js" "*.json"
+
+  build-and-deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
           cache: npm
 
       - run: npm ci
 
-      # 生产构建，base 路径 /tools/ 在 vite.config.js 中按 mode=production 自动生效
       - run: npm run build
 
-      # GitHub Pages 不支持服务器端路由重写。
-      # 复制 index.html 为 404.html，实现 SPA fallback：
-      # 访问任意未匹配路径时 GH Pages 返回 404.html，Vue Router 接管路由。
+      # GitHub Pages 无路由重写：用 404.html 复制 index.html，让 Vue Router 接管深链。
       - run: cp dist/index.html dist/404.html
 
-      # 禁用 Jekyll：否则以下划线开头的文件（如 Vite 的 _plugin-vue_export-helper-*.js
-      # 共享 chunk）会被 Jekyll 静默丢弃，导致动态 import 404。
+      # 禁止 Jekyll 丢弃 _plugin-vue_export-helper-*.js 这类下划线 chunk。
       - run: touch dist/.nojekyll
 
-      # 推送到 gh-pages 分支（GitHub Pages 从该分支部署）
-      - uses: peaceiris/actions-gh-pages@v4
+      - if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist

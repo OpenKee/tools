@@ -1,78 +1,43 @@
 <script setup>
-/* ============================================================
-   Rate Board — 汇率与加密货币看板（Vue 3 SFC）
-   数据源：open.er-api.com（汇率）/ CoinGecko（加密货币）
-   - 汇率换算、区域分组、交叉汇率矩阵、全量汇率表
-   - 中英文 i18n，共享 i18n.js / ok.js
-   ============================================================ */
-
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { ArrowLeftRight, RefreshCw } from '@lucide/vue'
 import { i18nState, useT } from '../i18n.js'
-import { fetchJSON, locale } from '../ok.js'
-import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
+import { locale, cryptoMarkets } from '../ok.js'
+import { getUsdRates } from '../lib/markets.js'
+import {
+  UiCard,
+  UiEmptyState,
+  UiErrorState,
+  UiField,
+  UiIconButton,
+  UiInput,
+  UiLoading,
+  UiPage,
+  UiPageHead,
+  UiSectionHead,
+  UiSelect,
+  UiTabs,
+} from '../components/ui/index.js'
+import { useUrlTab } from '../lib/use-url-tab.js'
+import CryptoPulse from './CryptoPulse.vue'
+import copy from '../copy/rate-board.js'
 
-// ---------- i18n 文案字典（合并汇率与加密货币两套文案） ----------
-const copy = {
-  en: {
-    eyebrow: 'Exchange rate utility',
-    title: 'Rate Board',
-    lead: 'Convert currencies, compare rates, plan budgets. No sign-up, no tracking.',
-    crossRates: 'Cross Rates',
-    crossDesc: 'Direct rates between currencies (no base needed).',
-    allRates: 'All Rates',
-    updated: 'Updated',
-    loading: 'Loading rates\u2026',
-    error: 'Failed to load rates. The free API may be temporarily unavailable.',
-    rate: 'Rate',
-    conv: 'Converted',
-    cryptoTitle: 'Crypto',
-    cryptoDesc: 'Top cryptocurrencies by market cap. Powered by CoinGecko.',
-    cryptoTracked: 'Coins',
-    cryptoTotalMcap: 'Total Market Cap',
-    cryptoGainers: '24h Gainers',
-    cryptoLosers: '24h Losers',
-    cryptoLoading: 'Loading crypto\u2026',
-    cryptoError: 'CoinGecko API may be rate-limited.',
-    cryptoRank: '#',
-    cryptoName: 'Name',
-    cryptoPrice: 'Price',
-    crypto24h: '24h',
-    crypto7d: '7d',
-    cryptoMcap: 'Mkt Cap',
-  },
-  zh: {
-    eyebrow: '汇率工具',
-    title: '汇率看板',
-    lead: '换算汇率、对比币种、规划预算。无需注册，不追踪。',
-    crossRates: '交叉汇率',
-    crossDesc: '货币之间的直接汇率（无需基准货币）。',
-    allRates: '全部汇率',
-    updated: '更新于',
-    loading: '正在加载汇率\u2026',
-    error: '加载失败，免费 API 可能暂时不可用。',
-    rate: '汇率',
-    conv: '换算结果',
-    cryptoTitle: '加密货币',
-    cryptoDesc: '市值排名前列的加密货币。由 CoinGecko 提供。',
-    cryptoTracked: '币种',
-    cryptoTotalMcap: '总市值',
-    cryptoGainers: '24h 涨幅',
-    cryptoLosers: '24h 跌',
-    cryptoLoading: '加载中\u2026',
-    cryptoError: 'CoinGecko API 可能限流。',
-    cryptoRank: '#',
-    cryptoName: '名称',
-    cryptoPrice: '价格',
-    crypto24h: '24h',
-    crypto7d: '7天',
-    cryptoMcap: '市值',
-  },
-}
+const { tab, setTab } = useUrlTab(['fx', 'crypto', 'asset'], 'fx')
 
 const t = useT(copy)
 
-// ---------- 货币 / 区域 / 矩阵常量 ----------
+const tabDesc = computed(() => {
+  if (tab.value === 'crypto') return t.value('cryptoDesc')
+  if (tab.value === 'asset') return t.value('assetLead')
+  return t.value('lead')
+})
+
+const tabItems = computed(() => [
+  { key: 'fx', label: t.value('tabFx') },
+  { key: 'crypto', label: t.value('tabCrypto') },
+  { key: 'asset', label: t.value('tabAsset') },
+])
+
 const CURRENCIES = {
   USD: { en: 'US Dollar', zh: '美元', flag: '🇺🇸' },
   EUR: { en: 'Euro', zh: '欧元', flag: '🇪🇺' },
@@ -107,40 +72,54 @@ const CURRENCIES = {
 }
 
 const REGIONS = [
-  { key: 'asia', label: { en: 'Asia Pacific', zh: '亚太地区' }, codes: ['CNY', 'JPY', 'KRW', 'HKD', 'SGD', 'TWD', 'THB', 'MYR', 'PHP', 'IDR', 'VND', 'INR'] },
-  { key: 'west', label: { en: 'Americas & Europe', zh: '欧美地区' }, codes: ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'TRY'] },
-  { key: 'other', label: { en: 'Middle East & Others', zh: '中东及其他' }, codes: ['AED', 'SAR', 'RUB', 'BRL', 'MXN', 'ZAR'] },
+  {
+    key: 'asia',
+    label: { en: 'Asia Pacific', zh: '亚太地区' },
+    codes: ['CNY', 'JPY', 'KRW', 'HKD', 'SGD', 'TWD', 'THB', 'MYR', 'PHP', 'IDR', 'VND', 'INR'],
+  },
+  {
+    key: 'west',
+    label: { en: 'Americas & Europe', zh: '欧美地区' },
+    codes: ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CHF', 'NZD', 'SEK', 'NOK', 'DKK', 'PLN', 'TRY'],
+  },
+  {
+    key: 'other',
+    label: { en: 'Middle East & Others', zh: '中东及其他' },
+    codes: ['AED', 'SAR', 'RUB', 'BRL', 'MXN', 'ZAR'],
+  },
 ]
 
 const MATRIX_CODES = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'HKD', 'KRW', 'SGD', 'AUD', 'CAD']
+const ASSET_FIAT_CODES = ['USD', 'EUR', 'CNY', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'HKD', 'SGD']
 const allCodes = Object.keys(CURRENCIES)
+const currencyOptions = computed(() => allCodes.map((code) => ({ value: code, label: `${code} — ${cname(code)}` })))
+const assetFiatOptions = computed(() =>
+  ASSET_FIAT_CODES.map((code) => ({ value: code, label: `${code} — ${cname(code)}` })),
+)
 
-// ---------- 状态 ----------
-const ratesCache = ref(null)        // 汇率 API 原始数据
-const ratesLoading = ref(true)      // 汇率加载中
-const ratesError = ref(false)       // 汇率加载失败
-const updatedAt = ref(null)         // 汇率更新时间
+const ratesCache = ref(null)
+const ratesLoading = ref(true)
+const ratesError = ref(false)
+const updatedAt = ref(null)
 
-const cryptoCoins = ref([])         // 加密货币数组
-const cryptoLoading = ref(true)     // 加密货币加载中
-const cryptoError = ref(false)      // 加密货币加载失败
+const cryptoCoins = ref([])
+const cryptoLoading = ref(false)
+const cryptoError = ref(false)
 
-// 换算器状态
 const fromCurrency = ref('USD')
 const toCurrency = ref('CNY')
 const fromAmount = ref('1000')
 
-// 全量汇率表状态
 const tableBase = ref('USD')
 const tableAmount = ref('100')
 
-// ---------- 工具函数 ----------
-// 货币名称（响应式依赖 i18nState.lang）
+const assetAmount = ref('1000')
+const assetSource = ref('USD')
+
 function cname(code) {
   return CURRENCIES[code]?.[i18nState.lang] || code
 }
 
-// 交叉汇率：基于以 USD 为基准的 rates 表换算
 function crossRate(rates, from, to) {
   if (from === to) return 1
   const rFrom = rates[from]
@@ -149,7 +128,6 @@ function crossRate(rates, from, to) {
   return rTo / rFrom
 }
 
-// 汇率展示格式（按量级选择小数位）
 function fmtRate(n) {
   if (n === null || n === undefined) return '—'
   if (n >= 100) return n.toFixed(2)
@@ -157,12 +135,10 @@ function fmtRate(n) {
   return n.toFixed(6)
 }
 
-// 金额格式（按语言区域）
 function fmtAmount(n) {
   return new Intl.NumberFormat(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 }
 
-// 加密货币金额缩写（$ 前缀）
 function cryptoFmt(n) {
   if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T'
   if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B'
@@ -171,7 +147,6 @@ function cryptoFmt(n) {
   return '$' + n.toPrecision(4)
 }
 
-// 加密货币涨跌百分比：class 与文本拆分，模板中分别绑定
 function cryptoPctCls(n) {
   if (n == null) return ''
   return n >= 0 ? 'up' : 'down'
@@ -181,8 +156,6 @@ function cryptoPctText(n) {
   return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'
 }
 
-// ---------- computed：换算器 ----------
-// 换算结果金额（只读输入框绑定）
 const toAmountValue = computed(() => {
   if (!ratesCache.value) return ''
   const from = fromCurrency.value
@@ -193,7 +166,6 @@ const toAmountValue = computed(() => {
   return (amount * rate).toFixed(2)
 })
 
-// 换算比率说明文本
 const converterRateText = computed(() => {
   if (!ratesCache.value) return ''
   const from = fromCurrency.value
@@ -203,7 +175,6 @@ const converterRateText = computed(() => {
   return `1 ${from} = ${fmtRate(rate)} ${to}`
 })
 
-// ---------- computed：区域分组 ----------
 const regionData = computed(() => {
   if (!ratesCache.value) return []
   const base = 'USD'
@@ -221,7 +192,6 @@ const regionData = computed(() => {
   }))
 })
 
-// ---------- computed：交叉汇率矩阵 ----------
 const matrixRows = computed(() => {
   if (!ratesCache.value) return []
   return MATRIX_CODES.map((from) => ({
@@ -233,7 +203,6 @@ const matrixRows = computed(() => {
   }))
 })
 
-// ---------- computed：全量汇率表 ----------
 const rateTableRows = computed(() => {
   if (!ratesCache.value) return []
   const base = tableBase.value
@@ -253,54 +222,87 @@ const rateTableRows = computed(() => {
   })
 })
 
-// ---------- computed：更新时间文本 ----------
+function fmtCoinAmount(n) {
+  if (n == null || !Number.isFinite(n)) return '—'
+  return new Intl.NumberFormat(locale(), {
+    maximumFractionDigits: n >= 1 ? 4 : 8,
+  }).format(n)
+}
+
+const assetFiatRows = computed(() => {
+  if (!ratesCache.value) return []
+  const amount = parseFloat(assetAmount.value) || 0
+  const from = assetSource.value
+  return ASSET_FIAT_CODES.map((code) => {
+    const rate = crossRate(ratesCache.value.rates, from, code)
+    return {
+      code,
+      flag: CURRENCIES[code]?.flag || '',
+      name: cname(code),
+      display: rate != null ? fmtAmount(amount * rate) : '—',
+    }
+  })
+})
+
+const assetCryptoRows = computed(() => {
+  const rates = ratesCache.value?.rates
+  const sourceRate = rates?.[assetSource.value]
+  const amount = parseFloat(assetAmount.value) || 0
+  if (!rates || !sourceRate || amount <= 0) return []
+  const usd = amount / sourceRate
+  return cryptoCoins.value.slice(0, 10).map((coin) => {
+    const price = coin.current_price
+    const coinAmount = price ? usd / price : null
+    const change = coin.price_change_percentage_7d_in_currency ?? coin.price_change_percentage_7d ?? null
+    return {
+      id: coin.id,
+      name: coin.name,
+      symbol: coin.symbol,
+      image: coin.image,
+      display: fmtCoinAmount(coinAmount),
+      priceText: price != null ? cryptoFmt(price) : '—',
+      changeText: cryptoPctText(change),
+      changeCls: cryptoPctCls(change),
+    }
+  })
+})
+
 const updatedAtText = computed(() => {
   if (!updatedAt.value) return ''
   return t.value('updated') + ': ' + updatedAt.value.toLocaleString(locale())
 })
 
-// ---------- computed：加密货币汇总统计 ----------
-const cryptoStatCells = computed(() => {
-  if (cryptoCoins.value.length === 0) return []
-  let totalMcap = 0
-  let gainers = 0
-  for (const c of cryptoCoins.value) {
-    totalMcap += c.market_cap || 0
-    if ((c.price_change_percentage_24h || 0) > 0) gainers++
-  }
-  const losers = cryptoCoins.value.length - gainers
-  return [
-    { label: t.value('cryptoTracked'), val: String(cryptoCoins.value.length), style: '' },
-    { label: t.value('cryptoTotalMcap'), val: cryptoFmt(totalMcap), style: 'font-size:1.1rem' },
-    { label: t.value('cryptoGainers'), val: String(gainers), style: 'color:#22c55e' },
-    { label: t.value('cryptoLosers'), val: String(losers), style: 'color:#ef4444' },
-  ]
-})
-
-// ---------- 操作：换算器交换 ----------
 function swap() {
   const tmp = fromCurrency.value
   fromCurrency.value = toCurrency.value
   toCurrency.value = tmp
 }
 
-// ---------- 数据加载 ----------
-async function loadRates() {
+let ratesToken = 0
+
+async function loadRates(force = false) {
+  const token = ++ratesToken
+  ratesLoading.value = true
+  ratesError.value = false
   try {
-    const data = await fetchJSON('https://open.er-api.com/v6/latest/USD')
-    if (data.result !== 'success') throw new Error('API error')
+    const data = await getUsdRates({ force: force === true })
+    if (!data || data.result !== 'success' || !data.rates) throw new Error('API error')
+    if (token !== ratesToken) return
     ratesCache.value = data
     updatedAt.value = new Date(data.time_last_update_utc)
-    ratesLoading.value = false
   } catch (err) {
-    ratesLoading.value = false
+    if (token !== ratesToken) return
     ratesError.value = true
+  } finally {
+    if (token === ratesToken) ratesLoading.value = false
   }
 }
 
 async function loadCrypto() {
+  cryptoLoading.value = true
+  cryptoError.value = false
   try {
-    const coins = await fetchJSON('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=false&price_change_percentage=24h,7d')
+    const coins = await cryptoMarkets({ perPage: 15 })
     cryptoCoins.value = Array.isArray(coins) ? coins : []
     cryptoLoading.value = false
   } catch (err) {
@@ -309,709 +311,660 @@ async function loadCrypto() {
   }
 }
 
-// ---------- 生命周期 ----------
 onMounted(() => {
   loadRates()
-  loadCrypto()
+  if (tab.value === 'asset') loadCrypto()
+})
+
+watch(tab, (next) => {
+  if (next === 'asset' && !cryptoCoins.value.length && !cryptoLoading.value) {
+    loadCrypto()
+  }
 })
 </script>
 
 <template>
-  <div class="rate-board-app">
-    <AppHeader :show-lang-toggle="true" :title="t('title')" />
+  <UiPage
+    class="rate-board-app"
+    :title="t('title')"
+    :sources="[
+      { name: 'open.er-api.com', url: 'https://www.exchangerate-api.com/' },
+      { name: 'CoinGecko', url: 'https://www.coingecko.com/' },
+      { name: 'Gate.io', url: 'https://www.gate.io/' },
+    ]"
+    spacing="compact"
+  >
+    <UiTabs
+      class="rb-tabs"
+      :model-value="tab"
+      :items="tabItems"
+      panel-id="rate-board-panel"
+      :aria-label="t('title')"
+      @update:model-value="setTab"
+    />
 
-    <main class="shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
-          <h1>{{ t('title') }}</h1>
-          <p class="lead">{{ t('lead') }}</p>
-        </div>
-        <div class="header-actions">
-          <span class="update-time">{{ updatedAtText }}</span>
-        </div>
-      </header>
+    <div id="rate-board-panel" role="tabpanel" :aria-labelledby="'ui-tab-' + tab" tabindex="0">
+      <UiPageHead :description="tabDesc" />
 
-      <!-- 换算器 -->
-      <section class="converter-card">
-        <div class="converter-row">
-          <div class="converter-side">
-            <select v-model="fromCurrency" aria-label="From currency">
-              <option v-for="c in allCodes" :key="c" :value="c">
-                {{ CURRENCIES[c]?.flag || '' }} {{ c }} — {{ cname(c) }}
-              </option>
-            </select>
-            <input
-              v-model="fromAmount"
-              type="number"
-              min="0"
-              step="any"
-              aria-label="Amount to convert"
-            />
-          </div>
-          <button
-            class="swap-btn"
-            type="button"
-            title="Swap"
-            aria-label="Swap currencies"
-            @click="swap"
-          >⇄</button>
-          <div class="converter-side">
-            <select v-model="toCurrency" aria-label="To currency">
-              <option v-for="c in allCodes" :key="c" :value="c">
-                {{ CURRENCIES[c]?.flag || '' }} {{ c }} — {{ cname(c) }}
-              </option>
-            </select>
-            <input
-              :value="toAmountValue"
-              type="number"
-              readonly
-              aria-label="Converted amount"
-            />
-          </div>
-        </div>
-        <p class="converter-rate">{{ converterRateText }}</p>
-      </section>
+      <div v-show="tab === 'fx'">
+        <UiLoading v-if="ratesLoading && !ratesCache" :label="t('loading')" />
+        <UiErrorState
+          v-else-if="ratesError && !ratesCache"
+          variant="block"
+          :message="t('error')"
+          :retry-label="t('retry')"
+          @retry="loadRates(true)"
+        />
 
-      <!-- 区域分组 -->
-      <section class="region-sections">
-        <div v-if="ratesLoading" class="loading">
-          <span class="spinner"></span>
-          <span>{{ t('loading') }}</span>
-        </div>
-        <p v-else-if="ratesError" class="error-msg">{{ t('error') }}</p>
         <template v-else>
-          <div v-for="region in regionData" :key="region.key" class="region-card">
-            <div class="region-title">{{ region.label }}</div>
-            <div
-              v-for="row in region.rows"
-              :key="row.code"
-              class="currency-row"
-            >
-              <div>
-                <span class="currency-code">{{ row.flag }} {{ row.code }}</span>
-                <span class="currency-name">{{ row.name }}</span>
+          <UiErrorState
+            v-if="ratesError"
+            :message="t('error')"
+            :retry-label="t('retry')"
+            class="inline-alert"
+            @retry="loadRates(true)"
+          />
+          <UiCard class="converter-card">
+            <UiSectionHead :title="t('converter')">
+              <template #actions>
+                <span class="update-time">{{ updatedAtText }}</span>
+                <UiIconButton
+                  :label="t('refresh')"
+                  variant="secondary"
+                  size="sm"
+                  :disabled="ratesLoading"
+                  @click="loadRates(true)"
+                >
+                  <RefreshCw :class="{ spinning: ratesLoading }" aria-hidden="true" />
+                </UiIconButton>
+              </template>
+            </UiSectionHead>
+            <div class="converter-grid">
+              <div class="converter-field">
+                <UiField :label="t('fromCurrency')" label-for="rate-from-currency">
+                  <UiSelect id="rate-from-currency" v-model="fromCurrency" :options="currencyOptions" />
+                </UiField>
+                <UiField :label="t('fromAmount')" label-for="rate-from-amount">
+                  <UiInput
+                    id="rate-from-amount"
+                    v-model="fromAmount"
+                    class="converter-amount"
+                    type="number"
+                    min="0"
+                    step="any"
+                  />
+                </UiField>
               </div>
-              <span class="currency-rate">{{ row.rateText }}</span>
+              <UiIconButton class="swap-btn" :label="t('swap')" variant="secondary" @click="swap">
+                <ArrowLeftRight aria-hidden="true" />
+              </UiIconButton>
+              <div class="converter-field">
+                <UiField :label="t('toCurrency')" label-for="rate-to-currency">
+                  <UiSelect id="rate-to-currency" v-model="toCurrency" :options="currencyOptions" />
+                </UiField>
+                <UiField :label="t('conversionResult')" label-for="rate-result">
+                  <UiInput
+                    id="rate-result"
+                    :model-value="toAmountValue"
+                    class="converter-amount"
+                    type="number"
+                    readonly
+                  />
+                </UiField>
+              </div>
             </div>
-          </div>
+            <p class="converter-rate">{{ converterRateText }}</p>
+          </UiCard>
+
+          <section class="region-section">
+            <UiSectionHead :title="t('regionRates')" />
+            <div class="region-grid">
+              <UiCard v-for="region in regionData" :key="region.key" padding="sm" class="region-card">
+                <div class="region-title">{{ region.label }}</div>
+                <div v-for="row in region.rows" :key="row.code" class="currency-row">
+                  <div class="currency-main">
+                    <span class="currency-code">{{ row.code }}</span>
+                    <span class="currency-name">{{ row.name }}</span>
+                  </div>
+                  <span class="currency-rate">{{ row.rateText }}</span>
+                </div>
+              </UiCard>
+            </div>
+          </section>
+
+          <UiCard class="matrix-section">
+            <UiSectionHead :title="t('crossRates')" :description="t('crossDesc')" />
+            <div class="matrix-wrap">
+              <table class="matrix-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th v-for="c in MATRIX_CODES" :key="c">{{ c }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in matrixRows" :key="row.from">
+                    <th>{{ row.from }}</th>
+                    <td v-for="(cell, i) in row.cells" :key="i" :class="{ diag: cell.diag }">{{ cell.val }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </UiCard>
+
+          <UiCard class="table-section">
+            <UiSectionHead :title="t('allRates')">
+              <template #actions>
+                <div class="table-controls">
+                  <UiSelect
+                    v-model="tableBase"
+                    class="table-base"
+                    :options="currencyOptions"
+                    size="sm"
+                    :aria-label="t('currency')"
+                  />
+                  <UiInput
+                    v-model="tableAmount"
+                    class="table-amount"
+                    type="number"
+                    size="sm"
+                    min="0"
+                    step="any"
+                    :placeholder="t('assetAmount')"
+                    :aria-label="t('assetAmount')"
+                  />
+                </div>
+              </template>
+            </UiSectionHead>
+            <div class="rate-table">
+              <div class="rate-head">
+                <span>{{ t('currency') }}</span>
+                <span>{{ t('rate') }}</span>
+                <span>{{ t('conv') }}</span>
+                <span>{{ t('name') }}</span>
+              </div>
+              <div v-for="row in rateTableRows" :key="row.code" class="rate-row">
+                <span class="rate-code">{{ row.code }}</span>
+                <span class="rate-val">{{ row.rateText }}</span>
+                <span class="rate-converted">{{ row.convertedText }}</span>
+                <span class="rate-name">{{ row.name }}</span>
+              </div>
+            </div>
+          </UiCard>
+        </template>
+      </div>
+
+      <CryptoPulse v-if="tab === 'crypto'" />
+
+      <section v-if="tab === 'asset'" class="asset-tab">
+        <UiLoading v-if="ratesLoading" :label="t('loading')" />
+        <UiErrorState
+          v-else-if="ratesError"
+          variant="block"
+          :message="t('assetRateError')"
+          :retry-label="t('retry')"
+          @retry="loadRates(true)"
+        />
+
+        <template v-else>
+          <UiCard class="asset-controls-panel">
+            <div class="asset-control-row">
+              <UiField :label="t('assetAmount')" class="asset-field">
+                <UiInput v-model="assetAmount" type="number" min="0" step="any" :aria-label="t('assetAmount')" />
+              </UiField>
+              <UiField :label="t('assetSource')" class="asset-field">
+                <UiSelect v-model="assetSource" :options="assetFiatOptions" :aria-label="t('assetSource')" />
+              </UiField>
+              <span class="update-time asset-updated">{{ updatedAtText }}</span>
+            </div>
+          </UiCard>
+
+          <section class="asset-block">
+            <UiSectionHead :title="t('assetFiat')" />
+            <div class="asset-grid">
+              <UiCard v-for="row in assetFiatRows" :key="row.code" padding="sm" class="asset-card">
+                <span class="asset-code">{{ row.code }}</span>
+                <span class="asset-name">{{ row.name }}</span>
+                <strong class="asset-value">{{ row.display }}</strong>
+              </UiCard>
+            </div>
+          </section>
+
+          <section class="asset-block">
+            <UiSectionHead :title="t('assetCrypto')" />
+            <UiLoading v-if="cryptoLoading" :label="t('cryptoLoading')" inline />
+            <UiErrorState
+              v-else-if="cryptoError"
+              :message="t('assetCryptoError')"
+              :retry-label="t('retry')"
+              @retry="loadCrypto"
+            />
+            <UiEmptyState v-else-if="!assetCryptoRows.length" :description="t('assetNoData')" compact />
+            <div v-else class="asset-grid asset-crypto-grid">
+              <UiCard v-for="row in assetCryptoRows" :key="row.id" padding="sm" class="asset-card">
+                <div class="asset-crypto-head">
+                  <img v-if="row.image" class="asset-icon" :src="row.image" alt="" loading="lazy" />
+                  <span class="asset-code">{{ row.symbol }}</span>
+                  <span class="asset-name">{{ row.name }}</span>
+                </div>
+                <strong class="asset-value">{{ row.display }}</strong>
+                <div class="asset-meta">
+                  {{ t('assetPrice') }} {{ row.priceText }} · {{ t('asset7d') }}
+                  <span :class="row.changeCls">{{ row.changeText }}</span>
+                </div>
+              </UiCard>
+            </div>
+          </section>
         </template>
       </section>
-
-      <!-- 交叉汇率矩阵 -->
-      <section class="matrix-section">
-        <div class="section-head">
-          <h2>{{ t('crossRates') }}</h2>
-          <p class="section-desc">{{ t('crossDesc') }}</p>
-        </div>
-        <div class="matrix-wrap">
-          <table class="matrix-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th v-for="c in MATRIX_CODES" :key="c">{{ c }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in matrixRows" :key="row.from">
-                <th>{{ row.from }}</th>
-                <td
-                  v-for="(cell, i) in row.cells"
-                  :key="i"
-                  :class="{ diag: cell.diag }"
-                >{{ cell.val }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 全量汇率表 -->
-      <section class="table-section">
-        <div class="section-head">
-          <h2>{{ t('allRates') }}</h2>
-          <div class="table-controls">
-            <select v-model="tableBase" aria-label="Base currency">
-              <option v-for="c in allCodes" :key="c" :value="c">
-                {{ CURRENCIES[c]?.flag || '' }} {{ c }} — {{ cname(c) }}
-              </option>
-            </select>
-            <input
-              v-model="tableAmount"
-              type="number"
-              min="0"
-              step="any"
-              placeholder="Amount"
-              aria-label="Amount"
-            />
-          </div>
-        </div>
-        <div class="rate-table">
-          <div v-for="row in rateTableRows" :key="row.code" class="rate-row">
-            <span class="rate-code">{{ row.flag }} {{ row.code }}</span>
-            <span class="rate-val">{{ row.rateText }}</span>
-            <span class="rate-converted">{{ row.convertedText }}</span>
-            <span class="rate-name">{{ row.name }}</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 加密货币 -->
-      <section class="crypto-section">
-        <div class="section-head">
-          <h2>{{ t('cryptoTitle') }}</h2>
-          <p class="section-desc">{{ t('cryptoDesc') }}</p>
-        </div>
-        <div class="crypto-stats">
-          <div
-            v-for="(s, i) in cryptoStatCells"
-            :key="i"
-            class="stat"
-            :style="s.style"
-          >
-            <div class="s-label">{{ s.label }}</div>
-            <div class="s-val">{{ s.val }}</div>
-          </div>
-        </div>
-        <div class="crypto-list">
-          <div v-if="cryptoLoading && cryptoCoins.length === 0" class="loading">
-            {{ t('cryptoLoading') }}
-          </div>
-          <div v-else-if="cryptoError && cryptoCoins.length === 0" class="loading">
-            {{ t('cryptoError') }}
-          </div>
-          <template v-else>
-            <div class="crypto-thead">
-              <span>{{ t('cryptoRank') }}</span>
-              <span>{{ t('cryptoName') }}</span>
-              <span>{{ t('cryptoPrice') }}</span>
-              <span>{{ t('crypto24h') }}</span>
-              <span>{{ t('crypto7d') }}</span>
-              <span>{{ t('cryptoMcap') }}</span>
-            </div>
-            <div
-              v-for="(c, i) in cryptoCoins"
-              :key="c.id"
-              class="crypto-row"
-            >
-              <span class="crypto-rank">{{ i + 1 }}</span>
-              <div class="crypto-coin">
-                <img class="crypto-icon" :src="c.image" alt="" />
-                <div>
-                  <div class="crypto-name">{{ c.name }}</div>
-                  <div class="crypto-symbol">{{ c.symbol.toUpperCase() }}</div>
-                </div>
-              </div>
-              <span class="crypto-price">{{ cryptoFmt(c.current_price) }}</span>
-              <span class="crypto-change" :class="cryptoPctCls(c.price_change_percentage_24h)">
-                {{ cryptoPctText(c.price_change_percentage_24h) }}
-              </span>
-              <span class="crypto-change" :class="cryptoPctCls(c.price_change_percentage_7d_in_currency)">
-                {{ cryptoPctText(c.price_change_percentage_7d_in_currency) }}
-              </span>
-              <span class="crypto-mcap">{{ cryptoFmt(c.market_cap) }}</span>
-            </div>
-          </template>
-        </div>
-      </section>
-    </main>
-
-    <AppFooter />
-  </div>
+    </div>
+  </UiPage>
 </template>
 
 <style scoped>
-/* ============================================================
-   Rate Board — 浅色汇率主题
-   原 :root 变量迁移到组件根类 .rate-board-app，
-   --ok-* 令牌在此覆盖，影响 AppHeader / AppFooter 等共享组件。
-   ============================================================ */
-
 .rate-board-app {
-  /* 表面与文字 */
-  --bg: #f5f7fb;
-  --panel: #ffffff;
-  --line: #d9e0ea;
-  --text: #122032;
-  --muted: #5a6778;
-  --accent: #1c63d5;
-  --accent-soft: #eaf1ff;
-  --up: #16a34a;
-  --up-bg: #f0fdf4;
-  --down: #dc2626;
-  --down-bg: #fef2f2;
-
-  /* 共享组件主题映射 */
-  --ok-bg: var(--bg);
-  --ok-panel: var(--panel);
-  --ok-line: var(--line);
-  --ok-text: var(--text);
-  --ok-muted: var(--muted);
-  --ok-accent: var(--accent);
-  --ok-accent-soft: var(--accent-soft);
-  --ok-footer-line: var(--line);
-  --ok-footer-text: var(--muted);
-  --ok-footer-link: var(--accent);
-  --ok-topbar-line: rgba(128, 128, 128, 0.1);
-
-  min-height: 100vh;
-  margin: 0;
-  font-family: "Inter", system-ui, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  --ok-content-width: 1100px;
 }
 
-.rate-board-app * { box-sizing: border-box; }
-
-.rate-board-app a { color: var(--accent); text-decoration: none; }
-.rate-board-app h1, .rate-board-app h2, .rate-board-app p,
-.rate-board-app strong, .rate-board-app span, .rate-board-app small { margin: 0; }
-
-.shell {
-  width: min(1100px, calc(100% - 1.25rem));
-  margin: 0 auto;
-  padding: 1rem 0 3rem;
+.rb-tabs {
+  margin-bottom: 0.65rem;
 }
 
-.masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  padding: 0.3rem 0 1.2rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.masthead h1 {
-  margin-top: 0.25rem;
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.update-time {
-  font-size: 0.72rem;
-  color: var(--muted);
-}
-
-/* Converter */
 .converter-card {
-  margin-top: 1.2rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1.5rem;
+  margin-bottom: 0.8rem;
 }
 
-.converter-row {
-  display: flex;
+.converter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.6rem;
   align-items: end;
-  gap: 1rem;
 }
 
-.converter-side {
-  flex: 1;
+.converter-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
-.converter-side select,
-.converter-side input {
-  font: inherit;
-  width: 100%;
-  height: 3rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 1rem;
+.converter-field :deep(.ui-field-control) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
-.converter-side input {
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.converter-side select {
-  font-size: 0.88rem;
+.converter-amount :deep(input) {
+  font-family: var(--ok-mono);
+  font-size: 1.25rem;
   font-weight: 600;
-  cursor: pointer;
 }
 
 .swap-btn {
-  flex-shrink: 0;
-  width: 2.8rem;
-  height: 2.8rem;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--accent);
-  font-size: 1.2rem;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: all 150ms ease;
-  margin-bottom: 0.25rem;
+  border-radius: var(--ok-radius-pill);
+  margin-bottom: 0.15rem;
 }
 
-.swap-btn:hover {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
+.spinning {
+  animation: ui-spin 0.8s linear infinite;
 }
 
 .converter-rate {
-  margin-top: 0.75rem;
-  font-size: 0.82rem;
-  color: var(--muted);
-  text-align: center;
+  margin-top: 0.55rem;
+  font-family: var(--ok-mono);
+  font-size: 0.72rem;
+  color: var(--ok-muted);
 }
 
-/* Region sections */
-.region-sections {
-  margin-top: 1.5rem;
+.region-section {
+  margin-top: 0.8rem;
+}
+
+.region-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1rem;
-}
-
-.region-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.6rem;
 }
 
 .region-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ok-muted);
 }
 
 .currency-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--ok-line);
 }
 
-.currency-row:last-child { border-bottom: none; }
+.region-title + .currency-row {
+  border-top: none;
+}
+
+.currency-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
 
 .currency-code {
+  font-size: 0.8rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .currency-name {
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-left: 0.4rem;
+  overflow: hidden;
+  color: var(--ok-muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .currency-rate {
-  font-family: "Inter", monospace;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-align: right;
-}
-
-.currency-rate.up { color: var(--up); }
-.currency-rate.down { color: var(--down); }
-
-/* Matrix */
-.matrix-section, .table-section {
-  margin-top: 1.5rem;
-}
-
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
-}
-
-.section-head h2 {
-  font-size: 1.1rem;
-}
-
-.section-desc {
+  font-family: var(--ok-mono);
   font-size: 0.78rem;
-  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.table-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+.matrix-section,
+.table-section {
+  margin-top: 0.8rem;
 }
-
-.table-controls select,
-.table-controls input {
-  font: inherit;
-  height: 2.2rem;
-  padding: 0 0.6rem;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--text);
-  font-size: 0.82rem;
-}
-
-.table-controls input { width: 80px; }
 
 .matrix-wrap {
   overflow-x: auto;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--ok-radius-control);
 }
 
 .matrix-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
 .matrix-table th,
 .matrix-table td {
-  padding: 0.5rem;
-  text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 0.4rem 0.45rem;
+  text-align: right;
+  border-bottom: 1px solid var(--ok-line);
   white-space: nowrap;
 }
 
-.matrix-table th {
-  background: var(--bg);
+.matrix-table thead th {
+  background: var(--ok-bg);
+  color: var(--ok-muted);
   font-weight: 600;
-  font-size: 0.72rem;
-  color: var(--accent);
+}
+
+.matrix-table tbody th {
   position: sticky;
-  top: 0;
+  left: 0;
+  z-index: 1;
+  background: var(--ok-panel);
+  color: var(--ok-text);
+  text-align: left;
+  font-weight: 600;
+  border-right: 1px solid var(--ok-line);
+}
+
+.matrix-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.matrix-table tbody tr:last-child th,
+.matrix-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .matrix-table td.diag {
-  background: var(--accent-soft);
-  font-weight: 700;
-  color: var(--accent);
+  background: var(--ok-accent-soft);
+  color: var(--ok-accent);
+  font-weight: 600;
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.table-base {
+  width: 10rem;
+}
+
+.table-amount {
+  width: 5.5rem;
 }
 
 .rate-table {
+  max-height: 480px;
+  overflow: auto;
+  border: 1px solid var(--ok-line);
+  border-radius: var(--ok-radius-control);
+}
+
+.rate-head,
+.rate-row {
   display: grid;
-  gap: 0;
+  grid-template-columns: minmax(90px, 1.1fr) 1fr 1fr 1.4fr;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: 520px;
+  padding: 0.42rem 0.7rem;
+}
+
+.rate-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ok-bg);
+  border-bottom: 1px solid var(--ok-line);
+  color: var(--ok-muted);
+  font-size: 0.66rem;
+  font-weight: 600;
 }
 
 .rate-row {
-  display: grid;
-  grid-template-columns: 80px 1fr 1fr 1fr;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.6rem 0.8rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  margin-top: -1px;
-  font-size: 0.85rem;
+  border-bottom: 1px solid var(--ok-line);
+  font-size: 0.78rem;
 }
 
-.rate-row:first-child { margin-top: 0; }
+.rate-row:last-child {
+  border-bottom: none;
+}
 
-.rate-row:hover { background: var(--accent-soft); }
+.rate-row:hover {
+  background: var(--ok-accent-soft);
+}
 
 .rate-code {
-  font-weight: 700;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .rate-val {
-  font-family: "Inter", monospace;
-  font-weight: 500;
+  font-family: var(--ok-mono);
 }
 
 .rate-converted {
-  font-family: "Inter", monospace;
+  font-family: var(--ok-mono);
   font-weight: 600;
-  color: var(--accent);
+  color: var(--ok-accent);
 }
 
 .rate-name {
-  color: var(--muted);
-  font-size: 0.76rem;
+  overflow: hidden;
+  color: var(--ok-muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Loading / error */
-.loading {
+.asset-controls-panel {
+  margin-bottom: 0.8rem;
+}
+
+.asset-control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.asset-updated {
+  margin-left: auto;
+  align-self: center;
+}
+
+.asset-field {
+  width: 10rem;
+}
+
+.asset-block {
+  margin-top: 0.8rem;
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.asset-crypto-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.asset-card :deep(.ui-card-body) {
+  gap: 0.2rem;
+}
+
+.asset-code {
+  color: var(--ok-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.asset-name {
+  overflow: hidden;
+  color: var(--ok-muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-value {
+  color: var(--ok-text);
+  font-family: var(--ok-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.asset-meta {
+  color: var(--ok-muted);
+  font-size: 0.66rem;
+}
+
+.asset-meta .up {
+  color: var(--ok-up);
+}
+
+.asset-meta .down {
+  color: var(--ok-down);
+}
+
+.asset-crypto-head {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  color: var(--muted);
-  padding: 1.5rem;
-  font-size: 0.88rem;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
+.asset-crypto-head .asset-name {
+  min-width: 0;
+}
+
+.asset-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.error-msg {
-  color: #a33;
-  background: var(--down-bg);
-  border: 1px solid rgba(170, 50, 50, 0.2);
-  padding: 0.8rem;
-  border-radius: 4px;
-  font-size: 0.88rem;
 }
 
 @media (max-width: 720px) {
-  .masthead { flex-direction: column; align-items: start; gap: 0.6rem; }
-  .converter-row { flex-direction: column; }
-  .swap-btn { align-self: center; transform: rotate(90deg); }
-  .region-sections { grid-template-columns: 1fr; }
-  .rate-row { grid-template-columns: 70px 1fr 1fr; }
-  .rate-name { display: none; }
+  .converter-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .swap-btn {
+    justify-self: center;
+    transform: rotate(90deg);
+    margin: 0;
+  }
+
+  .region-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .table-controls {
+    width: 100%;
+  }
+
+  .table-base {
+    flex: 1;
+    width: auto;
+  }
+
+  .asset-control-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .asset-field {
+    width: 100%;
+  }
+
+  .asset-updated {
+    margin-left: 0;
+  }
 }
 
-/* Crypto Section */
-.crypto-section {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #d9e0ea;
-}
-.crypto-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  padding: 1rem 0;
-  border-bottom: 1px solid #d9e0ea;
-}
-.crypto-stats .stat {
-  padding: 0 1rem;
-  border-right: 1px solid #e8ecf2;
-}
-.crypto-stats .stat:last-child {
-  border-right: none;
-}
-.crypto-stats .s-label {
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #5a6778;
-}
-.crypto-stats .s-val {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-top: 0.1rem;
-}
-.crypto-thead {
-  display: grid;
-  grid-template-columns: 40px 1fr 100px 70px 70px 100px;
-  gap: 0.5rem;
-  padding: 0.5rem 0.8rem;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #5a6778;
-  border-bottom: 1px solid #d9e0ea;
-}
-.crypto-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 100px 70px 70px 100px;
-  gap: 0.5rem;
-  padding: 0.6rem 0.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  align-items: center;
-  font-size: 0.85rem;
-  transition: background 0.15s;
-}
-.crypto-row:hover {
-  background: #f0f3f8;
-}
-.crypto-rank {
-  color: #8892a4;
-  font-size: 0.78rem;
-  text-align: center;
-}
-.crypto-coin {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.crypto-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-}
-.crypto-name {
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-.crypto-symbol {
-  font-size: 0.72rem;
-  color: #8892a4;
-  text-transform: uppercase;
-}
-.crypto-price {
-  font-family: "JetBrains Mono", "Inter", monospace;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-.crypto-change {
-  font-family: "JetBrains Mono", "Inter", monospace;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-.crypto-change.up {
-  color: #22c55e;
-}
-.crypto-change.down {
-  color: #ef4444;
-}
-.crypto-mcap {
-  font-size: 0.78rem;
-  color: #5a6778;
-}
-@media (max-width: 768px) {
-  .crypto-stats {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 600px) {
+  .rate-head,
+  .rate-row {
+    grid-template-columns: minmax(80px, 1fr) 1fr 1fr;
+    min-width: 0;
   }
-  .crypto-stats .stat {
-    border-right: none;
-    border-bottom: 1px solid #e8ecf2;
-  }
-  .crypto-thead,
-  .crypto-row {
-    grid-template-columns: 30px 1fr 90px 60px;
-  }
-  .crypto-thead > span:nth-child(5),
-  .crypto-thead > span:nth-child(6),
-  .crypto-row > span:nth-child(5),
-  .crypto-row > span:last-child {
+
+  .rate-head span:last-child,
+  .rate-name {
     display: none;
+  }
+
+  .asset-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  }
+
+  .asset-crypto-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  .converter-amount :deep(input) {
+    font-size: 1.15rem;
   }
 }
 </style>

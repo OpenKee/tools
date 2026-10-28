@@ -1,576 +1,705 @@
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
-import { i18nState, useT } from '../i18n.js'
-import { fetchJSON } from '../ok.js'
-import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useT } from '../i18n.js'
+import { fetchJSON, locale, lsGet, lsSet, lsRemove } from '../ok.js'
+import { wbCode, bestByIso, applyPopulationFallback, normalizeAtlasQuery, buildAtlasQuery } from '../lib/atlas-data.js'
+import { getUsdRates } from '../lib/markets.js'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { UiButton, UiPage, UiPageHead } from '../components/ui/index.js'
+import { themeState } from '../theme.js'
+import { MAP_ATTRIBUTION, mapTileUrl } from '../lib/map-tiles.js'
+import countryFacts from '../data/country-facts.json'
+import copy from '../copy/atlas-info.js'
+import CountryDirectory from '../components/atlas/CountryDirectory.vue'
+import ComparePanel from '../components/atlas/ComparePanel.vue'
+import CountryDetail from '../components/atlas/CountryDetail.vue'
+import {
+  REGION_KEYS,
+  VALID_SORTS,
+  areaValue,
+  buildSearchText,
+  capitalTextFor,
+  countryName,
+  densityValue,
+  flagImg,
+} from '../lib/atlas-display.js'
 
-/* ============================================================
-   Atlas Info — 国家百科
-   数据来源：world-countries（jsDelivr CDN）+ World Bank API
-   ============================================================ */
-
-/* ---------- 文案字典（中英双语） ---------- */
-const copy = {
-  en: {
-    eyebrow: 'Country encyclopedia',
-    title: 'Atlas Info',
-    lead: 'Search any country. Flag, population, languages, currencies, borders — via World Bank + jsDelivr.',
-    search: 'Search',
-    capital: 'Capital',
-    population: 'Population',
-    region: 'Region',
-    subregion: 'Subregion',
-    languages: 'Languages',
-    currencies: 'Currencies',
-    borders: 'Borders',
-    openMaps: 'Google Maps',
-    openOSM: 'OpenStreetMap',
-    none: 'None',
-    countries: 'countries'
-  },
-  zh: {
-    eyebrow: '国家百科',
-    title: '国家百科',
-    lead: '搜索任意国家。国旗、人口、语言、货币、边境 — 通过 World Bank + jsDelivr。',
-    search: '搜索',
-    capital: '首都',
-    population: '人口',
-    region: '地区',
-    subregion: '子地区',
-    languages: '语言',
-    currencies: '货币',
-    borders: '边境',
-    openMaps: 'Google 地图',
-    openOSM: 'OpenStreetMap',
-    none: '无',
-    countries: '个国家'
-  }
-}
-
+const route = useRoute()
+const router = useRouter()
 const t = useT(copy)
 
-/* ---------- 地区筛选常量 ---------- */
-const REGIONS = [
-  { k: '', l: { en: 'All', zh: '全部' } },
-  { k: 'africa', l: { en: 'Africa', zh: '非洲' } },
-  { k: 'americas', l: { en: 'Americas', zh: '美洲' } },
-  { k: 'asia', l: { en: 'Asia', zh: '亚洲' } },
-  { k: 'europe', l: { en: 'Europe', zh: '欧洲' } },
-  { k: 'oceania', l: { en: 'Oceania', zh: '大洋洲' } }
-]
+const THIS_YEAR = new Date().getFullYear()
+const LAST_YEAR = THIS_YEAR - 1
+const WB = 'https://api.worldbank.org/v2'
+const COUNTRIES_URL = 'https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json'
 
-/* ---------- 响应式状态 ---------- */
-const allCountries = ref([])      // 全部国家数据
-const activeRegion = ref('')      // 当前选中地区
-const searchQuery = ref('')       // 搜索输入
-const selectedCode = ref(null)    // 当前查看详情的国家 cca3
-const errorMsg = ref('')          // 加载错误信息
-const detailRef = ref(null)       // 详情卡片引用，用于滚动定位
+const CORE_INDICATORS = {
+  population: { code: 'SP.POP.TOTL', from: LAST_YEAR - 3, to: LAST_YEAR },
+  gdp: { code: 'NY.GDP.MKTP.CD', from: LAST_YEAR - 3, to: LAST_YEAR },
+  gdpPc: { code: 'NY.GDP.PCAP.CD', from: LAST_YEAR - 3, to: LAST_YEAR },
+  gni: { code: 'NY.GNP.PCAP.CD', from: LAST_YEAR - 3, to: LAST_YEAR - 1 },
+  lifeExp: { code: 'SP.DYN.LE00.IN', from: LAST_YEAR - 2, to: LAST_YEAR - 1 },
+}
 
-/* ---------- 工具函数：数字千分位格式化 ---------- */
-function num(n) { return new Intl.NumberFormat().format(n) }
+const EXTRA_INDICATORS = {
+  gdpGrowth: { code: 'NY.GDP.MKTP.KD.ZG', from: LAST_YEAR - 3, to: LAST_YEAR },
+  inflation: { code: 'FP.CPI.TOTL.ZG', from: LAST_YEAR - 3, to: LAST_YEAR },
+  unemployment: { code: 'SL.UEM.TOTL.ZS', from: LAST_YEAR - 3, to: LAST_YEAR },
+  urban: { code: 'SP.URB.TOTL.IN.ZS', from: LAST_YEAR - 3, to: LAST_YEAR },
+  internet: { code: 'IT.NET.USER.ZS', from: LAST_YEAR - 4, to: LAST_YEAR },
+  gini: { code: 'SI.POV.GINI', from: LAST_YEAR - 10, to: LAST_YEAR },
+  co2: { code: 'EN.GHG.CO2.PC.CE.AR5', from: LAST_YEAR - 3, to: LAST_YEAR - 1 },
+}
 
-/* ---------- 派生：搜索框占位符（随语言切换） ---------- */
-const searchPlaceholder = computed(() =>
-  i18nState.lang === 'en' ? 'Search country…' : '搜索国家…'
-)
+const CACHE_KEY = 'atlas-info-cache-v1'
+const CACHE_VERSION = 1
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000
 
-/* ---------- 派生：按地区 + 关键词过滤后的国家列表 ---------- */
+const allCountries = ref([])
+const activeRegion = ref('')
+const searchQuery = ref('')
+const selectedCode = ref(null)
+const onlySovereign = ref(false)
+const sortBy = ref('pop')
+const loading = ref(true)
+const errorMsg = ref('')
+const extrasState = ref('idle')
+const usdRates = ref(null)
+const dataUpdatedAt = ref(null)
+const dataStale = ref(false)
+const trend = ref(null)
+const trendState = ref('idle')
+const compareOpen = ref(false)
+const compareA = ref('')
+const compareB = ref('')
+let mapInstance = null
+let trendToken = 0
+let dataToken = 0
+let alive = true
+let syncingFromUrl = false
+const trendCache = new Map()
+
+const initialQuery = normalizeAtlasQuery(route.query, REGION_KEYS, VALID_SORTS)
+sortBy.value = initialQuery.sort || 'pop'
+activeRegion.value = initialQuery.region || ''
+onlySovereign.value = !!initialQuery.sovereign
+
 const filteredCountries = computed(() => {
-  const q = searchQuery.value.toLowerCase()
+  const q = searchQuery.value.trim().toLowerCase()
   let list = allCountries.value
   if (activeRegion.value) {
-    list = list.filter(c => c.region?.toLowerCase() === activeRegion.value)
+    list = list.filter((c) => (c.region || '').toLowerCase() === activeRegion.value)
   }
-  if (q) {
-    list = list.filter(c =>
-      (c.name?.common || '').toLowerCase().includes(q) ||
-      (c.name?.official || '').toLowerCase().includes(q)
-    )
+  if (onlySovereign.value) list = list.filter((c) => c.independent)
+  if (q) list = list.filter((c) => (c.searchText || '').includes(q))
+
+  const sorted = [...list]
+  if (sortBy.value === 'name') {
+    sorted.sort((a, b) => countryName(a).localeCompare(countryName(b), locale()))
+  } else if (sortBy.value === 'area') {
+    sorted.sort((a, b) => (areaValue(b) || 0) - (areaValue(a) || 0))
+  } else if (sortBy.value === 'density') {
+    sorted.sort((a, b) => (densityValue(b) ?? -1) - (densityValue(a) ?? -1))
+  } else {
+    sorted.sort((a, b) => (b.stats?.population?.value || 0) - (a.stats?.population?.value || 0))
   }
-  return list
+  return sorted
 })
 
-/* ---------- 派生：当前选中的国家对象 ---------- */
-const selectedCountry = computed(() =>
-  allCountries.value.find(x => x.cca3 === selectedCode.value) || null
-)
+function normalizedRouteQuery(q = route.query) {
+  return normalizeAtlasQuery(q, REGION_KEYS, VALID_SORTS)
+}
 
-/* ---------- 派生：详情卡片数据（语言、货币、地图链接等） ---------- */
-const detail = computed(() => {
-  const c = selectedCountry.value
-  if (!c) return null
-  // 语言列表
-  const langs = c.languages ? Object.values(c.languages).join(', ') : '—'
-  // 货币列表
-  const currs = c.currencies
-    ? Object.values(c.currencies).map(x => x.name + ' (' + (x.symbol || '') + ')').join(', ')
-    : '—'
-  // 经纬度用于地图链接
-  const lat = c.latlng?.[0]
-  const lng = c.latlng?.[1]
-  const hasCoords = lat != null && lng != null
-  return {
-    flag: c.flag || '',
-    name: c.name?.common || '',
-    official: c.name?.official || '',
-    items: [
-      { label: t.value('capital'), value: c.capital?.[0] || '—' },
-      { label: t.value('population'), value: num(c.population || 0) },
-      { label: t.value('region'), value: c.region || '—' },
-      { label: t.value('subregion'), value: c.subregion || '—' },
-      { label: t.value('languages'), value: langs },
-      { label: t.value('currencies'), value: currs }
-    ],
-    gMap: hasCoords ? 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng : '#',
-    osm: hasCoords ? 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '#map=5/' + lat + '/' + lng : '#'
+function stateQuery() {
+  return buildAtlasQuery({
+    sort: sortBy.value,
+    region: activeRegion.value,
+    sovereign: onlySovereign.value,
+    country: selectedCode.value,
+  })
+}
+
+function sameQuery(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+function rawQueryForCompare(q = route.query) {
+  const out = {}
+  for (const key of ['sort', 'region', 'sovereign', 'country']) {
+    const value = q[key]
+    if (typeof value === 'string' && value !== '') out[key] = value
   }
-})
+  return out
+}
 
-/* ---------- 派生：邻国列表（带国旗与名称，找不到时回退为代码） ---------- */
+function applyUrlQuery(q) {
+  syncingFromUrl = true
+  const next = normalizedRouteQuery(q)
+  sortBy.value = next.sort || 'pop'
+  activeRegion.value = next.region || ''
+  onlySovereign.value = !!next.sovereign
+  if (next.country && allCountries.value.some((c) => c.cca3 === next.country)) {
+    if (selectedCode.value !== next.country) openCountry(next.country)
+  } else if (selectedCode.value) {
+    closeDetail()
+  }
+  nextTick(() => {
+    syncingFromUrl = false
+    const state = stateQuery()
+    if (!sameQuery(rawQueryForCompare(), state)) {
+      router.replace({ query: state }).catch(() => {})
+    }
+  })
+}
+
+const selectedCountry = computed(() => allCountries.value.find((x) => x.cca3 === selectedCode.value) || null)
+
 const borders = computed(() => {
   const c = selectedCountry.value
-  if (!c || !c.borders || !c.borders.length) return []
-  return c.borders.map(code => {
-    const bc = allCountries.value.find(x => x.cca3 === code)
-    return { code, flag: bc?.flag || '', name: bc?.name?.common || code }
+  if (!c || !c.borders?.length) return []
+  return c.borders.map((code) => {
+    const bc = allCountries.value.find((x) => x.cca3 === code)
+    return {
+      code,
+      name: bc ? countryName(bc) : code,
+      flagImg: bc ? flagImg(bc.cca2, 40) : '',
+      latlng: bc?.latlng || null,
+    }
   })
 })
 
-/* ---------- 选择地区 ---------- */
 function selectRegion(k) {
-  activeRegion.value = k
+  if (!k) {
+    activeRegion.value = ''
+    return
+  }
+  activeRegion.value = activeRegion.value === k ? '' : k
 }
 
-/* ---------- 显示国家详情（邻国按钮点击复用同一函数） ---------- */
-function showDetail(code) {
+function mapContainer() {
+  return document.querySelector('.crow-detail .d-map')
+}
+
+function scrollToCountry(code) {
+  const el = document.querySelector(`.crow[data-code="${code}"]`)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+function closeDetail() {
+  destroyMap()
+  selectedCode.value = null
+  trendToken++
+  trend.value = null
+  trendState.value = 'idle'
+}
+
+function ensureVisible(code) {
+  const target = allCountries.value.find((c) => c.cca3 === code)
+  if (!target) return
+  if (onlySovereign.value && !target.independent) onlySovereign.value = false
+  if (activeRegion.value && (target.region || '').toLowerCase() !== activeRegion.value) {
+    activeRegion.value = ''
+  }
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q && !(target.searchText || '').includes(q)) searchQuery.value = ''
+}
+
+function openCountry(code) {
+  const target = allCountries.value.find((c) => c.cca3 === code)
+  if (!target) return
+  ensureVisible(code)
+  if (selectedCode.value === code) {
+    nextTick(() => scrollToCountry(code))
+    return
+  }
+  destroyMap()
   selectedCode.value = code
-  // 等待 DOM 更新后滚动到详情卡片
+  trend.value = null
+  trendState.value = 'idle'
+  loadTrend(code)
   nextTick(() => {
-    detailRef.value?.scrollIntoView({ behavior: 'smooth' })
+    initMap()
+    scrollToCountry(code)
   })
 }
 
-/* ---------- 加载全部国家数据 ---------- */
-async function loadAll() {
-  try {
-    // 使用共享 fetchJSON（带超时和状态检查）
-    const [countries, popData] = await Promise.all([
-      fetchJSON('https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json'),
-      fetchJSON('https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&per_page=300&date=2023')
-    ])
-    if (!Array.isArray(countries)) throw new Error('countries not array')
-    // 构建 cca3 -> 人口 的映射
-    const popMap = {}
-    if (Array.isArray(popData) && popData.length > 1) {
-      popData[1].forEach(item => {
-        if (item.countryiso3code && item.value) popMap[item.countryiso3code] = item.value
-      })
-    }
-    // 合并人口数据并按常见名称排序
-    const data = countries.map(c => ({ ...c, population: popMap[c.cca3] || 0 }))
-    allCountries.value = data.sort((a, b) =>
-      (a.name?.common || '').localeCompare(b.name?.common || '')
-    )
-  } catch (e) {
-    errorMsg.value = e.message
+function onRowClick(code) {
+  if (selectedCode.value === code) closeDetail()
+  else openCountry(code)
+}
+
+watch(
+  () => themeState.theme,
+  () => {
+    if (selectedCountry.value) initMap()
+  },
+)
+
+function initMap() {
+  const c = selectedCountry.value
+  const el = mapContainer()
+  if (!c || !c.latlng || !el) return
+  destroyMap()
+  const f = countryFacts[c.cca3] || {}
+  mapInstance = L.map(el, { scrollWheelZoom: false, attributionControl: true })
+  L.tileLayer(mapTileUrl(themeState.theme), {
+    attribution: MAP_ATTRIBUTION,
+    maxZoom: 18,
+  }).addTo(mapInstance)
+  mapInstance.setView([c.latlng[0], c.latlng[1]], zoomByArea(areaValue(c)))
+  L.circleMarker([c.latlng[0], c.latlng[1]], {
+    radius: 7,
+    color: '#4090ff',
+    weight: 2,
+    fillColor: '#4090ff',
+    fillOpacity: 0.6,
+  })
+    .addTo(mapInstance)
+    .bindTooltip(countryName(c))
+
+  if (f.capitalLat != null && f.capitalLng != null) {
+    L.circleMarker([f.capitalLat, f.capitalLng], {
+      radius: 5,
+      color: '#f0c040',
+      weight: 2,
+      fillColor: '#f0c040',
+      fillOpacity: 0.75,
+    })
+      .addTo(mapInstance)
+      .bindTooltip(`${t.value('mapCapital')}: ${capitalTextFor(c)}`)
+  }
+
+  borders.value.forEach((b) => {
+    if (!b.latlng) return
+    L.circleMarker([b.latlng[0], b.latlng[1]], {
+      radius: 4,
+      color: '#c7b299',
+      fillColor: '#c7b299',
+      fillOpacity: 0.5,
+    })
+      .addTo(mapInstance)
+      .bindTooltip(b.name)
+  })
+}
+
+function destroyMap() {
+  if (mapInstance) {
+    mapInstance.remove()
+    mapInstance = null
   }
 }
 
-/* ---------- 生命周期：挂载时加载数据 ---------- */
-onMounted(() => {
-  loadAll()
+function zoomByArea(area) {
+  if (!area) return 4
+  if (area > 5000000) return 3
+  if (area > 1000000) return 4
+  if (area > 100000) return 5
+  return 6
+}
+
+onBeforeUnmount(() => {
+  alive = false
+  destroyMap()
+  trendToken++
 })
+
+async function loadTrend(cca3) {
+  const token = ++trendToken
+  const cached = trendCache.get(cca3)
+  if (cached) {
+    trend.value = cached
+    trendState.value = 'loaded'
+    return
+  }
+  trendState.value = 'loading'
+  trend.value = null
+  const start = LAST_YEAR - 9
+  const end = LAST_YEAR
+  try {
+    const code = wbCode(cca3)
+    const [popRes, gdpRes] = await Promise.allSettled([
+      wbPage(`${WB}/country/${code}/indicator/SP.POP.TOTL?format=json&date=${start}:${end}&per_page=100`),
+      wbPage(`${WB}/country/${code}/indicator/NY.GDP.MKTP.CD?format=json&date=${start}:${end}&per_page=100`),
+    ])
+    if (token !== trendToken) return
+    const popRows = popRes.status === 'fulfilled' && Array.isArray(popRes.value?.[1]) ? popRes.value[1] : []
+    const gdpRows = gdpRes.status === 'fulfilled' && Array.isArray(gdpRes.value?.[1]) ? gdpRes.value[1] : []
+    const popByYear = {}
+    const gdpByYear = {}
+    popRows.forEach((r) => {
+      if (r.value != null) popByYear[Number(r.date)] = r.value
+    })
+    gdpRows.forEach((r) => {
+      if (r.value != null) gdpByYear[Number(r.date)] = r.value
+    })
+    const rows = Array.from({ length: 10 }, (_, i) => {
+      const y = start + i
+      return { y, pop: popByYear[y] ?? null, gdp: gdpByYear[y] ?? null }
+    })
+    if (!rows.some((r) => r.pop != null || r.gdp != null)) throw new Error('no trend data')
+    const data = {
+      rows,
+      start,
+      end,
+    }
+    trendCache.set(cca3, data)
+    trend.value = data
+    trendState.value = 'loaded'
+  } catch (e) {
+    if (token === trendToken) trendState.value = 'error'
+  }
+}
+
+const WB_CONCURRENCY = 4
+let wbActive = 0
+const wbQueue = []
+
+function withWbSlot(task) {
+  return new Promise((resolve, reject) => {
+    const run = () => {
+      wbActive++
+      task()
+        .then(resolve, reject)
+        .finally(() => {
+          wbActive--
+          const next = wbQueue.shift()
+          if (next) next()
+        })
+    }
+    if (wbActive < WB_CONCURRENCY) run()
+    else wbQueue.push(run)
+  })
+}
+
+function fetchWBJSON(url) {
+  return withWbSlot(() => fetchJSON(url, { timeout: 20000 }))
+}
+
+async function wbPage(url) {
+  try {
+    return await fetchWBJSON(url)
+  } catch (e) {
+    return fetchWBJSON(url)
+  }
+}
+
+async function fetchWBIndicator(code, from, to) {
+  const base = `${WB}/country/all/indicator/${code}?format=json&per_page=1000&date=${from}:${to}`
+  const first = await wbPage(base)
+  if (!Array.isArray(first?.[1])) throw new Error('indicator unavailable')
+  const rows = first[1].slice()
+  const pages = Number(first?.[0]?.pages || 1)
+  if (pages > 1) {
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) =>
+        wbPage(base + '&page=' + (i + 2))
+          .then((d) => (Array.isArray(d?.[1]) ? d[1] : []))
+          .catch(() => []),
+      ),
+    )
+    rest.forEach((pageRows) => rows.push(...pageRows))
+  }
+  return bestByIso(rows)
+}
+
+function applyIndicator(data, key, map) {
+  for (const c of data) {
+    const s = map?.[wbCode(c.cca3)]
+    if (s) c.stats[key] = s
+  }
+}
+
+async function loadExtras() {
+  if (!alive || !allCountries.value.length) return
+  if (extrasState.value === 'loading' || extrasState.value === 'loaded') return
+  const token = dataToken
+  extrasState.value = 'loading'
+  const entries = Object.entries(EXTRA_INDICATORS)
+  const results = await Promise.allSettled(entries.map(([, cfg]) => fetchWBIndicator(cfg.code, cfg.from, cfg.to)))
+  if (!alive || token !== dataToken) return
+  let failed = 0
+  results.forEach((res, i) => {
+    if (res.status === 'fulfilled') applyIndicator(allCountries.value, entries[i][0], res.value)
+    else failed++
+  })
+  extrasState.value = failed === entries.length ? 'error' : 'loaded'
+  writeCountryCache(failed === 0)
+}
+
+function readCountryCache() {
+  const raw = lsGet(CACHE_KEY)
+  if (!raw) return null
+  try {
+    const cache = JSON.parse(raw)
+    if (!cache || cache.version !== CACHE_VERSION) return null
+    if (cache.year !== LAST_YEAR) return null
+    if (!Array.isArray(cache.countries) || !cache.countries.length) return null
+    if (!Number.isFinite(cache.savedAt)) return null
+    return cache
+  } catch (e) {
+    lsRemove(CACHE_KEY)
+    return null
+  }
+}
+
+function writeCountryCache(extrasReady) {
+  if (!allCountries.value.length || !dataUpdatedAt.value) return
+  const entry = {
+    version: CACHE_VERSION,
+    year: LAST_YEAR,
+    savedAt: dataUpdatedAt.value,
+    extrasReady,
+    usdRates: usdRates.value,
+    countries: allCountries.value,
+  }
+  try {
+    lsSet(CACHE_KEY, JSON.stringify(entry))
+  } catch (e) {}
+}
+
+function applyCachedData(cache, stale) {
+  allCountries.value = cache.countries
+  usdRates.value = cache.usdRates || null
+  dataUpdatedAt.value = cache.savedAt
+  dataStale.value = stale
+  extrasState.value = cache.extrasReady ? 'loaded' : 'idle'
+  errorMsg.value = ''
+  loading.value = false
+}
+
+function finishLoad(applyInitialQuery, extrasReady) {
+  if (applyInitialQuery && allCountries.value.length) {
+    nextTick(() => applyUrlQuery(route.query))
+  }
+  if (allCountries.value.length && !extrasReady) {
+    setTimeout(loadExtras, 50)
+  }
+}
+
+async function loadAll(applyInitialQuery = false, force = false) {
+  dataToken++
+  const cached = readCountryCache()
+  if (!force && cached && Date.now() - cached.savedAt < CACHE_TTL) {
+    applyCachedData(cached, false)
+    finishLoad(applyInitialQuery, cached.extrasReady)
+    return
+  }
+
+  try {
+    const coreEntries = Object.entries(CORE_INDICATORS)
+    const [countriesRes, fxRes, ...indicatorRes] = await Promise.allSettled([
+      fetchJSON(COUNTRIES_URL),
+      getUsdRates(),
+      ...coreEntries.map(([, cfg]) => fetchWBIndicator(cfg.code, cfg.from, cfg.to)),
+    ])
+    if (countriesRes.status === 'rejected') throw countriesRes.reason
+    const countries = countriesRes.value
+    if (!Array.isArray(countries)) throw new Error('countries not array')
+
+    usdRates.value = fxRes.status === 'fulfilled' && fxRes.value?.rates ? fxRes.value.rates : null
+
+    const data = countries.map((c) => ({
+      ...c,
+      stats: {},
+      searchText: buildSearchText(c),
+    }))
+    indicatorRes.forEach((res, i) => {
+      if (res.status === 'fulfilled') applyIndicator(data, coreEntries[i][0], res.value)
+    })
+    applyPopulationFallback(data, countryFacts)
+    data.sort((a, b) => countryName(a).localeCompare(countryName(b), locale()))
+    allCountries.value = data
+    dataUpdatedAt.value = Date.now()
+    dataStale.value = false
+    writeCountryCache(false)
+    loading.value = false
+    finishLoad(applyInitialQuery, false)
+  } catch (e) {
+    console.warn('Atlas Info load failed:', e)
+    if (cached) {
+      applyCachedData(cached, true)
+      finishLoad(applyInitialQuery, cached.extrasReady)
+    } else {
+      errorMsg.value = t.value('error')
+      loading.value = false
+    }
+  }
+}
+
+function refreshData() {
+  if (loading.value) return
+  errorMsg.value = ''
+  closeDetail()
+  trendCache.clear()
+  extrasState.value = 'idle'
+  dataStale.value = false
+  loading.value = true
+  loadAll(false, true)
+}
+
+watch([activeRegion, searchQuery, onlySovereign], () => {
+  if (selectedCode.value && !filteredCountries.value.some((c) => c.cca3 === selectedCode.value)) {
+    closeDetail()
+  }
+})
+
+watch([selectedCode, sortBy, activeRegion, onlySovereign], () => {
+  if (!allCountries.value.length || syncingFromUrl) return
+  const state = stateQuery()
+  if (sameQuery(normalizedRouteQuery(), state)) return
+  router.push({ query: state }).catch(() => {})
+})
+
+watch(
+  () => route.query,
+  (q) => {
+    if (syncingFromUrl) return
+    const next = normalizedRouteQuery(q)
+    if (!allCountries.value.length) {
+      sortBy.value = next.sort || 'pop'
+      activeRegion.value = next.region || ''
+      onlySovereign.value = !!next.sovereign
+      return
+    }
+    const state = stateQuery()
+    if (sameQuery(next, state)) {
+      if (!sameQuery(rawQueryForCompare(q), state)) {
+        router.replace({ query: state }).catch(() => {})
+      }
+      return
+    }
+    applyUrlQuery(q)
+  },
+)
+
+onMounted(() => loadAll(true))
 </script>
 
 <template>
-  <div class="atlas-info">
-    <!-- 顶部栏：标题 + 语言切换（语言切换由 AppHeader 内部处理） -->
-    <AppHeader :title="t('title')" />
+  <UiPage
+    class="atlas-info"
+    :title="t('title')"
+    :sources="[
+      { name: 'world-countries', url: 'https://github.com/mledoze/countries' },
+      { name: 'World Bank', url: 'https://api.worldbank.org/' },
+      { name: 'ExchangeRate-API', url: 'https://www.exchangerate-api.com/' },
+      { name: 'flagcdn', url: 'https://flagcdn.com/' },
+      { name: 'Natural Earth', url: 'https://www.naturalearthdata.com/' },
+      { name: 'Esri', url: 'https://www.esri.com/' },
+      { name: 'country-json', url: 'https://github.com/samayo/country-json' },
+      { name: 'country-list-js', url: 'https://www.npmjs.com/package/country-list-js' },
+    ]"
+    spacing="compact"
+  >
+    <UiPageHead :description="t('lead')" />
 
-    <main class="shell">
-      <!-- 页头说明 -->
-      <header class="masthead">
-        <p class="eyebrow">{{ t('eyebrow') }}</p>
-        <p class="lead">{{ t('lead') }}</p>
-      </header>
-
-      <!-- 搜索框 -->
-      <section class="search">
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="searchPlaceholder"
-          autocomplete="off"
-          aria-label="Search country"
+    <CountryDirectory
+      v-model:search-query="searchQuery"
+      v-model:sort-by="sortBy"
+      v-model:only-sovereign="onlySovereign"
+      :compare-open="compareOpen"
+      :active-region="activeRegion"
+      :countries="filteredCountries"
+      :selected-code="selectedCode"
+      :data-updated-at="dataUpdatedAt"
+      :data-stale="dataStale"
+      :loading="loading"
+      :error-msg="errorMsg"
+      :t="t"
+      @select-region="selectRegion"
+      @toggle-compare="compareOpen = !compareOpen"
+      @row-click="onRowClick"
+    >
+      <template #compare>
+        <ComparePanel
+          v-if="compareOpen"
+          v-model:a="compareA"
+          v-model:b="compareB"
+          :countries="allCountries"
+          :t="t"
+          @close="compareOpen = false"
         />
-        <button type="button">{{ t('search') }}</button>
-      </section>
+      </template>
+      <template #detail="{ country }">
+        <CountryDetail
+          :country="country"
+          :borders="borders"
+          :usd-rates="usdRates"
+          :extras-state="extrasState"
+          :trend="trend"
+          :trend-state="trendState"
+          :t="t"
+          @open-country="openCountry"
+        />
+      </template>
+    </CountryDirectory>
 
-      <!-- 地区筛选栏 -->
-      <div class="region-bar">
-        <button
-          v-for="r in REGIONS"
-          :key="r.k"
-          type="button"
-          class="region-btn"
-          :class="{ active: activeRegion === r.k }"
-          @click="selectRegion(r.k)"
-        >{{ r.l[i18nState.lang] }}</button>
-      </div>
-
-      <!-- 结果计数 -->
-      <div class="result-count">{{ filteredCountries.length }} {{ t('countries') }}</div>
-
-      <!-- 加载错误 -->
-      <div v-if="errorMsg" class="grid-error">{{ errorMsg }}</div>
-
-      <!-- 国家网格 -->
-      <div v-else class="country-grid">
-        <div
-          v-for="c in filteredCountries"
-          :key="c.cca3"
-          class="country-mini"
-          @click="showDetail(c.cca3)"
-        >
-          <span class="c-flag">{{ c.flag || '' }}</span>
-          <div>
-            <div class="c-name">{{ c.name?.common || '' }}</div>
-            <div class="c-sub">{{ c.region || '' }} · {{ num(c.population || 0) }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 国家详情卡片 -->
-      <div v-if="detail" ref="detailRef" class="detail-card">
-        <div class="card">
-          <div class="flag">{{ detail.flag }}</div>
-          <div class="info">
-            <h2>{{ detail.name }}</h2>
-            <div class="native">{{ detail.official }}</div>
-            <div class="grid">
-              <div v-for="item in detail.items" :key="item.label" class="item">
-                <div class="i-label">{{ item.label }}</div>
-                <div class="i-val">{{ item.value }}</div>
-              </div>
-            </div>
-            <div class="borders">
-              <h3>{{ t('borders') }}</h3>
-              <div class="border-chips">
-                <span v-if="!borders.length" class="no-border">{{ t('none') }}</span>
-                <button
-                  v-for="b in borders"
-                  :key="b.code"
-                  type="button"
-                  class="border-chip"
-                  @click="showDetail(b.code)"
-                >{{ b.flag }} {{ b.name }}</button>
-              </div>
-            </div>
-            <div class="map-link">
-              <a :href="detail.gMap" target="_blank" rel="noreferrer">{{ t('openMaps') }} ↗</a>
-              ·
-              <a :href="detail.osm" target="_blank" rel="noreferrer">{{ t('openOSM') }} ↗</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <AppFooter />
-  </div>
+    <details v-if="!loading && !errorMsg" class="about-data">
+      <summary>{{ t('aboutData') }}</summary>
+      <p>{{ t('dataNote') }}</p>
+      <UiButton variant="link" class="refresh-btn" :disabled="loading" @click="refreshData">
+        {{ t('refreshData') }}
+      </UiButton>
+    </details>
+  </UiPage>
 </template>
 
 <style scoped>
-/* ============================================================
-   Atlas Info — 国家百科样式
-   原版 :root 变量映射到组件根类 .atlas-info 上。
-   ============================================================ */
-
 .atlas-info {
-  /* 主题变量 */
-  --bg: #0c1220;
-  --panel: rgba(16, 28, 48, 0.6);
-  --line: rgba(100, 160, 255, 0.1);
-  --text: #d8e4f0;
-  --muted: #6888b0;
-  --accent: #4090ff;
-  --green: #40d080;
-  --gold: #f0c040;
-
-  /* 映射到共享设计 token */
-  --ok-bg: var(--bg);
-  --ok-panel: var(--panel);
-  --ok-line: var(--line);
-  --ok-text: var(--text);
-  --ok-muted: var(--muted);
-  --ok-accent: var(--accent);
-  --ok-footer-line: var(--line);
-  --ok-footer-text: var(--muted);
-  --ok-footer-link: var(--accent);
-  --ok-topbar-line: rgba(100, 160, 255, 0.08);
-
-  font-family: "Inter", system-ui, sans-serif;
-  color: var(--text);
-  background: var(--bg);
-  color-scheme: dark;
+  --atlas-gold: #b45309;
 }
 
-.atlas-info h2,
-.atlas-info h3,
-.atlas-info p,
-.atlas-info strong,
-.atlas-info span {
-  margin: 0;
+:root[data-theme='dark'] .atlas-info {
+  --atlas-gold: #d29922;
 }
 
-.atlas-info a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-/* ---------- 主容器 ---------- */
-.shell {
-  width: min(1000px, calc(100% - 1.5rem));
-  margin: 0 auto;
-  padding: 1rem 0 4rem;
-}
-
-/* ---------- 页头 ---------- */
-.masthead {
-  padding: 0.3rem 0 1rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.eyebrow {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-/* ---------- 搜索框 ---------- */
-.search {
-  margin-top: 0.8rem;
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.search input {
-  flex: 1;
-  font: inherit;
-  height: 2.4rem;
-  padding: 0 0.7rem;
-  border: 1px solid var(--line);
-  background: rgba(16, 28, 48, 0.5);
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.search button {
-  font: inherit;
-  height: 2.4rem;
-  padding: 0 1rem;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* ---------- 地区筛选栏 ---------- */
-.region-bar {
-  display: flex;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.region-btn {
-  font: inherit;
-  padding: 0.25rem 0.6rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  cursor: pointer;
+.about-data {
+  margin-top: 2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--ok-line);
+  color: var(--ok-muted);
   font-size: 0.76rem;
-  color: var(--muted);
-  border-radius: 12px;
 }
 
-.region-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(64, 144, 255, 0.1);
-}
-
-/* ---------- 国家网格 ---------- */
-.result-count {
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-top: 0.5rem;
-}
-
-.grid-error {
-  padding: 2rem;
-  text-align: center;
-  color: var(--muted);
-}
-
-.country-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.8rem;
-}
-
-.country-mini {
+.about-data summary {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
-  padding: 0.5rem;
-  border: 1px solid var(--line);
+  gap: 0.4rem;
+  list-style: none;
+  font-size: 0.78rem;
   cursor: pointer;
-  border-radius: 6px;
-  transition: all 150ms;
 }
 
-.country-mini:hover {
-  border-color: var(--accent);
-  background: var(--panel);
+.about-data summary::-webkit-details-marker {
+  display: none;
 }
 
-.country-mini .c-flag {
-  font-size: 1.3rem;
-}
-
-.country-mini .c-name {
-  font-size: 0.82rem;
-  font-weight: 500;
-}
-
-.country-mini .c-sub {
-  font-size: 0.68rem;
-  color: var(--muted);
-}
-
-/* ---------- 详情卡片 ---------- */
-.detail-card {
-  margin-top: 1rem;
-}
-
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1.2rem;
-  border-radius: 8px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1.2rem;
-  align-items: start;
-}
-
-.flag {
-  font-size: 3.5rem;
+.about-data summary::before {
+  content: '+';
+  width: 0.8rem;
+  color: var(--ok-accent);
   line-height: 1;
 }
 
-.info h2 {
-  font-size: 1.4rem;
-  font-weight: 700;
+.about-data[open] summary::before {
+  content: '−';
 }
 
-.info .native {
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin-top: 0.15rem;
+.about-data p {
+  max-width: 65ch;
+  margin: 0.6rem 0 0;
+  line-height: 1.65;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.6rem;
-  margin-top: 1rem;
+.refresh-btn {
+  margin-top: 0.6rem;
 }
 
-.item .i-label {
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-
-.item .i-val {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-top: 0.1rem;
-}
-
-/* ---------- 邻国 ---------- */
-.borders {
-  margin-top: 1rem;
-}
-
-.borders h3 {
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-
-.border-chips {
-  display: flex;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-}
-
-.no-border {
-  font-size: 0.76rem;
-  color: var(--muted);
-}
-
-.border-chip {
-  font: inherit;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.76rem;
-  border-radius: 4px;
-  color: var(--text);
-}
-
-.border-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ---------- 地图链接 ---------- */
-.map-link {
-  margin-top: 0.8rem;
-  font-size: 0.78rem;
-}
-
-/* ---------- 响应式 ---------- */
 @media (max-width: 700px) {
-  .card {
-    grid-template-columns: 1fr;
-  }
-
-  .flag {
-    font-size: 2.5rem;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
+  .about-data p {
+    max-width: none;
   }
 }
 </style>

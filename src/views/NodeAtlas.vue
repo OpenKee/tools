@@ -1,72 +1,55 @@
 <script setup>
-/* ============================================================
-   Node Atlas — IP & 域名情报（Vue 3 SFC）
-   数据源：
-     · ipquery.io（IP 地理位置查询）
-     · dns.google（DNS 解析记录查询）
-     · crt.sh（SSL 证书透明度查询）
-   - 历史记录持久化到 localStorage
-   - 中英文 i18n，共享 i18n.js / ok.js
-   ============================================================ */
-
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useT } from '../i18n.js'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { i18nState, useT } from '../i18n.js'
 import { fetchJSON, lsGet, lsSet } from '../ok.js'
-import AppHeader from '../components/AppHeader.vue'
-import AppFooter from '../components/AppFooter.vue'
-
-/* ---------- i18n 文案字典 ---------- */
-const copy = {
-  en: {
-    eyebrow: 'Network intelligence', title: 'Node Atlas',
-    lead: 'Lookup IPs and domains — DNS, geo, headers, SSL, latency.',
-    scan: 'Scan', geolocation: 'Geolocation', dnsRecords: 'DNS Records',
-    latency: 'Latency', httpHeaders: 'HTTP Response', sslCerts: 'SSL Certificates',
-    scanning: 'Scanning\u2026', done: 'Done', error: 'Error',
-    ip: 'IP', country: 'Country', region: 'Region', city: 'City',
-    isp: 'ISP', org: 'Organization', timezone: 'Timezone',
-    coords: 'Coordinates', reverseDns: 'Reverse DNS',
-    mapLink: 'Open in map', noData: 'No data',
-    dnsLookup: 'DNS lookup', httpFetch: 'HTTP fetch', sslFetch: 'SSL check',
-    total: 'Total', waiting: 'Waiting\u2026',
-    issued: 'Issued', expires: 'Expires', issuer: 'Issuer',
-  },
-  zh: {
-    eyebrow: '网络情报', title: '节点地图',
-    lead: '查询 IP 和域名 — DNS、地理位置、HTTP 头、SSL、延迟。',
-    scan: '扫描', geolocation: '地理位置', dnsRecords: 'DNS 记录',
-    latency: '延迟', httpHeaders: 'HTTP 响应', sslCerts: 'SSL 证书',
-    scanning: '扫描中\u2026', done: '完成', error: '错误',
-    ip: 'IP', country: '国家', region: '地区', city: '城市',
-    isp: '运营商', org: '组织', timezone: '时区',
-    coords: '坐标', reverseDns: '反向 DNS',
-    mapLink: '在地图中打开', noData: '无数据',
-    dnsLookup: 'DNS 查询', httpFetch: 'HTTP 请求', sslFetch: 'SSL 检查',
-    total: '总计', waiting: '等待中\u2026',
-    issued: '签发于', expires: '过期于', issuer: '签发者',
-  },
-}
+import { countryName } from '../lib/country-meta.js'
+import {
+  UiBadge,
+  UiButton,
+  UiCard,
+  UiChip,
+  UiErrorState,
+  UiLoading,
+  UiPage,
+  UiSearch,
+  UiStat,
+} from '../components/ui/index.js'
+import copy from '../copy/node-atlas.js'
 
 const t = useT(copy)
 
-/* ---------- 常量 ---------- */
 const HISTORY_KEY = 'node-atlas-history'
 const HISTORY_LIMIT = 20
 const HISTORY_VISIBLE = 8
 
-/* ---------- 状态 ---------- */
-const target = ref('')                        // 搜索框输入
-const history = ref(loadHistory())            // 历史记录列表
-const statusText = ref('')                    // 状态条文本
-const statusClass = ref('')                   // 状态条样式：scanning/done/error/''
-const showResults = ref(false)                // 是否展示结果区域
-const geo = ref(null)                         // 地理位置数据
-const dnsRecords = ref([])                    // DNS 记录数组
-const latency = reactive({ dns: 0, http: 0, ssl: 0, total: 0 })  // 延迟统计
-const httpInfo = ref(null)                    // HTTP 响应信息
-const sslCerts = ref([])                      // SSL 证书数组
+const target = ref('')
+const history = ref(loadHistory())
+const statusText = ref('')
+const statusClass = ref('')
+const showResults = ref(false)
+const geo = ref(null)
+const geoError = ref('')
+const geoMs = ref(0)
+const dnsRecords = ref([])
+const dnsError = ref('')
+const dnsMs = ref(0)
+const httpInfo = ref(null)
+const httpError = ref('')
+const httpMs = ref(0)
+const sslCerts = ref([])
+const sslError = ref('')
+const sslMs = ref(0)
+const ptr = ref([])
+const rdap = ref(null)
+const rdapError = ref('')
+const httpHeaders = ref(null)
+const httpHeadersError = ref('')
+const totalMs = ref(0)
+const isDomain = ref(false)
+const copied = ref(false)
+let lookupSeq = 0
+let copyTimer = null
 
-/* ---------- 历史记录持久化 ---------- */
 function loadHistory() {
   const raw = lsGet(HISTORY_KEY)
   if (!raw) return []
@@ -83,170 +66,525 @@ function saveHistory() {
 }
 
 function addToHistory(value) {
-  history.value = [value, ...history.value.filter(h => h !== value)].slice(0, HISTORY_LIMIT)
+  history.value = [value, ...history.value.filter((h) => h !== value)].slice(0, HISTORY_LIMIT)
   saveHistory()
 }
 
-/* ---------- computed 派生 ---------- */
-// 历史条只展示前 8 条
+function clearHistory() {
+  history.value = []
+  saveHistory()
+}
+
+async function copyResults() {
+  if (!showResults.value) return
+  const payload = {
+    target: target.value,
+    type: isDomain.value ? 'domain' : 'ip',
+    geo: geo.value,
+    reverseDns: ptr.value,
+    dns: dnsRecords.value,
+    rdap: rdap.value,
+    http: { reachability: httpInfo.value, headers: httpHeaders.value },
+    ssl: sslCerts.value,
+    latency: {
+      geo: geoMs.value,
+      dns: dnsMs.value,
+      http: httpMs.value,
+      ssl: sslMs.value,
+      total: totalMs.value,
+    },
+    errors: {
+      geo: geoError.value,
+      dns: dnsError.value,
+      http: httpError.value,
+      ssl: sslError.value,
+      rdap: rdapError.value,
+      headers: httpHeadersError.value,
+    },
+  }
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
+    copied.value = true
+    clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => {
+      copied.value = false
+    }, 1500)
+  } catch {}
+}
+
 const visibleHistory = computed(() => history.value.slice(0, HISTORY_VISIBLE))
 
-// 地图链接（仅在有坐标时生成）
 const mapUrl = computed(() => {
   const g = geo.value
   if (!g || g.lat == null) return ''
   return `https://www.openstreetmap.org/?mlat=${g.lat}&mlon=${g.lon}#map=10/${g.lat}/${g.lon}`
 })
 
-// 延迟展示单元
-const latencyItems = computed(() => [
-  { label: t.value('dnsLookup'), value: latency.dns, cls: latClass(latency.dns) },
-  { label: t.value('httpFetch'), value: latency.http, cls: latClass(latency.http) },
-  { label: t.value('sslFetch'), value: latency.ssl, cls: latClass(latency.ssl) },
-  { label: t.value('total'), value: latency.total, cls: latClass(latency.total) },
-])
+const geoCountryLabel = computed(() => {
+  const g = geo.value
+  if (!g) return '—'
+  if (g.countryCode) return countryName(g.countryCode, i18nState.lang)
+  return g.country || '—'
+})
 
-/* ---------- 工具函数 ---------- */
-function isIp(v) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(v.trim()) }
+const riskFlags = computed(() => {
+  const r = geo.value?.risk
+  if (!r) return []
+  return [r.vpn && 'VPN', r.tor && 'Tor', r.proxy && 'Proxy', r.datacenter && 'Datacenter'].filter(Boolean)
+})
 
-function latClass(ms) { return ms < 100 ? 'fast' : ms < 500 ? 'mid' : 'slow' }
+const sslLabsUrl = computed(() => {
+  const host = target.value
+  return host ? `https://www.ssllabs.com/ssltest/analyze.html?d=${encodeURIComponent(host)}&hideResults=on` : ''
+})
 
-// 签发者：优先取 CN= 之后的部分，否则用完整 issuer，再否则占位
+const hasRdapData = computed(() => {
+  const r = rdap.value
+  return !!r && !!(r.registrar || r.created || r.expires || r.updated || r.status?.length || r.nameservers?.length)
+})
+
+const latencyItems = computed(() => {
+  const items = [{ label: t.value('geoLookup'), value: geoMs.value, cls: latClass(geoMs.value) }]
+  if (isDomain.value) {
+    items.push(
+      { label: t.value('dnsLookup'), value: dnsMs.value, cls: latClass(dnsMs.value) },
+      { label: t.value('httpFetch'), value: httpMs.value, cls: latClass(httpMs.value) },
+      { label: t.value('sslFetch'), value: sslMs.value, cls: latClass(sslMs.value) },
+      { label: t.value('total'), value: totalMs.value, cls: latClass(totalMs.value) },
+    )
+  }
+  return items
+})
+
+function isIPv4(v) {
+  const parts = String(v).split('.')
+  return parts.length === 4 && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255)
+}
+
+function isIPv6(v) {
+  if (!String(v).includes(':')) return false
+  try {
+    new URL(`http://[${v}]`)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+function parseTarget(raw) {
+  let value = String(raw || '').trim()
+  if (!value) return { error: t.value('invalidTarget') }
+  try {
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) {
+      value = new URL(value).hostname
+    } else {
+      value = value.split(/[/?#]/)[0]
+      value = value.replace(/^\[|\]$/g, '')
+      if (/^[^:]+:\d+$/.test(value)) value = value.replace(/:\d+$/, '')
+    }
+  } catch (e) {
+    return { error: t.value('invalidTarget') }
+  }
+  if (value.startsWith('[') && value.endsWith(']')) value = value.slice(1, -1)
+  value = value.replace(/\.$/, '').toLowerCase()
+  if (isIPv4(value) || isIPv6(value)) return { target: value, isDomain: false }
+  if (!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(value)) {
+    return { error: t.value('invalidTarget') }
+  }
+  return { target: value, isDomain: true }
+}
+
+function latClass(ms) {
+  return ms < 100 ? 'fast' : ms < 500 ? 'mid' : 'slow'
+}
+
+function latTone(cls) {
+  if (cls === 'fast') return 'up'
+  if (cls === 'mid') return 'warn'
+  return 'down'
+}
+
+function fmtCoord(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n.toFixed(4) : '—'
+}
+
+function rdapStatusLabel(status) {
+  return String(status || '')
+    .split('/')
+    .pop()
+    .replace(/#/g, ' ')
+    .trim()
+}
+
 function sslIssuer(c) {
   return c.issuer?.split('CN=')[1] || c.issuer || '—'
 }
 
-// 日期截取为 YYYY-MM-DD
 function sslDateShort(s) {
   return s?.slice(0, 10) || '—'
 }
 
-/* ---------- 网络请求 ----------
-   用共享 fetchJSON 包一层 safeFetch：失败/非 2xx 返回 null，
-   行为对齐原版 OK 时代的 safeFetch。 */
-async function safeFetch(url, opts = {}) {
+async function geoLookup(ip) {
+  const start = performance.now()
   try {
-    return await fetchJSON(url, opts)
-  } catch {
-    return null
+    const d = await fetchJSON(`https://api.ipquery.io/${encodeURIComponent(ip)}`, { timeout: 8000 })
+    return {
+      ms: Math.round(performance.now() - start),
+      error: '',
+      data: {
+        ip,
+        country: d.location?.country,
+        countryCode: d.location?.country_code,
+        region: d.location?.state,
+        city: d.location?.city,
+        lat: d.location?.latitude,
+        lon: d.location?.longitude,
+        tz: d.location?.timezone,
+        isp: d.isp?.isp,
+        org: d.isp?.org,
+        asn: d.isp?.asn || '',
+        risk: d.risk
+          ? {
+              vpn: !!d.risk.is_vpn,
+              tor: !!d.risk.is_tor,
+              proxy: !!d.risk.is_proxy,
+              datacenter: !!d.risk.is_datacenter,
+              score: d.risk.risk_score ?? null,
+            }
+          : null,
+      },
+    }
+  } catch (e) {
+    try {
+      const d = await fetchJSON(`https://ipinfo.io/${encodeURIComponent(ip)}/json`, { timeout: 8000 })
+      const [lat, lon] = String(d.loc || '')
+        .split(',')
+        .map(Number)
+      const org = d.org || ''
+      return {
+        ms: Math.round(performance.now() - start),
+        error: '',
+        data: {
+          ip,
+          country: '',
+          countryCode: d.country || '',
+          region: d.region || '',
+          city: d.city || '',
+          lat: Number.isFinite(lat) ? lat : null,
+          lon: Number.isFinite(lon) ? lon : null,
+          tz: d.timezone || '',
+          isp: org,
+          org,
+          asn: (org.match(/^AS\d+/) || [''])[0],
+          risk: null,
+        },
+      }
+    } catch (e2) {
+      return { ms: Math.round(performance.now() - start), error: e2.message, data: null }
+    }
   }
 }
 
-async function geoLookup(ip) {
-  const d = await safeFetch(`https://api.ipquery.io/${ip}`)
-  if (!d) return null
-  return {
-    ip,
-    country: d.location?.country,
-    countryCode: d.location?.country_code,
-    region: d.location?.state,
-    city: d.location?.city,
-    lat: d.location?.latitude,
-    lon: d.location?.longitude,
-    tz: d.location?.timezone,
-    isp: d.isp?.isp,
-    org: d.isp?.org,
+async function ptrLookup(ip) {
+  const name = reverseName(ip)
+  if (!name) return { values: [], ms: 0, error: '' }
+  const start = performance.now()
+  try {
+    const d = await fetchJSON(`https://dns.alidns.com/resolve?name=${encodeURIComponent(name)}&type=PTR`, {
+      timeout: 5000,
+    })
+    return {
+      values: (d?.Answer || []).map((a) => a.data),
+      ms: Math.round(performance.now() - start),
+      error: '',
+    }
+  } catch (e) {
+    return { values: [], ms: Math.round(performance.now() - start), error: e.message }
+  }
+}
+
+function reverseName(ip) {
+  if (isIPv4(ip)) return ip.split('.').reverse().join('.') + '.in-addr.arpa'
+  if (!isIPv6(ip)) return ''
+  const value = ip.toLowerCase()
+  const halves = value.split('::')
+  if (halves.length > 2) return ''
+  let groups
+  if (halves.length === 1) {
+    groups = value.split(':')
+  } else {
+    const left = halves[0] ? halves[0].split(':') : []
+    const right = halves[1] ? halves[1].split(':') : []
+    const fill = 8 - left.length - right.length
+    if (fill < 1) return ''
+    groups = [...left, ...Array(fill).fill('0'), ...right]
+  }
+  if (groups.length !== 8 || groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return ''
+  const full = groups.map((g) => g.padStart(4, '0')).join('')
+  return full.split('').reverse().join('.') + '.ip6.arpa'
+}
+
+function rdapEvent(events, action) {
+  const event = (events || []).find((e) => e.eventAction === action)
+  return event?.eventDate ? event.eventDate.slice(0, 10) : ''
+}
+
+function rdapRegistrar(data) {
+  const entity = (data.entities || []).find((e) => (e.roles || []).includes('registrar'))
+  if (!entity) return ''
+  const vcard = entity.vcardArray?.[1]
+  if (Array.isArray(vcard)) {
+    const fn = vcard.find((row) => row[0] === 'fn')
+    if (fn && fn[3]) return fn[3]
+  }
+  return entity.handle || ''
+}
+
+async function rdapLookup(domain) {
+  const start = performance.now()
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const d = await fetchJSON(`https://rdap.net/domain/${encodeURIComponent(domain)}`, {
+        timeout: attempt === 0 ? 6000 : 4000,
+      })
+      return {
+        ms: Math.round(performance.now() - start),
+        error: '',
+        data: {
+          registrar: rdapRegistrar(d),
+          created: rdapEvent(d.events, 'registration'),
+          expires: rdapEvent(d.events, 'expiration'),
+          updated: rdapEvent(d.events, 'last changed'),
+          status: (d.status || []).slice(0, 8),
+          nameservers: (d.nameservers || [])
+            .map((n) => n.ldhName)
+            .filter(Boolean)
+            .slice(0, 8),
+        },
+      }
+    } catch (e) {
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 300))
+    }
+  }
+  return { ms: Math.round(performance.now() - start), error: t.value('rdapUnavailable'), data: null }
+}
+
+async function fetchHttpHeaders(domain) {
+  const start = performance.now()
+  try {
+    const r = await fetch(`https://api.hackertarget.com/httpheaders/?q=${encodeURIComponent('https://' + domain)}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    const text = await r.text()
+    if (!r.ok || /^error\b/i.test(text.trim())) throw new Error('headers unavailable')
+    const lines = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+    const statusLine = lines.shift() || ''
+    const headers = lines
+      .map((line) => {
+        const idx = line.indexOf(':')
+        if (idx <= 0) return null
+        return { name: line.slice(0, idx).trim(), value: line.slice(idx + 1).trim() }
+      })
+      .filter(Boolean)
+    return {
+      statusLine,
+      headers,
+      ms: Math.round(performance.now() - start),
+      error: '',
+    }
+  } catch (e) {
+    return {
+      statusLine: '',
+      headers: [],
+      ms: Math.round(performance.now() - start),
+      error: t.value('httpHeadersUnavailable'),
+    }
   }
 }
 
 async function dnsLookup(domain) {
-  const types = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA']
-  const results = await Promise.all(types.map(async (type) => {
-    const d = await safeFetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`)
-    return { type, values: (d?.Answer || []).map((a) => a.data) }
-  }))
-  return results.filter((r) => r.values.length)
+  const start = performance.now()
+  const types = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'CAA']
+  const results = await Promise.all(
+    types.map(async (type) => {
+      try {
+        const d = await fetchJSON(`https://dns.alidns.com/resolve?name=${encodeURIComponent(domain)}&type=${type}`, {
+          timeout: 7000,
+        })
+        return {
+          type,
+          values: (d?.Answer || []).map((a) => ({ value: a.data, ttl: a.TTL })),
+          failed: false,
+        }
+      } catch (e) {
+        return { type, values: [], failed: true }
+      }
+    }),
+  )
+  const records = results.filter((r) => r.values.length)
+  return {
+    records,
+    ms: Math.round(performance.now() - start),
+    error: results.every((r) => r.failed) ? t.value('dnsUnavailable') : '',
+  }
 }
 
-async function fetchHeaders(domain) {
+async function checkReachability(domain) {
+  const start = performance.now()
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
   try {
-    const start = performance.now()
-    // no-cors 模式返回 opaque 响应（res.ok=false），不能复用 fetchJSON，需直接 fetch
-    const r = await fetch(`https://${domain}`, { mode: 'no-cors', cache: 'no-store' })
-    const ms = Math.round(performance.now() - start)
-    return { status: r.status || 'opaque', type: r.type, ms }
+    const r = await fetch(`https://${domain}`, { mode: 'no-cors', cache: 'no-store', signal: controller.signal })
+    return {
+      ok: true,
+      status: r.status || 'opaque',
+      type: r.type,
+      ms: Math.round(performance.now() - start),
+      error: '',
+    }
   } catch (e) {
-    return { error: e.message }
+    return {
+      ok: false,
+      status: '',
+      type: '',
+      ms: Math.round(performance.now() - start),
+      error: t.value('httpUnavailable'),
+    }
+  } finally {
+    clearTimeout(timer)
   }
 }
 
 async function fetchSSL(domain) {
+  const start = performance.now()
   try {
-    const certs = await fetchJSON(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`)
-    if (!Array.isArray(certs)) return []
-    return certs.slice(0, 5).map((c) => ({
-      name: c.common_name,
-      issuer: c.issuer_name,
-      issued: c.not_before,
-      expires: c.not_after,
-      id: c.id,
-    }))
-  } catch {
-    return []
+    const certs = await fetchJSON(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`, { timeout: 10000 })
+    if (!Array.isArray(certs)) throw new Error('bad response')
+    return {
+      ms: Math.round(performance.now() - start),
+      error: '',
+      certs: certs.slice(0, 5).map((c) => ({
+        name: c.common_name,
+        issuer: c.issuer_name,
+        issued: c.not_before,
+        expires: c.not_after,
+        id: c.id,
+      })),
+    }
+  } catch (e) {
+    return {
+      ms: Math.round(performance.now() - start),
+      error: t.value('sslUnavailable'),
+      certs: [],
+    }
   }
 }
 
-/* ---------- 主查询流程 ---------- */
 async function lookup(value) {
-  const trimmed = value.trim()
-  if (!trimmed) return
-  addToHistory(trimmed)
+  const seq = ++lookupSeq
+  const parsed = parseTarget(value)
+  if (parsed.error) {
+    statusClass.value = 'error'
+    statusText.value = parsed.error
+    showResults.value = false
+    return
+  }
 
-  // 重置 UI 为扫描中
+  const targetValue = parsed.target
+  const domain = parsed.isDomain
+
+  target.value = targetValue
+  addToHistory(targetValue)
+
   showResults.value = false
+  isDomain.value = domain
+  geo.value = null
+  geoError.value = ''
+  geoMs.value = 0
+  dnsRecords.value = []
+  dnsError.value = ''
+  dnsMs.value = 0
+  httpInfo.value = null
+  httpError.value = ''
+  httpMs.value = 0
+  sslCerts.value = []
+  sslError.value = ''
+  sslMs.value = 0
+  ptr.value = []
+  rdap.value = null
+  rdapError.value = ''
+  httpHeaders.value = null
+  httpHeadersError.value = ''
+  totalMs.value = 0
   statusClass.value = 'scanning'
   statusText.value = t.value('scanning')
 
-  const totalStart = performance.now()
-  const domain = isIp(trimmed) ? null : trimmed
+  const started = performance.now()
 
   try {
-    // 并发启动 DNS / HTTP / SSL 任务
-    const dnsStart = performance.now()
-    const dnsPromise = domain ? dnsLookup(domain) : Promise.resolve([])
-    const httpPromise = domain ? fetchHeaders(domain) : Promise.resolve(null)
-    const sslPromise = domain ? fetchSSL(domain) : Promise.resolve([])
+    let dnsResult = { records: [], ms: 0, error: '' }
+    let ip = targetValue
 
-    // 先解析 IP 用于地理位置查询
-    let ip = trimmed
     if (domain) {
-      const dnsResult = await dnsPromise
-      const aRecord = dnsResult.find((r) => r.type === 'A')
-      ip = aRecord?.values[0] || trimmed
+      dnsResult = await dnsLookup(targetValue)
+      if (seq !== lookupSeq) return
+      const address = dnsResult.records.find((r) => r.type === 'A') || dnsResult.records.find((r) => r.type === 'AAAA')
+      if (address) ip = address.values[0]?.value || targetValue
     }
 
-    const [geoData, dnsResult, httpData, sslData] = await Promise.all([
+    const [geoResult, ptrResult, httpResult, sslResult, rdapResult, headersResult] = await Promise.all([
       geoLookup(ip),
-      dnsPromise,
-      httpPromise,
-      sslPromise,
+      ptrLookup(ip),
+      domain ? checkReachability(targetValue) : Promise.resolve(null),
+      domain ? fetchSSL(targetValue) : Promise.resolve(null),
+      domain ? rdapLookup(targetValue) : Promise.resolve(null),
+      domain ? fetchHttpHeaders(targetValue) : Promise.resolve(null),
     ])
+    if (seq !== lookupSeq) return
 
-    const dnsMs = Math.round(performance.now() - dnsStart)
-    const totalMs = Math.round(performance.now() - totalStart)
-    const httpMs = httpData?.ms || 0
-
-    // 渲染结果
+    geo.value = geoResult.data
+    geoError.value = geoResult.error
+    geoMs.value = geoResult.ms
+    dnsRecords.value = dnsResult.records
+    dnsError.value = dnsResult.error
+    dnsMs.value = dnsResult.ms
+    ptr.value = ptrResult.values || []
+    httpInfo.value = httpResult
+    httpError.value = httpResult?.error || ''
+    httpMs.value = httpResult?.ms || 0
+    sslCerts.value = sslResult?.certs || []
+    sslError.value = sslResult?.error || ''
+    sslMs.value = sslResult?.ms || 0
+    rdap.value = rdapResult?.data || null
+    rdapError.value = rdapResult?.error || ''
+    httpHeaders.value = headersResult?.headers?.length ? headersResult : null
+    httpHeadersError.value = headersResult?.error || ''
+    totalMs.value = Math.round(performance.now() - started)
     showResults.value = true
-    geo.value = geoData
-    dnsRecords.value = dnsResult
-    latency.dns = dnsMs
-    latency.http = httpMs
-    // 与原版一致：展示的 SSL 时间用 total - dns - http 推算
-    latency.ssl = Math.max(0, totalMs - dnsMs - httpMs)
-    latency.total = totalMs
-    httpInfo.value = httpData
-    sslCerts.value = sslData
 
-    statusClass.value = 'done'
-    statusText.value = `${t.value('done')} — ${totalMs}ms`
+    const errors = [geoError.value, dnsError.value, httpError.value, sslError.value].filter(Boolean)
+    const hasData = !!geo.value || dnsRecords.value.length > 0 || !!httpInfo.value?.ok || sslCerts.value.length > 0
+    if (!hasData) {
+      statusClass.value = 'error'
+      statusText.value = t.value('lookupFailed')
+    } else if (errors.length) {
+      statusClass.value = 'partial'
+      statusText.value = `${t.value('partial')} — ${totalMs.value}ms`
+    } else {
+      statusClass.value = 'done'
+      statusText.value = `${t.value('done')} — ${totalMs.value}ms`
+    }
   } catch (e) {
+    if (seq !== lookupSeq) return
     statusClass.value = 'error'
     statusText.value = `${t.value('error')}: ${e.message}`
   }
 }
 
-/* ---------- 事件处理 ---------- */
 function onSubmit() {
   lookup(target.value)
 }
@@ -256,384 +594,382 @@ function onChipClick(value) {
   lookup(value)
 }
 
-/* ---------- 生命周期 ---------- */
 onMounted(() => {
-  // 与原版一致：进入页面即查询 8.8.8.8
   target.value = '8.8.8.8'
   lookup('8.8.8.8')
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(copyTimer)
 })
 </script>
 
 <template>
-  <div class="node-atlas-app">
-    <AppHeader :show-lang-toggle="true" />
-
-    <main class="shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">{{ t('eyebrow') }}</p>
-          <h1>{{ t('title') }}</h1>
-          <p class="lead">{{ t('lead') }}</p>
-        </div>
-      </header>
-
-      <!-- 搜索栏 -->
-      <section class="search-bar">
-        <form @submit.prevent="onSubmit">
-          <input
-            v-model="target"
-            type="text"
-            placeholder="8.8.8.8 or google.com"
-            autocomplete="off"
-            aria-label="Target IP or domain"
-          />
-          <button type="submit">{{ t('scan') }}</button>
-        </form>
-        <div class="history-strip">
-          <button
+  <UiPage
+    class="node-atlas-app"
+    :title="{ en: 'Node Atlas', zh: '节点情报' }"
+    width="1100px"
+    spacing="compact"
+    :sources="[
+      { name: 'ipquery.io', url: 'https://ipquery.io/' },
+      { name: 'ipinfo.io', url: 'https://ipinfo.io/' },
+      { name: 'AliDNS DoH', url: 'https://www.alidns.com/' },
+      { name: 'crt.sh', url: 'https://crt.sh/' },
+      { name: 'RDAP', url: 'https://rdap.net/' },
+      { name: 'HackerTarget', url: 'https://hackertarget.com/' },
+    ]"
+  >
+    <section class="search-bar">
+      <UiSearch
+        v-model="target"
+        placeholder="8.8.8.8 or google.com"
+        aria-label="Target IP or domain"
+        :submit-label="t('scan')"
+        @submit="onSubmit"
+      >
+        <template #extra>
+          <UiChip
             v-for="h in visibleHistory"
             :key="h"
             class="history-chip"
+            size="sm"
             type="button"
             @click="onChipClick(h)"
-          >{{ h }}</button>
+          >
+            {{ h }}
+          </UiChip>
+          <UiButton v-if="history.length" class="history-clear" variant="link" size="sm" @click="clearHistory">
+            {{ t('clearHistory') }}
+          </UiButton>
+        </template>
+      </UiSearch>
+    </section>
+
+    <div class="status-bar" :class="statusClass" aria-live="polite">
+      <UiLoading v-if="statusClass === 'scanning'" inline :label="statusText" />
+      <template v-else>
+        <UiErrorState
+          v-if="statusClass === 'error' || statusClass === 'partial'"
+          class="status-error"
+          variant="inline"
+          :message="statusText"
+          retry-label=""
+        />
+        <span v-else-if="statusText" class="status-text">{{ statusText }}</span>
+        <UiButton
+          v-if="statusClass === 'error' || statusClass === 'partial'"
+          variant="secondary"
+          size="sm"
+          @click="onSubmit"
+        >
+          {{ t('retry') }}
+        </UiButton>
+      </template>
+      <UiButton v-if="showResults" class="status-copy" variant="secondary" size="sm" @click="copyResults">
+        {{ copied ? t('copied') : t('copyJson') }}
+      </UiButton>
+    </div>
+
+    <div v-if="showResults" class="results">
+      <UiCard class="geo-card" :label="t('geolocation')">
+        <template #actions>
+          <span v-if="!isDomain && geoMs" class="card-time">{{ geoMs }} ms</span>
+        </template>
+        <UiErrorState v-if="geoError" :message="t('geoUnavailable')" retry-label="" />
+        <p v-else-if="!geo" class="geo-empty">{{ t('noData') }}</p>
+        <div v-else class="geo-grid">
+          <div class="geo-item">
+            <div class="g-label">{{ t('ip') }}</div>
+            <div class="g-value">{{ geo.ip }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('country') }}</div>
+            <div class="g-value">
+              {{ geoCountryLabel }}
+              <small v-if="geo.countryCode" class="g-code">{{ geo.countryCode }}</small>
+            </div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('region') }}</div>
+            <div class="g-value">{{ geo.region || '—' }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('city') }}</div>
+            <div class="g-value">{{ geo.city || '—' }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('isp') }}</div>
+            <div class="g-value">{{ geo.isp || '—' }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('org') }}</div>
+            <div class="g-value">{{ geo.org || '—' }}</div>
+          </div>
+          <div v-if="geo.asn" class="geo-item">
+            <div class="g-label">{{ t('asn') }}</div>
+            <div class="g-value">{{ geo.asn }}</div>
+          </div>
+          <div v-if="geo.risk" class="geo-item">
+            <div class="g-label">{{ t('risk') }}</div>
+            <div class="g-value">
+              <span v-if="riskFlags.length" class="risk-tags">
+                <UiBadge v-for="flag in riskFlags" :key="flag" size="sm" mono>{{ flag }}</UiBadge>
+              </span>
+              <span v-else>{{ t('noRiskFlags') }}</span>
+              <small v-if="geo.risk.score != null" class="g-code">{{ t('riskScore') }} {{ geo.risk.score }}</small>
+            </div>
+          </div>
+          <div v-if="ptr.length" class="geo-item">
+            <div class="g-label">{{ t('reverseDns') }}</div>
+            <div class="g-value">{{ ptr.join(', ') }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('timezone') }}</div>
+            <div class="g-value">{{ geo.tz || '—' }}</div>
+          </div>
+          <div class="geo-item">
+            <div class="g-label">{{ t('coords') }}</div>
+            <div class="g-value">
+              <template v-if="geo.lat != null">
+                {{ fmtCoord(geo.lat) }}, {{ fmtCoord(geo.lon) }}
+                <a :href="mapUrl" target="_blank" rel="noreferrer">{{ t('mapLink') }}</a>
+              </template>
+              <template v-else>—</template>
+            </div>
+          </div>
         </div>
-      </section>
+      </UiCard>
 
-      <!-- 状态条 -->
-      <div class="status-bar" :class="statusClass">{{ statusText }}</div>
-
-      <!-- 结果区 -->
-      <div v-if="showResults" class="results">
-        <!-- 地理位置卡片 -->
-        <section class="card geo-card">
-          <div class="card-head">
-            <span class="card-kicker">{{ t('geolocation') }}</span>
-          </div>
-          <div class="geo-grid">
-            <p v-if="!geo" class="geo-empty">{{ t('noData') }}</p>
-            <template v-else>
-              <div class="geo-item">
-                <div class="g-label">{{ t('ip') }}</div>
-                <div class="g-value">{{ geo.ip }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('country') }}</div>
-                <div class="g-value">{{ geo.country || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('region') }}</div>
-                <div class="g-value">{{ geo.region || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('city') }}</div>
-                <div class="g-value">{{ geo.city || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('isp') }}</div>
-                <div class="g-value">{{ geo.isp || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('org') }}</div>
-                <div class="g-value">{{ geo.org || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('timezone') }}</div>
-                <div class="g-value">{{ geo.tz || '—' }}</div>
-              </div>
-              <div class="geo-item">
-                <div class="g-label">{{ t('coords') }}</div>
-                <div class="g-value">
-                  <template v-if="geo.lat != null">
-                    {{ geo.lat }}, {{ geo.lon }}
-                    <a :href="mapUrl" target="_blank" rel="noreferrer">{{ t('mapLink') }}</a>
-                  </template>
-                  <template v-else>—</template>
-                </div>
-              </div>
-            </template>
-          </div>
-        </section>
-
-        <!-- DNS 记录 -->
-        <section class="card">
-          <div class="card-head">
-            <span class="card-kicker">{{ t('dnsRecords') }}</span>
-          </div>
-          <div class="dns-grid">
-            <p v-if="!dnsRecords.length" class="dns-empty">{{ t('noData') }}</p>
-            <div
-              v-for="r in dnsRecords"
-              :key="r.type"
-              class="dns-row"
-            >
-              <span class="dns-type">{{ r.type }}</span>
-              <div class="dns-values">
-                <span
-                  v-for="(v, i) in r.values"
-                  :key="i"
-                  class="dns-val"
-                >{{ v }}</span>
-              </div>
+      <UiCard v-if="isDomain" :label="t('dnsRecords')">
+        <UiErrorState v-if="dnsError" :message="dnsError" retry-label="" />
+        <p v-else-if="!dnsRecords.length" class="dns-empty">{{ t('noData') }}</p>
+        <div v-else class="dns-grid">
+          <div v-for="r in dnsRecords" :key="r.type" class="dns-row">
+            <span class="dns-type">
+              {{ r.type }}
+              <small v-if="r.values[0]?.ttl" class="dns-ttl">TTL {{ r.values[0].ttl }}s</small>
+            </span>
+            <div class="dns-values">
+              <span v-for="(v, i) in r.values" :key="i" class="dns-val">{{ v.value }}</span>
             </div>
           </div>
-        </section>
+        </div>
+      </UiCard>
 
-        <!-- 延迟 -->
-        <section class="card">
-          <div class="card-head">
-            <span class="card-kicker">{{ t('latency') }}</span>
+      <UiCard v-if="isDomain" :label="t('rdapTitle')">
+        <UiErrorState v-if="rdapError" :message="rdapError" retry-label="" />
+        <p v-else-if="!hasRdapData" class="dns-empty">{{ t('noData') }}</p>
+        <div v-else class="kv-list">
+          <div v-if="rdap.registrar" class="kv-row">
+            <span class="kv-key">{{ t('registrar') }}</span>
+            <span class="kv-val">{{ rdap.registrar }}</span>
           </div>
-          <div class="latency-body">
-            <div
-              v-for="item in latencyItems"
-              :key="item.label"
-              class="latency-item"
-            >
-              <div class="l-label">{{ item.label }}</div>
-              <div class="l-value" :class="item.cls">{{ item.value }}</div>
-              <div class="l-unit">ms</div>
-            </div>
+          <div v-if="rdap.created" class="kv-row">
+            <span class="kv-key">{{ t('rdapCreated') }}</span>
+            <span class="kv-val">{{ rdap.created }}</span>
           </div>
-        </section>
+          <div v-if="rdap.expires" class="kv-row">
+            <span class="kv-key">{{ t('rdapExpires') }}</span>
+            <span class="kv-val">{{ rdap.expires }}</span>
+          </div>
+          <div v-if="rdap.updated" class="kv-row">
+            <span class="kv-key">{{ t('rdapUpdated') }}</span>
+            <span class="kv-val">{{ rdap.updated }}</span>
+          </div>
+          <div v-if="rdap.status.length" class="kv-row">
+            <span class="kv-key">{{ t('rdapStatus') }}</span>
+            <span class="kv-val status-tags">
+              <UiBadge v-for="s in rdap.status" :key="s" size="sm" mono>{{ rdapStatusLabel(s) }}</UiBadge>
+            </span>
+          </div>
+          <div v-if="rdap.nameservers.length" class="kv-row">
+            <span class="kv-key">{{ t('rdapNameservers') }}</span>
+            <span class="kv-val">{{ rdap.nameservers.join(', ') }}</span>
+          </div>
+        </div>
+      </UiCard>
 
-        <!-- HTTP 响应（仅有数据时渲染） -->
-        <section v-if="httpInfo && !httpInfo.error" class="card">
-          <div class="card-head">
-            <span class="card-kicker">{{ t('httpHeaders') }}</span>
-          </div>
+      <UiCard v-if="isDomain" :label="t('latency')">
+        <div class="latency-body">
+          <UiStat
+            v-for="item in latencyItems"
+            :key="item.label"
+            :label="item.label"
+            :value="item.value"
+            sub="ms"
+            :tone="latTone(item.cls)"
+            card
+            compact
+          />
+        </div>
+      </UiCard>
+
+      <UiCard v-if="isDomain" :label="t('httpCheck')">
+        <UiErrorState v-if="httpError" :message="httpError" retry-label="" />
+        <template v-else-if="httpInfo">
           <div class="kv-list">
             <div class="kv-row">
-              <span class="kv-key">status</span>
-              <span class="kv-val">{{ httpInfo.status }}</span>
+              <span class="kv-key">{{ t('result') }}</span>
+              <span class="kv-val">{{ httpInfo.ok ? t('reachable') : t('unreachable') }}</span>
             </div>
             <div class="kv-row">
-              <span class="kv-key">type</span>
-              <span class="kv-val">{{ httpInfo.type }}</span>
+              <span class="kv-key">{{ t('mode') }}</span>
+              <span class="kv-val">{{ httpInfo.type || '—' }}</span>
             </div>
             <div class="kv-row">
-              <span class="kv-key">response time</span>
+              <span class="kv-key">{{ t('responseTime') }}</span>
               <span class="kv-val">{{ httpInfo.ms }} ms</span>
             </div>
           </div>
-        </section>
-
-        <!-- SSL 证书（仅有数据时渲染） -->
-        <section v-if="sslCerts.length" class="card">
-          <div class="card-head">
-            <span class="card-kicker">{{ t('sslCerts') }}</span>
-          </div>
-          <div class="ssl-body">
-            <div
-              v-for="c in sslCerts"
-              :key="c.id"
-              class="ssl-item"
-            >
-              <div class="ssl-name">{{ c.name }}</div>
-              <div class="ssl-meta">
-                {{ t('issuer') }}: {{ sslIssuer(c) }}<br />
-                {{ t('issued') }}: {{ sslDateShort(c.issued) }} ·
-                {{ t('expires') }}: {{ sslDateShort(c.expires) }}
-              </div>
+          <p class="card-note">{{ t('httpOpaque') }}</p>
+        </template>
+        <details v-if="httpHeaders?.headers.length" class="headers-details">
+          <summary>{{ t('headers') }} ({{ httpHeaders.headers.length }})</summary>
+          <div class="headers-status">{{ httpHeaders.statusLine }}</div>
+          <div class="headers-list">
+            <div v-for="(h, i) in httpHeaders.headers" :key="i" class="header-row">
+              <span class="header-name">{{ h.name }}</span>
+              <span class="header-value">{{ h.value }}</span>
             </div>
           </div>
-        </section>
-      </div>
-    </main>
+          <p class="card-note">{{ t('headersSource') }}</p>
+        </details>
+        <p v-else-if="httpHeadersError" class="card-note">{{ httpHeadersError }}</p>
+      </UiCard>
 
-    <AppFooter />
-  </div>
+      <UiCard v-if="isDomain" :label="t('sslCerts')">
+        <UiErrorState v-if="sslError" :message="sslError" retry-label="" />
+        <p v-else-if="!sslCerts.length" class="dns-empty">{{ t('noData') }}</p>
+        <div v-else class="ssl-body">
+          <div v-for="c in sslCerts" :key="c.id" class="ssl-item">
+            <div class="ssl-name">{{ c.name }}</div>
+            <div class="ssl-meta">
+              {{ t('issuer') }}: {{ sslIssuer(c) }}<br />
+              {{ t('issued') }}: {{ sslDateShort(c.issued) }} · {{ t('expires') }}: {{ sslDateShort(c.expires) }}
+            </div>
+          </div>
+        </div>
+        <a v-if="sslLabsUrl" class="card-link" :href="sslLabsUrl" target="_blank" rel="noreferrer"
+          >{{ t('sslReport') }} ↗</a
+        >
+      </UiCard>
+    </div>
+  </UiPage>
 </template>
 
 <style scoped>
-/* ============================================================
-   Node Atlas — 深色网络情报主题
-   原 :root 变量迁移到组件根类 .node-atlas-app，
-   --ok-* 令牌在此覆盖，影响 AppHeader / AppFooter 等共享组件。
-   ============================================================ */
-
-.node-atlas-app {
-  /* 主题色 */
-  --bg: #08111f;
-  --bg-2: #0b1830;
-  --line: rgba(125, 197, 255, 0.18);
-  --text: #e9f4ff;
-  --muted: #87a3c4;
-  --accent: #56d3ff;
-  --accent-2: #8d7bff;
-  --panel: rgba(8, 20, 37, 0.72);
-  --green: #34d399;
-  --yellow: #fbbf24;
-  --red: #f87171;
-
-  /* 共享组件主题映射 */
-  --ok-bg: var(--bg);
-  --ok-panel: var(--panel);
-  --ok-line: var(--line);
-  --ok-text: var(--text);
-  --ok-muted: var(--muted);
-  --ok-accent: var(--accent);
-  --ok-footer-line: var(--line);
-  --ok-footer-text: var(--muted);
-  --ok-footer-link: var(--accent);
-  --ok-topbar-line: rgba(128, 128, 128, 0.1);
-
-  color-scheme: dark;
-
-  min-height: 100vh;
-  margin: 0;
-  color: var(--text);
-  font-family: "Space Grotesk", system-ui, sans-serif;
-  background:
-    linear-gradient(rgba(98,163,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(98,163,255,0.06) 1px, transparent 1px),
-    radial-gradient(circle at top, #102348 0%, #091325 45%, #050b14 100%);
-  background-size: 28px 28px, 28px 28px, auto;
-}
-
-.node-atlas-app a { color: var(--accent); text-decoration: none; }
-.node-atlas-app a:hover { text-decoration: underline; }
-.node-atlas-app h1,
-.node-atlas-app h2,
-.node-atlas-app h3,
-.node-atlas-app p,
-.node-atlas-app span,
-.node-atlas-app strong,
-.node-atlas-app small { margin: 0; }
-
-/* ---------- 主容器 ---------- */
-.shell {
-  width: min(1000px, calc(100% - 1.25rem));
-  margin: 0 auto;
-  padding: 1rem 0 3rem;
-}
-
-.masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  padding: 0.3rem 0 1rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.eyebrow {
-  font-family: "JetBrains Mono", monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  color: var(--accent);
-}
-
-.masthead h1 {
-  margin-top: 0.25rem;
-  font-size: clamp(2rem, 5vw, 3rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-/* ---------- 搜索 ---------- */
 .search-bar {
-  margin-top: 0.8rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.search-bar form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.search-bar input {
-  flex: 1;
-  font: inherit;
-  font-family: "JetBrains Mono", monospace;
-  height: 2.6rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--line);
-  background: rgba(8, 20, 37, 0.6);
-  color: var(--text);
-  font-size: 0.92rem;
-}
-
-.search-bar button {
-  font: inherit;
-  height: 2.6rem;
-  padding: 0 1.2rem;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--bg);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.history-strip {
-  display: flex;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-  margin-top: 0.4rem;
+  padding: 0.15rem 0 0.75rem;
+  border-bottom: 1px solid var(--ok-line);
 }
 
 .history-chip {
-  font: inherit;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.7rem;
+  font-family: var(--ok-mono);
 }
 
-.history-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ---------- 状态条 ---------- */
 .status-bar {
-  padding: 0.4rem 0;
-  font-family: "JetBrains Mono", monospace;
+  display: flex;
+  min-height: 1.8rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0;
+  font-family: var(--ok-mono);
   font-size: 0.74rem;
-  color: var(--muted);
-  min-height: 1.4rem;
+  color: var(--ok-muted);
 }
 
-.status-bar.scanning { color: var(--accent); }
-.status-bar.done { color: var(--green); }
-.status-bar.error { color: var(--red); }
+.status-bar.scanning :deep(.ui-loading) {
+  padding: 0;
+  color: var(--ok-accent);
+  font-family: var(--ok-mono);
+}
 
-/* ---------- 结果区 ---------- */
+.status-bar.done .status-text {
+  color: var(--ok-up);
+}
+
+.status-error {
+  flex: 1 1 18rem;
+}
+
+.status-copy {
+  margin-left: auto;
+}
+
 .results {
-  margin-top: 0.8rem;
   display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
   gap: 0.8rem;
+  margin-top: 0.9rem;
 }
 
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1rem;
+.results :deep(.ui-card-label) {
+  color: var(--ok-accent);
+  font-family: var(--ok-mono);
 }
 
-.card-head {
-  margin-bottom: 0.6rem;
+.card-time {
+  color: var(--ok-muted);
+  font-family: var(--ok-mono);
+  font-size: 0.72rem;
 }
 
-.card-kicker {
-  font-family: "JetBrains Mono", monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.68rem;
-  color: var(--accent);
+.card-note {
+  color: var(--ok-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
-/* ---------- 地理位置 ---------- */
+.card-link {
+  display: inline-block;
+  font-size: 0.76rem;
+}
+
+.headers-details {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ok-line);
+}
+
+.headers-details summary {
+  color: var(--ok-accent);
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.headers-status {
+  margin-top: 0.4rem;
+  font-family: var(--ok-mono);
+  font-size: 0.76rem;
+}
+
+.headers-list {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.3rem;
+}
+
+.header-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--ok-line);
+  font-size: 0.72rem;
+}
+
+.header-name {
+  color: var(--ok-muted);
+  font-family: var(--ok-mono);
+  word-break: break-all;
+}
+
+.header-value {
+  font-family: var(--ok-mono);
+  word-break: break-all;
+}
+
 .geo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -641,55 +977,71 @@ onMounted(() => {
 }
 
 .geo-empty {
-  color: var(--muted);
+  color: var(--ok-muted);
 }
 
 .geo-item {
   padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--ok-line);
 }
 
 .geo-item .g-label {
+  color: var(--ok-muted);
   font-size: 0.66rem;
-  color: var(--muted);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .geo-item .g-value {
-  font-weight: 600;
-  font-size: 0.9rem;
   margin-top: 0.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.geo-item .g-code {
+  margin-left: 0.35rem;
+  color: var(--ok-muted);
+  font-family: var(--ok-mono);
+  font-size: 0.7rem;
+}
+
+.risk-tags,
+.status-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .geo-item .g-value a {
   font-size: 0.78rem;
 }
 
-/* ---------- DNS ---------- */
 .dns-grid {
   display: grid;
   gap: 0.5rem;
 }
 
 .dns-empty {
-  color: var(--muted);
+  color: var(--ok-muted);
 }
 
 .dns-row {
   display: grid;
-  grid-template-columns: 60px 1fr;
+  grid-template-columns: 80px 1fr;
   gap: 0.5rem;
   align-items: start;
   padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--ok-line);
 }
 
 .dns-type {
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  color: var(--ok-accent);
+  font-family: var(--ok-mono);
   font-size: 0.82rem;
-  color: var(--accent-2);
+  font-weight: 700;
 }
 
 .dns-values {
@@ -699,47 +1051,23 @@ onMounted(() => {
 }
 
 .dns-val {
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--ok-mono);
   font-size: 0.78rem;
   word-break: break-all;
 }
 
-/* ---------- 延迟 ---------- */
+.dns-ttl {
+  color: var(--ok-muted);
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+
 .latency-body {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 0.5rem;
 }
 
-.latency-item {
-  text-align: center;
-  padding: 0.6rem;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.latency-item .l-label {
-  font-size: 0.66rem;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.latency-item .l-value {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-top: 0.15rem;
-}
-
-.latency-item .l-value.fast { color: var(--green); }
-.latency-item .l-value.mid { color: var(--yellow); }
-.latency-item .l-value.slow { color: var(--red); }
-
-.latency-item .l-unit {
-  font-size: 0.68rem;
-  color: var(--muted);
-}
-
-/* ---------- KV 列表 ---------- */
 .kv-list {
   display: grid;
   gap: 0;
@@ -750,22 +1078,21 @@ onMounted(() => {
   grid-template-columns: 180px 1fr;
   gap: 0.5rem;
   padding: 0.35rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--ok-line);
   font-size: 0.8rem;
 }
 
 .kv-key {
-  font-family: "JetBrains Mono", monospace;
-  color: var(--accent-2);
+  color: var(--ok-accent);
+  font-family: var(--ok-mono);
   font-size: 0.76rem;
 }
 
 .kv-val {
+  color: var(--ok-muted);
   word-break: break-all;
-  color: var(--muted);
 }
 
-/* ---------- SSL ---------- */
 .ssl-body {
   display: grid;
   gap: 0.5rem;
@@ -773,47 +1100,33 @@ onMounted(() => {
 
 .ssl-item {
   padding: 0.5rem;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--ok-line);
   font-size: 0.8rem;
 }
 
 .ssl-item .ssl-name {
-  font-weight: 600;
   margin-bottom: 0.2rem;
+  font-weight: 600;
 }
 
 .ssl-item .ssl-meta {
-  color: var(--muted);
+  color: var(--ok-muted);
   font-size: 0.74rem;
   line-height: 1.5;
 }
 
-/* ---------- 加载（保留以备扩展） ---------- */
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--muted);
-  padding: 0.5rem 0;
-  font-size: 0.85rem;
-}
-
-.spinner {
-  width: 0.9rem;
-  height: 0.9rem;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ---------- 响应式 ---------- */
 @media (max-width: 720px) {
-  .masthead { flex-direction: column; gap: 0.5rem; }
-  .geo-grid { grid-template-columns: repeat(2, 1fr); }
-  .latency-body { grid-template-columns: repeat(2, 1fr); }
-  .kv-row { grid-template-columns: 120px 1fr; }
+  .geo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .latency-body {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .kv-row {
+    grid-template-columns: 120px 1fr;
+  }
+  .dns-row {
+    grid-template-columns: 70px 1fr;
+  }
 }
 </style>

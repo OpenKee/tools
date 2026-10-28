@@ -1,0 +1,2442 @@
+{
+  "_meta": {
+    "note": "Generated static country facts. Chinese capitals from Natural Earth; time zones from country-list-js; driving side and government from country-json. populationEst is a fallback used only when World Bank population is unavailable.",
+    "generated": "2026-10-26"
+  },
+  "ABW": {
+    "capitalZh": ["奥拉涅斯塔德"],
+    "timezones": ["America/Aruba"],
+    "populationEst": 105845,
+    "drive": "right",
+    "government": "Nonmetropolitan Territory of The Netherlands"
+  },
+  "AFG": {
+    "capitalTimezone": "Asia/Kabul",
+    "capitalZh": ["喀布尔"],
+    "capitalLat": 34.518636,
+    "capitalLng": 69.181314,
+    "timezones": ["Asia/Kabul"],
+    "populationEst": 37172386,
+    "drive": "right",
+    "government": "Islamic Emirate"
+  },
+  "AGO": {
+    "capitalTimezone": "Africa/Luanda",
+    "capitalZh": ["罗安达"],
+    "capitalLat": -8.83634,
+    "capitalLng": 13.232481,
+    "timezones": ["Africa/Luanda"],
+    "populationEst": 30809762,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "AIA": {
+    "capitalZh": ["瓦利"],
+    "timezones": ["America/Anguilla"],
+    "populationEst": 15094,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "ALA": {
+    "capitalZh": ["玛丽港"],
+    "timezones": ["Europe/Mariehamn"],
+    "populationEst": 30000,
+    "drive": "right",
+    "government": "Autonomous Area"
+  },
+  "ALB": {
+    "capitalTimezone": "Europe/Tirane",
+    "capitalZh": ["地拉那"],
+    "capitalLat": 41.327541,
+    "capitalLng": 19.818883,
+    "timezones": ["Europe/Tirane"],
+    "populationEst": 2866376,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "AND": {
+    "capitalTimezone": "Europe/Madrid",
+    "capitalZh": ["安道尔城"],
+    "capitalLat": 42.500001,
+    "capitalLng": 1.516486,
+    "timezones": ["Europe/Andorra"],
+    "populationEst": 77006,
+    "drive": "right",
+    "government": "Parliamentary Coprincipality"
+  },
+  "ARE": {
+    "capitalTimezone": "Asia/Dubai",
+    "capitalZh": ["阿布扎比"],
+    "capitalLat": 24.466684,
+    "capitalLng": 54.366593,
+    "timezones": ["Asia/Dubai"],
+    "populationEst": 9630959,
+    "drive": "right",
+    "government": "Emirate Federation"
+  },
+  "ARG": {
+    "capitalTimezone": "America/Argentina/Buenos_Aires",
+    "capitalZh": ["布宜诺斯艾利斯"],
+    "capitalLat": -34.600556,
+    "capitalLng": -58.399477,
+    "timezones": [
+      "America/Argentina/Buenos_Aires",
+      "America/Argentina/Catamarca",
+      "America/Argentina/Cordoba",
+      "America/Argentina/Jujuy",
+      "America/Argentina/La_Rioja",
+      "America/Argentina/Mendoza",
+      "America/Argentina/Rio_Gallegos",
+      "America/Argentina/Salta",
+      "America/Argentina/San_Juan",
+      "America/Argentina/San_Luis",
+      "America/Argentina/Tucuman",
+      "America/Argentina/Ushuaia"
+    ],
+    "populationEst": 44494502,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "ARM": {
+    "capitalTimezone": "Asia/Yerevan",
+    "capitalZh": ["埃里温"],
+    "capitalLat": 40.183097,
+    "capitalLng": 44.511606,
+    "timezones": ["Asia/Yerevan"],
+    "populationEst": 2951776,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ASM": {
+    "capitalZh": ["帕果帕果"],
+    "timezones": ["Pacific/Pago_Pago"],
+    "populationEst": 55465,
+    "drive": "right",
+    "government": "US Territory"
+  },
+  "ATA": {
+    "timezones": [
+      "Antarctica/Casey",
+      "Antarctica/Davis",
+      "Antarctica/DumontDUrville",
+      "Antarctica/Mawson",
+      "Antarctica/McMurdo",
+      "Antarctica/Palmer",
+      "Antarctica/Rothera",
+      "Antarctica/Syowa",
+      "Antarctica/Troll",
+      "Antarctica/Vostok"
+    ],
+    "government": "Co-administrated"
+  },
+  "ATF": {
+    "capitalZh": ["法兰西港"],
+    "timezones": ["Indian/Kerguelen"],
+    "government": "Overseas Territory of France"
+  },
+  "ATG": {
+    "capitalTimezone": "America/Antigua",
+    "capitalZh": ["圣约翰"],
+    "capitalLat": 17.118037,
+    "capitalLng": -61.850034,
+    "timezones": ["America/Antigua"],
+    "populationEst": 96286,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "AUS": {
+    "capitalTimezone": "Australia/Sydney",
+    "capitalZh": ["堪培拉"],
+    "capitalLat": -35.283029,
+    "capitalLng": 149.129026,
+    "timezones": [
+      "Antarctica/Macquarie",
+      "Australia/Adelaide",
+      "Australia/Brisbane",
+      "Australia/Broken_Hill",
+      "Australia/Darwin",
+      "Australia/Eucla",
+      "Australia/Hobart",
+      "Australia/Lindeman",
+      "Australia/Lord_Howe",
+      "Australia/Melbourne",
+      "Australia/Perth",
+      "Australia/Sydney"
+    ],
+    "populationEst": 24982688,
+    "drive": "left",
+    "government": "Federation Constitutional Monarchy"
+  },
+  "AUT": {
+    "capitalTimezone": "Europe/Vienna",
+    "capitalZh": ["维也纳"],
+    "capitalLat": 48.201961,
+    "capitalLng": 16.364693,
+    "timezones": ["Europe/Vienna"],
+    "populationEst": 8840521,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "AZE": {
+    "capitalTimezone": "Asia/Baku",
+    "capitalZh": ["巴库"],
+    "capitalLat": 40.397218,
+    "capitalLng": 49.860271,
+    "timezones": ["Asia/Baku"],
+    "populationEst": 9939800,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "BDI": {
+    "capitalZh": ["基特加"],
+    "timezones": ["Africa/Bujumbura"],
+    "populationEst": 11175378,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BEL": {
+    "capitalTimezone": "Europe/Brussels",
+    "capitalZh": ["布鲁塞尔"],
+    "capitalLat": 50.835263,
+    "capitalLng": 4.331371,
+    "timezones": ["Europe/Brussels"],
+    "populationEst": 11433256,
+    "drive": "right",
+    "government": "Federation Constitutional Monarchy"
+  },
+  "BEN": {
+    "capitalZh": ["波多诺伏"],
+    "timezones": ["Africa/Porto-Novo"],
+    "populationEst": 11485048,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BFA": {
+    "capitalTimezone": "Africa/Ouagadougou",
+    "capitalZh": ["瓦加杜古"],
+    "capitalLat": 12.372262,
+    "capitalLng": -1.52667,
+    "timezones": ["Africa/Ouagadougou"],
+    "populationEst": 19751535,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BGD": {
+    "capitalTimezone": "Asia/Dhaka",
+    "capitalZh": ["达卡"],
+    "capitalLat": 23.725006,
+    "capitalLng": 90.406634,
+    "timezones": ["Asia/Dhaka"],
+    "populationEst": 161356039,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "BGR": {
+    "capitalTimezone": "Europe/Sofia",
+    "capitalZh": ["索非亚"],
+    "capitalLat": 42.685295,
+    "capitalLng": 23.314708,
+    "timezones": ["Europe/Sofia"],
+    "populationEst": 7025037,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BHR": {
+    "capitalTimezone": "Asia/Bahrain",
+    "capitalZh": ["麦纳麦"],
+    "capitalLat": 26.236136,
+    "capitalLng": 50.583052,
+    "timezones": ["Asia/Bahrain"],
+    "populationEst": 1569439,
+    "drive": "right",
+    "government": "Monarchy (Emirate)"
+  },
+  "BHS": {
+    "capitalTimezone": "America/Nassau",
+    "capitalZh": ["拿骚"],
+    "capitalLat": 25.08339,
+    "capitalLng": -77.350044,
+    "timezones": ["America/Nassau"],
+    "populationEst": 385640,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "BIH": {
+    "capitalTimezone": "Europe/Sarajevo",
+    "capitalZh": ["萨拉热窝"],
+    "capitalLat": 43.850022,
+    "capitalLng": 18.383002,
+    "timezones": ["Europe/Sarajevo"],
+    "populationEst": 3323929,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "BLM": {
+    "capitalZh": ["古斯塔维亚"],
+    "timezones": ["America/St_Barthelemy"],
+    "populationEst": 11000,
+    "drive": "right",
+    "government": "Overseas Collectivity of France"
+  },
+  "SHN": {
+    "capitalZh": ["詹姆斯敦"],
+    "timezones": ["Atlantic/St_Helena"],
+    "populationEst": 5300,
+    "drive": "left",
+    "government": "British Overseas Territory"
+  },
+  "BLR": {
+    "capitalTimezone": "Europe/Minsk",
+    "capitalZh": ["明斯克"],
+    "capitalLat": 53.901923,
+    "capitalLng": 27.564681,
+    "timezones": ["Europe/Minsk"],
+    "populationEst": 9483499,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BLZ": {
+    "capitalTimezone": "America/Belize",
+    "capitalZh": ["贝尔墨邦"],
+    "capitalLat": 17.252034,
+    "capitalLng": -88.767073,
+    "timezones": ["America/Belize"],
+    "populationEst": 383071,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "BMU": {
+    "capitalTimezone": "Atlantic/Bermuda",
+    "capitalZh": ["哈密尔顿"],
+    "capitalLat": 32.29419,
+    "capitalLng": -64.783937,
+    "timezones": ["Atlantic/Bermuda"],
+    "populationEst": 63973,
+    "drive": "right",
+    "government": "Dependent Territory of the UK"
+  },
+  "BOL": {
+    "capitalTimezone": "America/La_Paz",
+    "capitalZh": ["苏克雷"],
+    "capitalLat": -19.040971,
+    "capitalLng": -65.259516,
+    "timezones": ["America/La_Paz"],
+    "populationEst": 11353142,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "BES": {
+    "capitalZh": ["克拉伦代克", "奥拉涅斯塔德", "博特姆"],
+    "timezones": ["America/Kralendijk"],
+    "populationEst": 26000,
+    "drive": "right",
+    "government": "Special Municipality of the Netherlands"
+  },
+  "BRA": {
+    "capitalTimezone": "America/Sao_Paulo",
+    "capitalZh": ["巴西利亚"],
+    "capitalLat": -15.781394,
+    "capitalLng": -47.917998,
+    "timezones": [
+      "America/Araguaina",
+      "America/Bahia",
+      "America/Belem",
+      "America/Boa_Vista",
+      "America/Campo_Grande",
+      "America/Cuiaba",
+      "America/Eirunepe",
+      "America/Fortaleza",
+      "America/Maceio",
+      "America/Manaus",
+      "America/Noronha",
+      "America/Porto_Velho",
+      "America/Recife",
+      "America/Rio_Branco",
+      "America/Santarem",
+      "America/Sao_Paulo"
+    ],
+    "populationEst": 209469333,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "BRB": {
+    "capitalTimezone": "Australia/Perth",
+    "capitalZh": ["布里奇顿"],
+    "capitalLat": 13.102003,
+    "capitalLng": -59.616527,
+    "timezones": ["America/Barbados"],
+    "populationEst": 286641,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "BRN": {
+    "capitalTimezone": "Asia/Brunei",
+    "capitalZh": ["斯里巴加湾"],
+    "capitalLat": 4.883331,
+    "capitalLng": 114.933284,
+    "timezones": ["Asia/Brunei"],
+    "populationEst": 428962,
+    "drive": "left",
+    "government": "Monarchy (Sultanate)"
+  },
+  "BTN": {
+    "capitalTimezone": "Asia/Thimphu",
+    "capitalZh": ["廷布"],
+    "capitalLat": 27.472986,
+    "capitalLng": 89.639014,
+    "timezones": ["Asia/Thimphu"],
+    "populationEst": 754394,
+    "drive": "left",
+    "government": "Monarchy"
+  },
+  "BVT": {
+    "government": "Dependent Territory of Norway"
+  },
+  "BWA": {
+    "capitalTimezone": "Africa/Gaborone",
+    "capitalZh": ["嘉柏隆里"],
+    "capitalLat": -24.646314,
+    "capitalLng": 25.911948,
+    "timezones": ["Africa/Gaborone"],
+    "populationEst": 2254126,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "CAF": {
+    "capitalTimezone": "Africa/Bangui",
+    "capitalZh": ["班吉"],
+    "capitalLat": 4.366644,
+    "capitalLng": 18.558288,
+    "timezones": ["Africa/Bangui"],
+    "populationEst": 4666377,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CAN": {
+    "capitalTimezone": "America/Montreal",
+    "capitalZh": ["渥太华"],
+    "capitalLat": 45.418643,
+    "capitalLng": -75.701961,
+    "timezones": [
+      "America/Atikokan",
+      "America/Blanc-Sablon",
+      "America/Cambridge_Bay",
+      "America/Creston",
+      "America/Dawson",
+      "America/Dawson_Creek",
+      "America/Edmonton",
+      "America/Fort_Nelson",
+      "America/Glace_Bay",
+      "America/Goose_Bay",
+      "America/Halifax",
+      "America/Inuvik",
+      "America/Iqaluit",
+      "America/Moncton",
+      "America/Rankin_Inlet",
+      "America/Regina",
+      "America/Resolute",
+      "America/St_Johns",
+      "America/Swift_Current",
+      "America/Toronto",
+      "America/Vancouver",
+      "America/Whitehorse",
+      "America/Winnipeg"
+    ],
+    "populationEst": 37057765,
+    "drive": "right",
+    "government": "Constitutional Monarchy, Federation"
+  },
+  "CCK": {
+    "capitalZh": ["西岛"],
+    "timezones": ["Indian/Cocos"],
+    "populationEst": 596,
+    "drive": "left",
+    "government": "Territory of Australia"
+  },
+  "CHE": {
+    "capitalTimezone": "Europe/Zurich",
+    "capitalZh": ["伯尔尼"],
+    "capitalLat": 46.916683,
+    "capitalLng": 7.466976,
+    "timezones": ["Europe/Zurich"],
+    "populationEst": 8513227,
+    "drive": "right",
+    "government": "Federation"
+  },
+  "CHL": {
+    "capitalTimezone": "America/Sao_Paulo",
+    "capitalZh": ["圣地亚哥"],
+    "capitalLat": -33.448068,
+    "capitalLng": -70.668987,
+    "timezones": ["America/Coyhaique", "America/Punta_Arenas", "America/Santiago", "Pacific/Easter"],
+    "populationEst": 18729160,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CHN": {
+    "capitalTimezone": "Asia/Harbin",
+    "capitalZh": ["北京"],
+    "capitalLat": 39.930838,
+    "capitalLng": 116.38634,
+    "timezones": ["Asia/Shanghai", "Asia/Urumqi"],
+    "populationEst": 1392730000,
+    "drive": "right",
+    "government": "People's Republic"
+  },
+  "CIV": {
+    "capitalTimezone": "Africa/Abidjan",
+    "capitalZh": ["亚穆苏克罗"],
+    "capitalLat": 6.818381,
+    "capitalLng": -5.275503,
+    "timezones": ["Africa/Abidjan"],
+    "populationEst": 25069229,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CMR": {
+    "capitalTimezone": "Africa/Douala",
+    "capitalZh": ["雅温得"],
+    "capitalLat": 3.868647,
+    "capitalLng": 11.514705,
+    "timezones": ["Africa/Douala"],
+    "populationEst": 25216237,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "COD": {
+    "capitalTimezone": "Africa/Kinshasa",
+    "capitalZh": ["金沙萨"],
+    "capitalLat": -4.327778,
+    "capitalLng": 15.313026,
+    "timezones": ["Africa/Kinshasa", "Africa/Lubumbashi"],
+    "drive": "right",
+    "government": "Republic"
+  },
+  "COG": {
+    "capitalTimezone": "Africa/Brazzaville",
+    "capitalZh": ["布拉柴维尔"],
+    "capitalLat": -4.25724,
+    "capitalLng": 15.282744,
+    "timezones": ["Africa/Brazzaville"],
+    "drive": "right",
+    "government": "Republic"
+  },
+  "COK": {
+    "capitalZh": ["阿瓦鲁阿"],
+    "timezones": ["Pacific/Rarotonga"],
+    "populationEst": 17379,
+    "drive": "left",
+    "government": "Nonmetropolitan Territory of New Zealand"
+  },
+  "COL": {
+    "capitalTimezone": "America/Bogota",
+    "capitalZh": ["波哥大"],
+    "capitalLat": 4.598369,
+    "capitalLng": -74.08529,
+    "timezones": ["America/Bogota"],
+    "populationEst": 49648685,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "COM": {
+    "capitalTimezone": "Indian/Comoro",
+    "capitalZh": ["莫洛尼"],
+    "capitalLat": -11.704158,
+    "capitalLng": 43.240244,
+    "timezones": ["Indian/Comoro"],
+    "populationEst": 832322,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CPV": {
+    "capitalTimezone": "Atlantic/Cape_Verde",
+    "capitalZh": ["培亞"],
+    "capitalLat": 14.916698,
+    "capitalLng": -23.516689,
+    "timezones": ["Atlantic/Cape_Verde"],
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CRI": {
+    "capitalTimezone": "America/Bogota",
+    "capitalZh": ["圣荷西"],
+    "capitalLat": 9.936958,
+    "capitalLng": -84.085997,
+    "timezones": ["America/Costa_Rica"],
+    "populationEst": 4999441,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "CUB": {
+    "capitalTimezone": "America/Havana",
+    "capitalZh": ["哈瓦那"],
+    "capitalLat": 23.133905,
+    "capitalLng": -82.366128,
+    "timezones": ["America/Havana"],
+    "populationEst": 11338138,
+    "drive": "right",
+    "government": "Socialistic Republic"
+  },
+  "CUW": {
+    "capitalZh": ["威廉斯塔德"],
+    "timezones": ["America/Curacao"],
+    "populationEst": 155000,
+    "drive": "right",
+    "government": "Constituent Country of the Kingdom of the Netherlands"
+  },
+  "CXR": {
+    "capitalZh": ["飞鱼湾"],
+    "timezones": ["Indian/Christmas"],
+    "populationEst": 1402,
+    "drive": "left",
+    "government": "Territory of Australia"
+  },
+  "CYM": {
+    "capitalZh": ["乔治敦"],
+    "timezones": ["America/Cayman"],
+    "populationEst": 64174,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "CYP": {
+    "capitalTimezone": "Asia/Nicosia",
+    "capitalZh": ["尼科西亚"],
+    "capitalLat": 35.166677,
+    "capitalLng": 33.366635,
+    "timezones": ["Asia/Famagusta", "Asia/Nicosia"],
+    "populationEst": 1189265,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "CZE": {
+    "capitalTimezone": "America/Chicago",
+    "capitalZh": ["布拉格"],
+    "capitalLat": 50.085283,
+    "capitalLng": 14.464034,
+    "timezones": ["Europe/Prague"],
+    "populationEst": 10629928,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "DEU": {
+    "capitalTimezone": "Europe/Berlin",
+    "capitalZh": ["柏林"],
+    "capitalLat": 52.523765,
+    "capitalLng": 13.399603,
+    "timezones": ["Europe/Berlin", "Europe/Busingen"],
+    "populationEst": 82905782,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "DJI": {
+    "capitalTimezone": "Africa/Djibouti",
+    "capitalZh": ["吉布地"],
+    "capitalLat": 11.595015,
+    "capitalLng": 43.148002,
+    "timezones": ["Africa/Djibouti"],
+    "populationEst": 958920,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "DMA": {
+    "capitalTimezone": "America/Dominica",
+    "capitalZh": ["罗索"],
+    "capitalLat": 15.301016,
+    "capitalLng": -61.387013,
+    "timezones": ["America/Dominica"],
+    "populationEst": 71625,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "DNK": {
+    "capitalTimezone": "Europe/Copenhagen",
+    "capitalZh": ["哥本哈根"],
+    "capitalLat": 55.68051,
+    "capitalLng": 12.56154,
+    "timezones": ["Europe/Copenhagen"],
+    "populationEst": 5793636,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "DOM": {
+    "capitalTimezone": "America/Bogota",
+    "capitalZh": ["圣多明哥"],
+    "capitalLat": 18.472019,
+    "capitalLng": -69.902031,
+    "timezones": ["America/Santo_Domingo"],
+    "populationEst": 10627165,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "DZA": {
+    "capitalTimezone": "Africa/Algiers",
+    "capitalZh": ["阿尔及尔"],
+    "capitalLat": 36.765011,
+    "capitalLng": 3.048607,
+    "timezones": ["Africa/Algiers"],
+    "populationEst": 42228429,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ECU": {
+    "capitalTimezone": "America/Guayaquil",
+    "capitalZh": ["基多"],
+    "capitalLat": -0.213042,
+    "capitalLng": -78.501997,
+    "timezones": ["America/Guayaquil", "Pacific/Galapagos"],
+    "populationEst": 17084357,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "EGY": {
+    "capitalTimezone": "Africa/Cairo",
+    "capitalZh": ["开罗"],
+    "capitalLat": 30.051906,
+    "capitalLng": 31.248022,
+    "timezones": ["Africa/Cairo"],
+    "populationEst": 98423595,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ERI": {
+    "capitalTimezone": "Africa/Asmara",
+    "capitalZh": ["阿斯马拉"],
+    "capitalLat": 15.333339,
+    "capitalLng": 38.933324,
+    "timezones": ["Africa/Asmara"],
+    "populationEst": 6213972,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ESH": {
+    "capitalZh": ["阿尤恩"],
+    "timezones": ["Africa/El_Aaiun"],
+    "populationEst": 652271,
+    "drive": "right",
+    "government": "Occupied by Morocco"
+  },
+  "ESP": {
+    "capitalTimezone": "Europe/Madrid",
+    "capitalZh": ["马德里"],
+    "capitalLat": 40.401972,
+    "capitalLng": -3.685298,
+    "timezones": ["Africa/Ceuta", "Atlantic/Canary", "Europe/Madrid"],
+    "populationEst": 46796540,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "EST": {
+    "capitalTimezone": "Europe/Tallinn",
+    "capitalZh": ["塔林"],
+    "capitalLat": 59.433877,
+    "capitalLng": 24.728041,
+    "timezones": ["Europe/Tallinn"],
+    "populationEst": 1321977,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ETH": {
+    "capitalTimezone": "Africa/Addis_Ababa",
+    "capitalZh": ["亚的斯亚贝巴"],
+    "capitalLat": 9.035256,
+    "capitalLng": 38.698059,
+    "timezones": ["Africa/Addis_Ababa"],
+    "populationEst": 109224559,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "FIN": {
+    "capitalTimezone": "Europe/Helsinki",
+    "capitalZh": ["赫尔辛基"],
+    "capitalLat": 60.177509,
+    "capitalLng": 24.932181,
+    "timezones": ["Europe/Helsinki"],
+    "populationEst": 5515525,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "FJI": {
+    "capitalTimezone": "Pacific/Fiji",
+    "capitalZh": ["苏瓦"],
+    "capitalLat": -18.133016,
+    "capitalLng": 178.441707,
+    "timezones": ["Pacific/Fiji"],
+    "drive": "left",
+    "government": "Republic"
+  },
+  "FLK": {
+    "capitalZh": ["斯坦利"],
+    "timezones": ["Atlantic/Stanley"],
+    "populationEst": 2840,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "FRA": {
+    "capitalTimezone": "Europe/Paris",
+    "capitalZh": ["巴黎"],
+    "capitalLat": 48.868639,
+    "capitalLng": 2.33139,
+    "timezones": ["Europe/Paris"],
+    "populationEst": 66977107,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "FRO": {
+    "capitalZh": ["托尔斯港"],
+    "timezones": ["Atlantic/Faroe"],
+    "populationEst": 48497,
+    "drive": "right",
+    "government": "Part of Denmark"
+  },
+  "FSM": {
+    "capitalTimezone": "Pacific/Ponape",
+    "capitalZh": ["帕利基尔"],
+    "capitalLat": 6.916644,
+    "capitalLng": 158.149974,
+    "timezones": ["Pacific/Chuuk", "Pacific/Kosrae", "Pacific/Pohnpei"],
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "GAB": {
+    "capitalTimezone": "Africa/Libreville",
+    "capitalZh": ["利伯维尔"],
+    "capitalLat": 0.385389,
+    "capitalLng": 9.457965,
+    "timezones": ["Africa/Libreville"],
+    "populationEst": 2119275,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GBR": {
+    "capitalTimezone": "Europe/London",
+    "capitalZh": ["伦敦"],
+    "capitalLat": 51.501941,
+    "capitalLng": -0.118668,
+    "timezones": ["Europe/London"],
+    "populationEst": 66460344,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "GEO": {
+    "capitalTimezone": "Asia/Tbilisi",
+    "capitalZh": ["第比利斯"],
+    "capitalLat": 41.726956,
+    "capitalLng": 44.78885,
+    "timezones": ["Asia/Tbilisi"],
+    "populationEst": 3726549,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GGY": {
+    "capitalZh": ["圣彼得港"],
+    "timezones": ["Europe/Guernsey"],
+    "populationEst": 64000,
+    "drive": "left",
+    "government": "Crown Dependency"
+  },
+  "GHA": {
+    "capitalTimezone": "Africa/Accra",
+    "capitalZh": ["阿克拉"],
+    "capitalLat": 5.551981,
+    "capitalLng": -0.218662,
+    "timezones": ["Africa/Accra"],
+    "populationEst": 29767108,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GIB": {
+    "capitalZh": ["直布罗陀"],
+    "timezones": ["Europe/Gibraltar"],
+    "populationEst": 33718,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "GIN": {
+    "capitalTimezone": "Africa/Conakry",
+    "capitalZh": ["科纳克里"],
+    "capitalLat": 9.533469,
+    "capitalLng": -13.682181,
+    "timezones": ["Africa/Conakry"],
+    "populationEst": 12414318,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GLP": {
+    "capitalZh": ["巴斯特尔"],
+    "timezones": ["America/Guadeloupe"],
+    "populationEst": 395700,
+    "drive": "right",
+    "government": "Overseas Department of France"
+  },
+  "GMB": {
+    "capitalTimezone": "Africa/Banjul",
+    "capitalZh": ["班竹"],
+    "capitalLat": 13.453877,
+    "capitalLng": -16.591702,
+    "timezones": ["Africa/Banjul"],
+    "populationEst": 2280102,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GNB": {
+    "capitalTimezone": "Africa/Bissau",
+    "capitalZh": ["比绍"],
+    "capitalLat": 11.865024,
+    "capitalLng": -15.598361,
+    "timezones": ["Africa/Bissau"],
+    "populationEst": 1874309,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GNQ": {
+    "capitalTimezone": "Africa/Malabo",
+    "capitalZh": ["马拉博"],
+    "capitalLat": 3.750015,
+    "capitalLng": 8.783278,
+    "timezones": ["Africa/Malabo"],
+    "populationEst": 1308974,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GRC": {
+    "capitalTimezone": "Europe/Athens",
+    "capitalZh": ["雅典"],
+    "capitalLat": 37.985272,
+    "capitalLng": 23.731375,
+    "timezones": ["Europe/Athens"],
+    "populationEst": 10731726,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GRD": {
+    "capitalTimezone": "America/Grenada",
+    "capitalZh": ["圣乔治"],
+    "capitalLat": 12.052633,
+    "capitalLng": -61.741643,
+    "timezones": ["America/Grenada"],
+    "populationEst": 111454,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "GRL": {
+    "capitalZh": ["努克"],
+    "timezones": ["America/Danmarkshavn", "America/Nuuk", "America/Scoresbysund", "America/Thule"],
+    "populationEst": 56025,
+    "drive": "right",
+    "government": "Part of Denmark"
+  },
+  "GTM": {
+    "capitalTimezone": "America/Guatemala",
+    "capitalZh": ["瓜地馬拉"],
+    "capitalLat": 14.623081,
+    "capitalLng": -90.528911,
+    "timezones": ["America/Guatemala"],
+    "populationEst": 17247807,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "GUF": {
+    "capitalZh": ["卡宴"],
+    "timezones": ["America/Cayenne"],
+    "populationEst": 290691,
+    "drive": "right",
+    "government": "Overseas Department of France"
+  },
+  "GUM": {
+    "capitalZh": ["阿加尼亚"],
+    "timezones": ["Pacific/Guam"],
+    "populationEst": 165768,
+    "drive": "right",
+    "government": "US Territory"
+  },
+  "GUY": {
+    "capitalTimezone": "America/Guyana",
+    "capitalZh": ["乔治敦"],
+    "capitalLat": 6.801974,
+    "capitalLng": -58.167029,
+    "timezones": ["America/Guyana"],
+    "populationEst": 779004,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "HKG": {
+    "capitalZh": ["维多利亚城"],
+    "timezones": ["Asia/Hong_Kong"],
+    "populationEst": 7451000,
+    "drive": "left",
+    "government": "Special Administrative Region of China"
+  },
+  "HMD": {
+    "government": "Territory of Australia"
+  },
+  "HND": {
+    "capitalTimezone": "America/Tegucigalpa",
+    "capitalZh": ["特古西加尔巴"],
+    "capitalLat": 14.103991,
+    "capitalLng": -87.219475,
+    "timezones": ["America/Tegucigalpa"],
+    "populationEst": 9587522,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "HRV": {
+    "capitalTimezone": "Europe/Zagreb",
+    "capitalZh": ["萨格勒布"],
+    "capitalLat": 45.800007,
+    "capitalLng": 15.999995,
+    "timezones": ["Europe/Zagreb"],
+    "populationEst": 4087843,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "HTI": {
+    "capitalTimezone": "America/Port-au-Prince",
+    "capitalZh": ["太子港"],
+    "capitalLat": 18.542971,
+    "capitalLng": -72.33798,
+    "timezones": ["America/Port-au-Prince"],
+    "populationEst": 11123176,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "HUN": {
+    "capitalTimezone": "Europe/Budapest",
+    "capitalZh": ["布达佩斯"],
+    "capitalLat": 47.501952,
+    "capitalLng": 19.081375,
+    "timezones": ["Europe/Budapest"],
+    "populationEst": 9775564,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "IDN": {
+    "capitalTimezone": "Asia/Jakarta",
+    "capitalZh": ["雅加达"],
+    "capitalLat": -6.172472,
+    "capitalLng": 106.827492,
+    "timezones": ["Asia/Jakarta", "Asia/Jayapura", "Asia/Makassar", "Asia/Pontianak"],
+    "populationEst": 267663435,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "IMN": {
+    "capitalZh": ["道格拉斯"],
+    "timezones": ["Europe/Isle_of_Man"],
+    "populationEst": 84000,
+    "drive": "left",
+    "government": "Crown Dependency"
+  },
+  "IND": {
+    "capitalTimezone": "Asia/Kolkata",
+    "capitalZh": ["新德里"],
+    "capitalLat": 28.600023,
+    "capitalLng": 77.19998,
+    "timezones": ["Asia/Kolkata"],
+    "populationEst": 1352617328,
+    "drive": "left",
+    "government": "Federal Republic"
+  },
+  "IOT": {
+    "capitalZh": ["迪戈加西亚"],
+    "timezones": ["Indian/Chagos"],
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "IRL": {
+    "capitalTimezone": "Europe/Dublin",
+    "capitalZh": ["都柏林"],
+    "capitalLat": 53.335007,
+    "capitalLng": -6.250852,
+    "timezones": ["Europe/Dublin"],
+    "populationEst": 4867309,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "IRN": {
+    "capitalTimezone": "Asia/Tehran",
+    "capitalZh": ["德黑兰"],
+    "capitalLat": 35.673889,
+    "capitalLng": 51.422398,
+    "timezones": ["Asia/Tehran"],
+    "populationEst": 81800269,
+    "drive": "right",
+    "government": "Islamic Republic"
+  },
+  "IRQ": {
+    "capitalTimezone": "Asia/Baghdad",
+    "capitalZh": ["巴格达"],
+    "capitalLat": 33.340594,
+    "capitalLng": 44.391923,
+    "timezones": ["Asia/Baghdad"],
+    "populationEst": 38433600,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ISL": {
+    "capitalTimezone": "Atlantic/Reykjavik",
+    "capitalZh": ["雷克雅未克"],
+    "capitalLat": 64.150024,
+    "capitalLng": -21.950015,
+    "timezones": ["Atlantic/Reykjavik"],
+    "populationEst": 352721,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ISR": {
+    "capitalTimezone": "Asia/Jerusalem",
+    "capitalZh": ["耶路撒冷"],
+    "capitalLat": 31.778408,
+    "capitalLng": 35.206626,
+    "timezones": ["Asia/Jerusalem"],
+    "populationEst": 8882800,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ITA": {
+    "capitalTimezone": "Europe/Rome",
+    "capitalZh": ["罗马"],
+    "capitalLat": 41.897902,
+    "capitalLng": 12.481313,
+    "timezones": ["Europe/Rome"],
+    "populationEst": 60421760,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "JAM": {
+    "capitalTimezone": "America/Jamaica",
+    "capitalZh": ["京斯敦"],
+    "capitalLat": 17.977077,
+    "capitalLng": -76.767434,
+    "timezones": ["America/Jamaica"],
+    "populationEst": 2934855,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "JEY": {
+    "capitalZh": ["圣赫利尔"],
+    "timezones": ["Europe/Jersey"],
+    "populationEst": 103000,
+    "drive": "left",
+    "government": "Crown Dependency"
+  },
+  "JOR": {
+    "capitalTimezone": "Asia/Amman",
+    "capitalZh": ["安曼"],
+    "capitalLat": 31.951971,
+    "capitalLng": 35.931354,
+    "timezones": ["Asia/Amman"],
+    "populationEst": 9956011,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "JPN": {
+    "capitalTimezone": "Asia/Tokyo",
+    "capitalZh": ["东京"],
+    "capitalLat": 35.686963,
+    "capitalLng": 139.749462,
+    "timezones": ["Asia/Tokyo"],
+    "populationEst": 126529100,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "KAZ": {
+    "capitalTimezone": "Asia/Qyzylorda",
+    "capitalZh": ["努尔苏丹"],
+    "capitalLat": 51.181125,
+    "capitalLng": 71.427774,
+    "timezones": [
+      "Asia/Almaty",
+      "Asia/Aqtau",
+      "Asia/Aqtobe",
+      "Asia/Atyrau",
+      "Asia/Oral",
+      "Asia/Qostanay",
+      "Asia/Qyzylorda"
+    ],
+    "populationEst": 18272430,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "KEN": {
+    "capitalTimezone": "Africa/Nairobi",
+    "capitalZh": ["内罗毕"],
+    "capitalLat": -1.281401,
+    "capitalLng": 36.814711,
+    "timezones": ["Africa/Nairobi"],
+    "populationEst": 51393010,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "KGZ": {
+    "capitalTimezone": "Asia/Bishkek",
+    "capitalZh": ["比什凯克"],
+    "capitalLat": 42.875025,
+    "capitalLng": 74.583258,
+    "timezones": ["Asia/Bishkek"],
+    "populationEst": 6322800,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "KHM": {
+    "capitalTimezone": "Asia/Phnom_Penh",
+    "capitalZh": ["金边"],
+    "capitalLat": 11.551976,
+    "capitalLng": 104.914689,
+    "timezones": ["Asia/Phnom_Penh"],
+    "populationEst": 16249798,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "KIR": {
+    "capitalTimezone": "Pacific/Tarawa",
+    "capitalZh": ["南塔拉瓦"],
+    "capitalLat": 1.338188,
+    "capitalLng": 173.017571,
+    "timezones": ["Pacific/Kanton", "Pacific/Kiritimati", "Pacific/Tarawa"],
+    "populationEst": 115847,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "KNA": {
+    "capitalTimezone": "America/St_Kitts",
+    "capitalZh": ["巴斯特尔"],
+    "capitalLat": 17.302031,
+    "capitalLng": -62.717009,
+    "timezones": ["America/St_Kitts"],
+    "populationEst": 52441,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "KOR": {
+    "capitalTimezone": "Asia/Seoul",
+    "capitalZh": ["首尔"],
+    "capitalLat": 37.568295,
+    "capitalLng": 126.997785,
+    "timezones": ["Asia/Seoul"],
+    "populationEst": 51606633,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "UNK": {
+    "capitalZh": ["普里什蒂纳"],
+    "timezones": ["Europe/Belgrade"],
+    "populationEst": 1576876,
+    "drive": "right",
+    "government": "Parliamentary Republic"
+  },
+  "KWT": {
+    "capitalTimezone": "Asia/Kuwait",
+    "capitalZh": ["科威特城"],
+    "capitalLat": 29.371664,
+    "capitalLng": 47.976355,
+    "timezones": ["Asia/Kuwait"],
+    "populationEst": 4137309,
+    "drive": "right",
+    "government": "Constitutional Monarchy (Emirate)"
+  },
+  "LAO": {
+    "capitalTimezone": "Asia/Vientiane",
+    "capitalZh": ["万象"],
+    "capitalLat": 17.966693,
+    "capitalLng": 102.59998,
+    "timezones": ["Asia/Vientiane"],
+    "populationEst": 7061507,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "LBN": {
+    "capitalTimezone": "Asia/Beirut",
+    "capitalZh": ["贝鲁特"],
+    "capitalLat": 33.873921,
+    "capitalLng": 35.507762,
+    "timezones": ["Asia/Beirut"],
+    "populationEst": 6848925,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "LBR": {
+    "capitalTimezone": "Africa/Monrovia",
+    "capitalZh": ["蒙罗维亚"],
+    "capitalLat": 6.314582,
+    "capitalLng": -10.79966,
+    "timezones": ["Africa/Monrovia"],
+    "populationEst": 4818977,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "LBY": {
+    "capitalZh": ["的黎波里"],
+    "capitalLat": 32.8925,
+    "capitalLng": 13.180012,
+    "timezones": ["Africa/Tripoli"],
+    "populationEst": 6678567,
+    "drive": "right",
+    "government": "Socialistic State"
+  },
+  "LCA": {
+    "capitalTimezone": "Europe/Paris",
+    "capitalZh": ["卡斯特里"],
+    "capitalLat": 14.001974,
+    "capitalLng": -61.000008,
+    "timezones": ["America/St_Lucia"],
+    "populationEst": 181889,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "LIE": {
+    "capitalTimezone": "Europe/Vaduz",
+    "capitalZh": ["瓦都兹"],
+    "capitalLat": 47.133724,
+    "capitalLng": 9.51667,
+    "timezones": ["Europe/Vaduz"],
+    "populationEst": 37910,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "LKA": {
+    "capitalTimezone": "America/Sao_Paulo",
+    "capitalZh": ["科伦坡"],
+    "capitalLat": 6.931966,
+    "capitalLng": 79.857751,
+    "timezones": ["Asia/Colombo"],
+    "populationEst": 21670000,
+    "drive": "left",
+    "government": "Unitary Semi-Presidential Republic"
+  },
+  "LSO": {
+    "capitalTimezone": "Africa/Maseru",
+    "capitalZh": ["马塞卢"],
+    "capitalLat": -29.316674,
+    "capitalLng": 27.483273,
+    "timezones": ["Africa/Maseru"],
+    "populationEst": 2108132,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "LTU": {
+    "capitalTimezone": "Europe/Vilnius",
+    "capitalZh": ["维尔纽斯"],
+    "capitalLat": 54.683366,
+    "capitalLng": 25.316635,
+    "timezones": ["Europe/Vilnius"],
+    "populationEst": 2801543,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "LUX": {
+    "capitalTimezone": "Europe/Luxembourg",
+    "capitalZh": ["卢森堡"],
+    "capitalLat": 49.61166,
+    "capitalLng": 6.130003,
+    "timezones": ["Europe/Luxembourg"],
+    "populationEst": 607950,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "LVA": {
+    "capitalTimezone": "Europe/Riga",
+    "capitalZh": ["里加"],
+    "capitalLat": 56.950024,
+    "capitalLng": 24.099965,
+    "timezones": ["Europe/Riga"],
+    "populationEst": 1927174,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MAC": {
+    "timezones": ["Asia/Macau"],
+    "drive": "left",
+    "government": "Special Administrative Region of China"
+  },
+  "MAF": {
+    "capitalZh": ["马里戈特"],
+    "timezones": ["America/Marigot"],
+    "populationEst": 32000,
+    "drive": "right",
+    "government": "Overseas Collectivity of France"
+  },
+  "MAR": {
+    "capitalTimezone": "Africa/Casablanca",
+    "capitalZh": ["拉巴特"],
+    "capitalLat": 34.025307,
+    "capitalLng": -6.836408,
+    "timezones": ["Africa/Casablanca"],
+    "populationEst": 36029138,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "MCO": {
+    "capitalTimezone": "Europe/Monaco",
+    "capitalZh": ["摩纳哥"],
+    "capitalLat": 43.739646,
+    "capitalLng": 7.406913,
+    "timezones": ["Europe/Monaco"],
+    "populationEst": 38682,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "MDA": {
+    "capitalTimezone": "Europe/Chisinau",
+    "capitalZh": ["基希讷乌"],
+    "capitalLat": 47.005024,
+    "capitalLng": 28.857711,
+    "timezones": ["Europe/Chisinau"],
+    "populationEst": 2706049,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MDG": {
+    "capitalTimezone": "Indian/Antananarivo",
+    "capitalZh": ["塔那那利佛"],
+    "capitalLat": -18.914692,
+    "capitalLng": 47.514678,
+    "timezones": ["Indian/Antananarivo"],
+    "populationEst": 26262368,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "MDV": {
+    "capitalTimezone": "Europe/Rome",
+    "capitalZh": ["马累"],
+    "capitalLat": 4.166708,
+    "capitalLng": 73.499948,
+    "timezones": ["Indian/Maldives"],
+    "populationEst": 515696,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "MEX": {
+    "capitalTimezone": "America/Mexico_City",
+    "capitalZh": ["墨西哥城"],
+    "capitalLat": 19.444388,
+    "capitalLng": -99.132934,
+    "timezones": [
+      "America/Bahia_Banderas",
+      "America/Cancun",
+      "America/Chihuahua",
+      "America/Ciudad_Juarez",
+      "America/Hermosillo",
+      "America/Matamoros",
+      "America/Mazatlan",
+      "America/Merida",
+      "America/Mexico_City",
+      "America/Monterrey",
+      "America/Ojinaga",
+      "America/Tijuana"
+    ],
+    "populationEst": 126190788,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "MHL": {
+    "capitalTimezone": "Pacific/Majuro",
+    "capitalZh": ["马朱罗"],
+    "capitalLat": 7.103004,
+    "capitalLng": 171.38,
+    "timezones": ["Pacific/Kwajalein", "Pacific/Majuro"],
+    "populationEst": 58413,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MKD": {
+    "capitalTimezone": "Europe/Skopje",
+    "capitalZh": ["斯科普里"],
+    "capitalLat": 42.000006,
+    "capitalLng": 21.433462,
+    "timezones": ["Europe/Skopje"],
+    "populationEst": 2084367,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MLI": {
+    "capitalTimezone": "Africa/Bamako",
+    "capitalZh": ["巴马科"],
+    "capitalLat": 12.651961,
+    "capitalLng": -8.001985,
+    "timezones": ["Africa/Bamako"],
+    "populationEst": 19077690,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MLT": {
+    "capitalTimezone": "Europe/Malta",
+    "capitalZh": ["瓦莱塔"],
+    "capitalLat": 35.899733,
+    "capitalLng": 14.514711,
+    "timezones": ["Europe/Malta"],
+    "populationEst": 484630,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "MMR": {
+    "capitalTimezone": "Asia/Rangoon",
+    "capitalZh": ["奈比多"],
+    "capitalLat": 19.768503,
+    "capitalLng": 96.116673,
+    "timezones": ["Asia/Yangon"],
+    "populationEst": 53708395,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MNE": {
+    "capitalTimezone": "Europe/Podgorica",
+    "capitalZh": ["波德戈里察"],
+    "capitalLat": 42.465973,
+    "capitalLng": 19.266307,
+    "timezones": ["Europe/Podgorica"],
+    "populationEst": 631219,
+    "drive": "right",
+    "government": "Parliamentary Republic"
+  },
+  "MNG": {
+    "capitalZh": ["乌兰巴托"],
+    "timezones": ["Asia/Hovd", "Asia/Ulaanbaatar"],
+    "populationEst": 3170208,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MNP": {
+    "capitalZh": ["塞班"],
+    "timezones": ["Pacific/Saipan"],
+    "populationEst": 56882,
+    "drive": "right",
+    "government": "Commonwealth of the US"
+  },
+  "MOZ": {
+    "capitalTimezone": "Africa/Maputo",
+    "capitalZh": ["马普托"],
+    "capitalLat": -25.953332,
+    "capitalLng": 32.587217,
+    "timezones": ["Africa/Maputo"],
+    "populationEst": 29495962,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "MRT": {
+    "capitalTimezone": "Africa/Nouakchott",
+    "capitalZh": ["努瓦克肖特"],
+    "capitalLat": 18.086427,
+    "capitalLng": -15.97534,
+    "timezones": ["Africa/Nouakchott"],
+    "populationEst": 4403319,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "MSR": {
+    "capitalZh": ["普利茅斯"],
+    "timezones": ["America/Montserrat"],
+    "populationEst": 5900,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "MTQ": {
+    "capitalZh": ["法兰西堡"],
+    "timezones": ["America/Martinique"],
+    "populationEst": 376480,
+    "drive": "right",
+    "government": "Overseas Department of France"
+  },
+  "MUS": {
+    "capitalTimezone": "Indian/Mauritius",
+    "capitalZh": ["路易港"],
+    "capitalLat": -20.166639,
+    "capitalLng": 57.499994,
+    "timezones": ["Indian/Mauritius"],
+    "populationEst": 1265303,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "MWI": {
+    "capitalTimezone": "Africa/Blantyre",
+    "capitalZh": ["利隆圭"],
+    "capitalLat": -13.983295,
+    "capitalLng": 33.783302,
+    "timezones": ["Africa/Blantyre"],
+    "populationEst": 18143315,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "MYS": {
+    "capitalTimezone": "Asia/Kuala_Lumpur",
+    "capitalZh": ["吉隆坡"],
+    "capitalLat": 3.168612,
+    "capitalLng": 101.698037,
+    "timezones": ["Asia/Kuala_Lumpur", "Asia/Kuching"],
+    "populationEst": 31528585,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "MYT": {
+    "capitalZh": ["马穆楚"],
+    "timezones": ["Indian/Mayotte"],
+    "populationEst": 270372,
+    "drive": "right",
+    "government": "Territorial Collectivity of France"
+  },
+  "NAM": {
+    "capitalTimezone": "Africa/Windhoek",
+    "capitalZh": ["温得和克"],
+    "capitalLat": -22.570006,
+    "capitalLng": 17.083546,
+    "timezones": ["Africa/Windhoek"],
+    "populationEst": 2448255,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "NCL": {
+    "capitalZh": ["努美阿"],
+    "timezones": ["Pacific/Noumea"],
+    "populationEst": 284060,
+    "drive": "left",
+    "government": "Nonmetropolitan Territory of France"
+  },
+  "NER": {
+    "capitalTimezone": "Africa/Niamey",
+    "capitalZh": ["尼亚美"],
+    "capitalLat": 13.518652,
+    "capitalLng": 2.11471,
+    "timezones": ["Africa/Niamey"],
+    "populationEst": 22442948,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "NFK": {
+    "capitalZh": ["金斯敦"],
+    "timezones": ["Pacific/Norfolk"],
+    "populationEst": 2169,
+    "drive": "right",
+    "government": "Territory of Australia"
+  },
+  "NGA": {
+    "capitalTimezone": "Africa/Lagos",
+    "capitalZh": ["阿布贾"],
+    "capitalLat": 9.085279,
+    "capitalLng": 7.531382,
+    "timezones": ["Africa/Lagos"],
+    "populationEst": 195874740,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "NIC": {
+    "capitalTimezone": "America/Managua",
+    "capitalZh": ["馬拿瓜"],
+    "capitalLat": 12.154962,
+    "capitalLng": -86.270438,
+    "timezones": ["America/Managua"],
+    "populationEst": 6465513,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "NIU": {
+    "capitalZh": ["阿洛菲"],
+    "timezones": ["Pacific/Niue"],
+    "populationEst": 1624,
+    "drive": "left",
+    "government": "Nonmetropolitan Territory of New Zealand"
+  },
+  "NLD": {
+    "capitalTimezone": "Europe/Amsterdam",
+    "capitalZh": ["阿姆斯特丹"],
+    "capitalLat": 52.351915,
+    "capitalLng": 4.914694,
+    "timezones": ["Europe/Amsterdam"],
+    "populationEst": 17231624,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "NOR": {
+    "capitalTimezone": "Europe/Oslo",
+    "capitalZh": ["奥斯陆"],
+    "capitalLat": 59.918636,
+    "capitalLng": 10.748033,
+    "timezones": ["Europe/Oslo"],
+    "populationEst": 5311916,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "NPL": {
+    "capitalTimezone": "Asia/Kathmandu",
+    "capitalZh": ["加德满都"],
+    "capitalLat": 27.718638,
+    "capitalLng": 85.314696,
+    "timezones": ["Asia/Kathmandu"],
+    "populationEst": 28087871,
+    "drive": "left",
+    "government": "Federal parliamentary republic"
+  },
+  "NRU": {
+    "capitalZh": ["亚伦"],
+    "timezones": ["Pacific/Nauru"],
+    "populationEst": 12704,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "NZL": {
+    "capitalTimezone": "Pacific/Auckland",
+    "capitalZh": ["惠灵顿"],
+    "capitalLat": -41.299988,
+    "capitalLng": 174.783266,
+    "timezones": ["Pacific/Auckland", "Pacific/Chatham"],
+    "populationEst": 4841000,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "OMN": {
+    "capitalTimezone": "Asia/Muscat",
+    "capitalZh": ["马斯喀特"],
+    "capitalLat": 23.613325,
+    "capitalLng": 58.593312,
+    "timezones": ["Asia/Muscat"],
+    "populationEst": 4829483,
+    "drive": "right",
+    "government": "Monarchy (Sultanate)"
+  },
+  "PAK": {
+    "capitalTimezone": "Asia/Karachi",
+    "capitalZh": ["伊斯兰堡"],
+    "capitalLat": 33.701942,
+    "capitalLng": 73.164689,
+    "timezones": ["Asia/Karachi"],
+    "populationEst": 212215030,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "PAN": {
+    "capitalTimezone": "America/Panama",
+    "capitalZh": ["巴拿马城"],
+    "capitalLat": 8.969963,
+    "capitalLng": -79.534983,
+    "timezones": ["America/Panama"],
+    "populationEst": 4176873,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PCN": {
+    "capitalZh": ["亚当斯敦"],
+    "timezones": ["Pacific/Pitcairn"],
+    "populationEst": 50,
+    "drive": "left",
+    "government": "British Overseas Territory"
+  },
+  "PER": {
+    "capitalTimezone": "America/Lima",
+    "capitalZh": ["利马"],
+    "capitalLat": -12.046067,
+    "capitalLng": -77.052008,
+    "timezones": ["America/Lima"],
+    "populationEst": 31989256,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PHL": {
+    "capitalTimezone": "Asia/Manila",
+    "capitalZh": ["马尼拉"],
+    "capitalLat": 14.606105,
+    "capitalLng": 120.980271,
+    "timezones": ["Asia/Manila"],
+    "populationEst": 106651922,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PLW": {
+    "capitalZh": ["恩吉鲁穆德"],
+    "timezones": ["Pacific/Palau"],
+    "populationEst": 17907,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PNG": {
+    "capitalTimezone": "Pacific/Port_Moresby",
+    "capitalZh": ["莫尔兹比港"],
+    "capitalLat": -9.464708,
+    "capitalLng": 147.192504,
+    "timezones": ["Pacific/Bougainville", "Pacific/Port_Moresby"],
+    "populationEst": 8606316,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "POL": {
+    "capitalTimezone": "Europe/Warsaw",
+    "capitalZh": ["华沙"],
+    "capitalLat": 52.251947,
+    "capitalLng": 20.998054,
+    "timezones": ["Europe/Warsaw"],
+    "populationEst": 37974750,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PRI": {
+    "capitalZh": ["圣胡安"],
+    "timezones": ["America/Puerto_Rico"],
+    "populationEst": 3195153,
+    "drive": "right",
+    "government": "Commonwealth of the US"
+  },
+  "PRK": {
+    "capitalTimezone": "Asia/Pyongyang",
+    "capitalZh": ["平壤"],
+    "capitalLat": 39.021385,
+    "capitalLng": 125.752745,
+    "timezones": ["Asia/Pyongyang"],
+    "populationEst": 25549819,
+    "drive": "right",
+    "government": "Socialistic Republic"
+  },
+  "PRT": {
+    "capitalTimezone": "Europe/Lisbon",
+    "capitalZh": ["里斯本"],
+    "capitalLat": 38.724669,
+    "capitalLng": -9.146812,
+    "timezones": ["Atlantic/Azores", "Atlantic/Madeira", "Europe/Lisbon"],
+    "populationEst": 10283822,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PRY": {
+    "capitalTimezone": "Asia/Manila",
+    "capitalZh": ["亚松森"],
+    "capitalLat": -25.294457,
+    "capitalLng": -57.643451,
+    "timezones": ["America/Asuncion"],
+    "populationEst": 6956071,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "PSE": {
+    "capitalZh": ["拉马拉"],
+    "timezones": ["Asia/Gaza", "Asia/Hebron"],
+    "populationEst": 4569087,
+    "drive": "right",
+    "government": "Autonomous Area"
+  },
+  "PYF": {
+    "capitalZh": ["帕皮提"],
+    "timezones": ["Pacific/Gambier", "Pacific/Marquesas", "Pacific/Tahiti"],
+    "populationEst": 277679,
+    "drive": "right",
+    "government": "Nonmetropolitan Territory of France"
+  },
+  "QAT": {
+    "capitalTimezone": "Asia/Qatar",
+    "capitalZh": ["多哈"],
+    "capitalLat": 25.286556,
+    "capitalLng": 51.532968,
+    "timezones": ["Asia/Qatar"],
+    "populationEst": 2781677,
+    "drive": "right",
+    "government": "Monarchy"
+  },
+  "REU": {
+    "capitalZh": ["圣但尼"],
+    "timezones": ["Indian/Reunion"],
+    "populationEst": 859959,
+    "drive": "right",
+    "government": "Overseas Department of France"
+  },
+  "ROU": {
+    "capitalTimezone": "Europe/Bucharest",
+    "capitalZh": ["布加勒斯特"],
+    "capitalLat": 44.435318,
+    "capitalLng": 26.098001,
+    "timezones": ["Europe/Bucharest"],
+    "populationEst": 19466145,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "RUS": {
+    "capitalZh": ["莫斯科"],
+    "capitalLat": 55.75411,
+    "capitalLng": 37.613577,
+    "timezones": [
+      "Asia/Anadyr",
+      "Asia/Barnaul",
+      "Asia/Chita",
+      "Asia/Irkutsk",
+      "Asia/Kamchatka",
+      "Asia/Khandyga",
+      "Asia/Krasnoyarsk",
+      "Asia/Magadan",
+      "Asia/Novokuznetsk",
+      "Asia/Novosibirsk",
+      "Asia/Omsk",
+      "Asia/Sakhalin",
+      "Asia/Srednekolymsk",
+      "Asia/Tomsk",
+      "Asia/Ust-Nera",
+      "Asia/Vladivostok",
+      "Asia/Yakutsk",
+      "Asia/Yekaterinburg",
+      "Europe/Astrakhan",
+      "Europe/Kaliningrad",
+      "Europe/Kirov",
+      "Europe/Moscow",
+      "Europe/Samara",
+      "Europe/Saratov",
+      "Europe/Ulyanovsk",
+      "Europe/Volgograd"
+    ],
+    "populationEst": 144478050,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "RWA": {
+    "capitalTimezone": "Africa/Kigali",
+    "capitalZh": ["吉佳利"],
+    "capitalLat": -1.951644,
+    "capitalLng": 30.058586,
+    "timezones": ["Africa/Kigali"],
+    "populationEst": 12301939,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SAU": {
+    "capitalTimezone": "Asia/Riyadh",
+    "capitalZh": ["利雅德"],
+    "capitalLat": 24.642779,
+    "capitalLng": 46.770796,
+    "timezones": ["Asia/Riyadh"],
+    "populationEst": 33699947,
+    "drive": "right",
+    "government": "Monarchy"
+  },
+  "SDN": {
+    "capitalTimezone": "Africa/Khartoum",
+    "capitalZh": ["喀土穆"],
+    "capitalLat": 15.590024,
+    "capitalLng": 32.532233,
+    "timezones": ["Africa/Khartoum"],
+    "populationEst": 41801533,
+    "drive": "right",
+    "government": "Islamic Republic"
+  },
+  "SEN": {
+    "capitalTimezone": "Africa/Dakar",
+    "capitalZh": ["达喀尔"],
+    "capitalLat": 14.717778,
+    "capitalLng": -17.475076,
+    "timezones": ["Africa/Dakar"],
+    "populationEst": 15854360,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SGP": {
+    "capitalTimezone": "Asia/Singapore",
+    "capitalZh": ["新加坡"],
+    "capitalLat": 1.294979,
+    "capitalLng": 103.853875,
+    "timezones": ["Asia/Singapore"],
+    "populationEst": 5638676,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "SGS": {
+    "capitalZh": ["爱德华国王角"],
+    "timezones": ["Atlantic/South_Georgia"],
+    "government": "Dependent Territory of the UK"
+  },
+  "SJM": {
+    "capitalZh": ["朗伊尔城"],
+    "timezones": ["Arctic/Longyearbyen"],
+    "populationEst": 2572,
+    "drive": "right",
+    "government": "Dependent Territory of Norway"
+  },
+  "SLB": {
+    "capitalTimezone": "Pacific/Guadalcanal",
+    "capitalZh": ["霍尼亚拉"],
+    "capitalLat": -9.437994,
+    "capitalLng": 159.949766,
+    "timezones": ["Pacific/Guadalcanal"],
+    "populationEst": 652858,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "SLE": {
+    "capitalTimezone": "Africa/Freetown",
+    "capitalZh": ["弗里敦"],
+    "capitalLat": 8.471957,
+    "capitalLng": -13.236162,
+    "timezones": ["Africa/Freetown"],
+    "populationEst": 7650154,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SLV": {
+    "capitalTimezone": "Asia/Manila",
+    "capitalZh": ["圣萨尔瓦多"],
+    "capitalLat": 13.711948,
+    "capitalLng": -89.204987,
+    "timezones": ["America/El_Salvador"],
+    "populationEst": 6420744,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SMR": {
+    "capitalZh": ["圣马力诺"],
+    "timezones": ["Europe/San_Marino"],
+    "populationEst": 33785,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SOM": {
+    "capitalTimezone": "Africa/Mogadishu",
+    "capitalZh": ["摩加迪休"],
+    "capitalLat": 2.068627,
+    "capitalLng": 45.364732,
+    "timezones": ["Africa/Mogadishu"],
+    "populationEst": 15008154,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SPM": {
+    "capitalZh": ["圣皮埃尔"],
+    "timezones": ["America/Miquelon"],
+    "populationEst": 5888,
+    "drive": "right",
+    "government": "Territorial Collectivity of France"
+  },
+  "SRB": {
+    "capitalTimezone": "Europe/Belgrade",
+    "capitalZh": ["贝尔格莱德"],
+    "capitalLat": 44.820591,
+    "capitalLng": 20.466045,
+    "timezones": ["Europe/Belgrade"],
+    "populationEst": 6963764,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SSD": {
+    "capitalZh": ["朱巴"],
+    "timezones": ["Africa/Juba"],
+    "populationEst": 10975920,
+    "drive": "right",
+    "government": "Federal Presidential Republic"
+  },
+  "STP": {
+    "capitalTimezone": "America/Fortaleza",
+    "capitalZh": ["圣多美"],
+    "capitalLat": 0.333402,
+    "capitalLng": 6.733325,
+    "timezones": ["Africa/Sao_Tome"],
+    "populationEst": 211028,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SUR": {
+    "capitalTimezone": "America/Paramaribo",
+    "capitalZh": ["帕拉马里博"],
+    "capitalLat": 5.83503,
+    "capitalLng": -55.167031,
+    "timezones": ["America/Paramaribo"],
+    "populationEst": 575991,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "SVK": {
+    "capitalTimezone": "Europe/Bratislava",
+    "capitalZh": ["布拉迪斯拉发"],
+    "capitalLat": 48.150018,
+    "capitalLng": 17.116981,
+    "timezones": ["Europe/Bratislava"],
+    "populationEst": 5446771,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SVN": {
+    "capitalTimezone": "Europe/Ljubljana",
+    "capitalZh": ["卢布尔雅那"],
+    "capitalLat": 46.055288,
+    "capitalLng": 14.514969,
+    "timezones": ["Europe/Ljubljana"],
+    "populationEst": 2073894,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "SWE": {
+    "capitalTimezone": "Europe/Stockholm",
+    "capitalZh": ["斯德哥尔摩"],
+    "capitalLat": 59.352706,
+    "capitalLng": 18.095389,
+    "timezones": ["Europe/Stockholm"],
+    "populationEst": 10175214,
+    "drive": "right",
+    "government": "Constitutional Monarchy"
+  },
+  "SWZ": {
+    "capitalZh": ["洛班巴"],
+    "timezones": ["Africa/Mbabane"],
+    "populationEst": 1136191,
+    "drive": "left",
+    "government": "Monarchy"
+  },
+  "SXM": {
+    "capitalZh": ["菲利普斯堡"],
+    "timezones": ["America/Lower_Princes"],
+    "populationEst": 44000,
+    "drive": "right",
+    "government": "Constituent Country of the Kingdom of the Netherlands"
+  },
+  "SYC": {
+    "capitalTimezone": "Indian/Mahe",
+    "capitalZh": ["維多利亞"],
+    "capitalLat": -4.616632,
+    "capitalLng": 55.44999,
+    "timezones": ["Indian/Mahe"],
+    "populationEst": 96762,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "SYR": {
+    "capitalZh": ["大马士革"],
+    "capitalLat": 33.50198,
+    "capitalLng": 36.29805,
+    "timezones": ["Asia/Damascus"],
+    "populationEst": 16906283,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TCA": {
+    "capitalZh": ["科克本城"],
+    "timezones": ["America/Grand_Turk"],
+    "populationEst": 37665,
+    "drive": "left",
+    "government": "Dependent Territory of the UK"
+  },
+  "TCD": {
+    "capitalTimezone": "Africa/Ndjamena",
+    "capitalZh": ["恩贾梅纳"],
+    "capitalLat": 12.115042,
+    "capitalLng": 15.047203,
+    "timezones": ["Africa/Ndjamena"],
+    "populationEst": 15477751,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TGO": {
+    "capitalTimezone": "Africa/Lome",
+    "capitalZh": ["洛美"],
+    "capitalLat": 6.133883,
+    "capitalLng": 1.220811,
+    "timezones": ["Africa/Lome"],
+    "populationEst": 7889094,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "THA": {
+    "capitalTimezone": "Asia/Bangkok",
+    "capitalZh": ["曼谷"],
+    "capitalLat": 13.751945,
+    "capitalLng": 100.514699,
+    "timezones": ["Asia/Bangkok"],
+    "populationEst": 69428524,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "TJK": {
+    "capitalTimezone": "Asia/Dushanbe",
+    "capitalZh": ["杜尚别"],
+    "capitalLat": 38.560035,
+    "capitalLng": 68.773879,
+    "timezones": ["Asia/Dushanbe"],
+    "populationEst": 9100837,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TKL": {
+    "capitalZh": ["法考福"],
+    "timezones": ["Pacific/Fakaofo"],
+    "populationEst": 1411,
+    "drive": "left",
+    "government": "Nonmetropolitan Territory of New Zealand"
+  },
+  "TKM": {
+    "capitalTimezone": "Asia/Ashgabat",
+    "capitalZh": ["阿什哈巴德"],
+    "capitalLat": 37.949995,
+    "capitalLng": 58.383299,
+    "timezones": ["Asia/Ashgabat"],
+    "populationEst": 5850908,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TLS": {
+    "capitalTimezone": "Asia/Dili",
+    "capitalZh": ["帝力"],
+    "capitalLat": -8.559388,
+    "capitalLng": 125.579456,
+    "timezones": ["Asia/Dili"],
+    "drive": "left",
+    "government": "Semi-presidential Republic"
+  },
+  "TON": {
+    "capitalTimezone": "Pacific/Tongatapu",
+    "capitalZh": ["努库阿洛法"],
+    "capitalLat": -21.138512,
+    "capitalLng": -175.220565,
+    "timezones": ["Pacific/Tongatapu"],
+    "populationEst": 103197,
+    "drive": "left",
+    "government": "Monarchy"
+  },
+  "TTO": {
+    "capitalTimezone": "America/Port_of_Spain",
+    "capitalZh": ["西班牙港"],
+    "capitalLat": 10.651997,
+    "capitalLng": -61.517031,
+    "timezones": ["America/Port_of_Spain"],
+    "populationEst": 1389858,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "TUN": {
+    "capitalTimezone": "Africa/Tunis",
+    "capitalZh": ["突尼斯"],
+    "capitalLat": 36.802778,
+    "capitalLng": 10.179678,
+    "timezones": ["Africa/Tunis"],
+    "populationEst": 11565204,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TUR": {
+    "capitalTimezone": "Europe/Istanbul",
+    "capitalZh": ["安卡拉"],
+    "capitalLat": 39.929184,
+    "capitalLng": 32.862446,
+    "timezones": ["Europe/Istanbul"],
+    "populationEst": 82319724,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "TUV": {
+    "capitalTimezone": "Pacific/Funafuti",
+    "capitalZh": ["富纳富提"],
+    "capitalLat": -8.516652,
+    "capitalLng": 179.216647,
+    "timezones": ["Pacific/Funafuti"],
+    "populationEst": 11508,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "TWN": {
+    "capitalTimezone": "Asia/Taipei",
+    "capitalZh": ["台北"],
+    "capitalLat": 25.035833,
+    "capitalLng": 121.568333,
+    "timezones": ["Asia/Taipei"],
+    "populationEst": 23400000,
+    "drive": "right"
+  },
+  "TZA": {
+    "capitalZh": ["多多马"],
+    "timezones": ["Africa/Dar_es_Salaam"],
+    "populationEst": 56318348,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "UGA": {
+    "capitalTimezone": "Africa/Kampala",
+    "capitalZh": ["坎帕拉"],
+    "capitalLat": 0.318605,
+    "capitalLng": 32.581378,
+    "timezones": ["Africa/Kampala"],
+    "populationEst": 42723139,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "UKR": {
+    "capitalTimezone": "Europe/Kiev",
+    "capitalZh": ["基辅"],
+    "capitalLat": 50.435313,
+    "capitalLng": 30.514682,
+    "timezones": ["Europe/Kyiv", "Europe/Simferopol"],
+    "populationEst": 44622516,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "UMI": {
+    "timezones": ["Pacific/Midway", "Pacific/Wake"],
+    "drive": "right",
+    "government": "Dependent Territory of the US"
+  },
+  "URY": {
+    "capitalTimezone": "America/Chicago",
+    "capitalZh": ["蒙得维的亚"],
+    "capitalLat": -34.856096,
+    "capitalLng": -56.172998,
+    "timezones": ["America/Montevideo"],
+    "populationEst": 3449299,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "USA": {
+    "capitalTimezone": "America/New_York",
+    "capitalZh": ["华盛顿哥伦比亚特区"],
+    "capitalLat": 38.901495,
+    "capitalLng": -77.011364,
+    "timezones": [
+      "America/Adak",
+      "America/Anchorage",
+      "America/Boise",
+      "America/Chicago",
+      "America/Denver",
+      "America/Detroit",
+      "America/Indiana/Indianapolis",
+      "America/Indiana/Knox",
+      "America/Indiana/Marengo",
+      "America/Indiana/Petersburg",
+      "America/Indiana/Tell_City",
+      "America/Indiana/Vevay",
+      "America/Indiana/Vincennes",
+      "America/Indiana/Winamac",
+      "America/Juneau",
+      "America/Kentucky/Louisville",
+      "America/Kentucky/Monticello",
+      "America/Los_Angeles",
+      "America/Menominee",
+      "America/Metlakatla",
+      "America/New_York",
+      "America/Nome",
+      "America/North_Dakota/Beulah",
+      "America/North_Dakota/Center",
+      "America/North_Dakota/New_Salem",
+      "America/Phoenix",
+      "America/Sitka",
+      "America/Yakutat",
+      "Pacific/Honolulu"
+    ],
+    "populationEst": 326687501,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "UZB": {
+    "capitalTimezone": "Asia/Tashkent",
+    "capitalZh": ["塔什干"],
+    "capitalLat": 41.313648,
+    "capitalLng": 69.292987,
+    "timezones": ["Asia/Samarkand", "Asia/Tashkent"],
+    "populationEst": 32955400,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "VAT": {
+    "capitalTimezone": "Europe/Vatican",
+    "capitalZh": ["梵蒂冈"],
+    "capitalLat": 41.903282,
+    "capitalLng": 12.453387,
+    "timezones": ["Europe/Vatican"],
+    "populationEst": 800,
+    "drive": "right",
+    "government": "Ecclesiastical Monarchy"
+  },
+  "VCT": {
+    "capitalTimezone": "America/New_York",
+    "capitalZh": ["金斯敦"],
+    "capitalLat": 13.148279,
+    "capitalLng": -61.212062,
+    "timezones": ["America/St_Vincent"],
+    "populationEst": 110210,
+    "drive": "left",
+    "government": "Constitutional Monarchy"
+  },
+  "VEN": {
+    "capitalTimezone": "America/Caracas",
+    "capitalZh": ["加拉加斯"],
+    "capitalLat": 10.502944,
+    "capitalLng": -66.918983,
+    "timezones": ["America/Caracas"],
+    "populationEst": 28870195,
+    "drive": "right",
+    "government": "Federal Republic"
+  },
+  "VGB": {
+    "capitalZh": ["罗德城"],
+    "timezones": ["America/Tortola"],
+    "populationEst": 40000,
+    "drive": "left",
+    "government": "British Overseas Territory"
+  },
+  "VIR": {
+    "capitalZh": ["夏洛特阿马利亚"],
+    "timezones": ["America/St_Thomas"],
+    "populationEst": 104000,
+    "drive": "right",
+    "government": "US Territory"
+  },
+  "VNM": {
+    "capitalTimezone": "Asia/Ho_Chi_Minh",
+    "capitalZh": ["河内"],
+    "capitalLat": 21.035273,
+    "capitalLng": 105.848068,
+    "timezones": ["Asia/Ho_Chi_Minh"],
+    "populationEst": 95540395,
+    "drive": "right",
+    "government": "Socialistic Republic"
+  },
+  "VUT": {
+    "capitalTimezone": "Pacific/Efate",
+    "capitalZh": ["维拉港"],
+    "capitalLat": -17.73335,
+    "capitalLng": 168.316641,
+    "timezones": ["Pacific/Efate"],
+    "populationEst": 292680,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "WLF": {
+    "capitalZh": ["马塔乌图"],
+    "timezones": ["Pacific/Wallis"],
+    "populationEst": 15289,
+    "drive": "left",
+    "government": "Nonmetropolitan Territory of France"
+  },
+  "WSM": {
+    "capitalTimezone": "America/Bogota",
+    "capitalZh": ["阿皮亚"],
+    "capitalLat": -13.841545,
+    "capitalLng": -171.738642,
+    "timezones": ["Pacific/Apia"],
+    "populationEst": 196130,
+    "drive": "left",
+    "government": "Parliamentary Republic"
+  },
+  "YEM": {
+    "capitalZh": ["萨那"],
+    "capitalLat": 15.356679,
+    "capitalLng": 44.204648,
+    "timezones": ["Asia/Aden"],
+    "populationEst": 28498687,
+    "drive": "right",
+    "government": "Republic"
+  },
+  "ZAF": {
+    "capitalTimezone": "Africa/Johannesburg",
+    "capitalZh": ["比勒陀利亚", "布隆方丹", "开普敦"],
+    "capitalLat": -25.704975,
+    "capitalLng": 28.227483,
+    "timezones": ["Africa/Johannesburg"],
+    "populationEst": 57779622,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "ZMB": {
+    "capitalTimezone": "Africa/Lusaka",
+    "capitalZh": ["卢萨卡"],
+    "capitalLat": -15.414698,
+    "capitalLng": 28.281382,
+    "timezones": ["Africa/Lusaka"],
+    "populationEst": 17351822,
+    "drive": "left",
+    "government": "Republic"
+  },
+  "ZWE": {
+    "capitalTimezone": "Africa/Harare",
+    "capitalZh": ["哈拉雷"],
+    "capitalLat": -17.815844,
+    "capitalLng": 31.042764,
+    "timezones": ["Africa/Harare"],
+    "populationEst": 14439018,
+    "drive": "left",
+    "government": "Republic"
+  }
+}
